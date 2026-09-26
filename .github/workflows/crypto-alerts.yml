@@ -48,8 +48,8 @@ jobs:
           }
 
           async function getKlines(symbol, interval) {
-            const url =
-          const url = `https://data-api.binance.vision/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=120`;
+        
+          const url = "https://data-api.binance.vision/api/v3/klines?symbol=" + encodeURIComponent(symbol) + "&interval=" + encodeURIComponent(interval) + "&limit=120";
 
             const r = await fetch(url);
             if (!r.ok) throw new Error(`${symbol} ${interval}: HTTP ${r.status}`);
