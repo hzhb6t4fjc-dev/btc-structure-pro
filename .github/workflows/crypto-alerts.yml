@@ -1,0 +1,297 @@
+name: Crypto Structure Pro Alerts
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run crypto scanner
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALERT_SYMBOLS: ${{ vars.ALERT_SYMBOLS }}
+        run: |
+          cat > /tmp/scanner.mjs <<'EOF'
+          const fs = require('fs');
+
+          const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+          const CHAT = process.env.TELEGRAM_CHAT_ID;
+
+          if (!TOKEN || !CHAT) {
+            throw new Error("Telegram secrets are missing");
+          }
+
+          const symbols = (process.env.ALERT_SYMBOLS ||
+            "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,AVAXUSDT,LINKUSDT,DOTUSDT")
+            .split(",")
+            .map(x => x.trim().toUpperCase())
+            .filter(Boolean);
+
+          const STATE_FILE = "runtime/alert-state.json";
+          fs.mkdirSync("runtime", { recursive: true });
+
+          let state = {};
+          if (fs.existsSync(STATE_FILE)) {
+            try { state = JSON.parse(fs.readFileSync(STATE_FILE, "utf8")); }
+            catch { state = {}; }
+          }
+
+          async function getKlines(symbol, interval) {
+            const url =
+              `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=120`;
+
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`${symbol} ${interval}: HTTP ${r.status}`);
+
+            return (await r.json()).map(x => ({
+              time: x[0],
+              open: +x[1],
+              high: +x[2],
+              low: +x[3],
+              close: +x[4],
+              volume: +x[5]
+            }));
+          }
+
+          const avg = a => a.reduce((x,y) => x+y, 0) / a.length;
+
+          function analyze(c) {
+            if (c.length < 60) return { long: 0, short: 0, trigger: false };
+
+            const last = c[c.length - 1];
+            const prev = c[c.length - 2];
+
+            const closes = c.map(x => x.close);
+            const highs = c.map(x => x.high);
+            const lows = c.map(x => x.low);
+            const vols = c.map(x => x.volume);
+
+            const sma20 = avg(closes.slice(-20));
+            const sma50 = avg(closes.slice(-50));
+            const avgVol = avg(vols.slice(-20));
+
+            const recentHigh = Math.max(...highs.slice(-21, -1));
+            const recentLow = Math.min(...lows.slice(-21, -1));
+
+            const range = last.high - last.low;
+            const body = Math.abs(last.close - last.open);
+            const displacement = range > 0 && body / range >= 0.65;
+            const volumeExpansion = last.volume > avgVol * 1.35;
+
+            const bullishTrend = sma20 > sma50 && last.close > sma20;
+            const bearishTrend = sma20 < sma50 && last.close < sma20;
+
+            const breakout = last.close > recentHigh;
+            const breakdown = last.close < recentLow;
+
+            const sweepLow =
+              prev.low < Math.min(...lows.slice(-7, -2)) &&
+              last.close > prev.high;
+
+            const sweepHigh =
+              prev.high > Math.max(...highs.slice(-7, -2)) &&
+              last.close < prev.low;
+
+            let longScore = 0;
+            let shortScore = 0;
+
+            if (bullishTrend) longScore += 30;
+            if (bearishTrend) shortScore += 30;
+
+            if (breakout) longScore += 25;
+            if (breakdown) shortScore += 25;
+
+            if (sweepLow) longScore += 20;
+            if (sweepHigh) shortScore += 20;
+
+            if (displacement && last.close > last.open) longScore += 15;
+            if (displacement && last.close < last.open) shortScore += 15;
+
+            if (volumeExpansion && last.close > last.open) longScore += 10;
+            if (volumeExpansion && last.close < last.open) shortScore += 10;
+
+            const trigger =
+              breakout || breakdown || sweepLow || sweepHigh || displacement;
+
+            return {
+              long: Math.min(longScore, 100),
+              short: Math.min(shortScore, 100),
+              trigger,
+              price: last.close,
+              high: recentHigh,
+              low: recentLow
+            };
+          }
+
+          async function telegram(text) {
+            const url =
+              `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+
+            const r = await fetch(url, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                chat_id: CHAT,
+                text,
+                disable_web_page_preview: true
+              })
+            });
+
+            if (!r.ok) {
+              throw new Error(`Telegram HTTP ${r.status}: ${await r.text()}`);
+            }
+          }
+
+          function money(n) {
+            return Number(n).toLocaleString("en-US", {
+              maximumFractionDigits: 8
+            });
+          }
+
+          for (const symbol of symbols) {
+            try {
+              const [m15, h1, h4] = await Promise.all([
+                getKlines(symbol, "15m"),
+                getKlines(symbol, "1h"),
+                getKlines(symbol, "4h")
+              ]);
+
+              const a15 = analyze(m15);
+              const a1 = analyze(h1);
+              const a4 = analyze(h4);
+
+              const longScore =
+                a15.long * 0.35 +
+                a1.long * 0.30 +
+                a4.long * 0.35;
+
+              const shortScore =
+                a15.short * 0.35 +
+                a1.short * 0.30 +
+                a4.short * 0.35;
+
+              const longConfirmed =
+                longScore >= 70 &&
+                longScore - shortScore >= 14 &&
+                a1.long > a1.short &&
+                a4.long > a4.short &&
+                a15.trigger &&
+                a15.long >= 40;
+
+              const shortConfirmed =
+                shortScore >= 70 &&
+                shortScore - longScore >= 14 &&
+                a1.short > a1.long &&
+                a4.short > a4.long &&
+                a15.trigger &&
+                a15.short >= 40;
+
+              let side = null;
+              let score = 0;
+
+              if (longConfirmed) {
+                side = "LONG";
+                score = longScore;
+              } else if (shortConfirmed) {
+                side = "SHORT";
+                score = shortScore;
+              }
+
+              if (!side) continue;
+
+              const key = `${symbol}_${side}`;
+              const now = Date.now();
+
+              // 60-minute cooldown for the same symbol + direction
+              if (state[key] && now - state[key] < 60 * 60 * 1000) {
+                continue;
+              }
+
+              const price = a15.price;
+
+              let entry = price;
+              let invalidation;
+              let tp1;
+              let tp2;
+
+              if (side === "LONG") {
+                invalidation = Math.min(a1.low, a4.low);
+                const risk = entry - invalidation;
+
+                if (risk <= 0) continue;
+
+                tp1 = entry + risk;
+                tp2 = entry + risk * 2;
+              } else {
+                invalidation = Math.max(a1.high, a4.high);
+                const risk = invalidation - entry;
+
+                if (risk <= 0) continue;
+
+                tp1 = entry - risk;
+                tp2 = entry - risk * 2;
+              }
+
+              const emoji = side === "LONG" ? "🟢" : "🔴";
+
+              const message =
+                `${emoji} CRYPTO STRUCTURE PRO\n\n` +
+                `${side} SETUP — ${symbol}\n` +
+                `━━━━━━━━━━━━━━\n` +
+                `Confidence: ${score.toFixed(0)}/100\n` +
+                `Price: ${money(price)}\n\n` +
+                `Entry: ${money(entry)}\n` +
+                `Invalidation: ${money(invalidation)}\n` +
+                `TP1: ${money(tp1)}\n` +
+                `TP2: ${money(tp2)}\n\n` +
+                `15m: ${a15.long}/${a15.short}\n` +
+                `1H: ${a1.long}/${a1.short}\n` +
+                `4H: ${a4.long}/${a4.short}\n\n` +
+                `MTF structure confirmation detected.\n` +
+                `Educational signal — not financial advice.`;
+
+              await telegram(message);
+
+              state[key] = now;
+
+              console.log(
+                `ALERT ${symbol} ${side} ${score.toFixed(1)}`
+              );
+
+            } catch (err) {
+              console.log(`SKIP ${symbol}: ${err.message}`);
+            }
+          }
+
+          fs.writeFileSync(
+            STATE_FILE,
+            JSON.stringify(state, null, 2)
+          );
+          EOF
+
+          node /tmp/scanner.mjs
+
+      - name: Save alert state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add runtime/alert-state.json
+
+          if git diff --cached --quiet; then
+            echo "No alert state changes."
+          else
+            git commit -m "Update alert state"
+            git push
+          fi
