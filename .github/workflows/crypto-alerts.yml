@@ -20,7 +20,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          ALERT_SYMBOLS: ${{ vars.ALERT_SYMBOLS }}
+        ALERT_SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT
         run: |
           cat > /tmp/scanner.mjs <<'EOF'
           import fs from 'node:fs';
