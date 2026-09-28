@@ -162,7 +162,8 @@ jobs:
           }
 
           for (const symbol of symbols) {
-            try {
+            try { 
+            console.log(`SCAN ${symbol}`);
               const [m15, h1, h4] = await Promise.all([
                 getKlines(symbol, "15m"),
                 getKlines(symbol, "1h"),
