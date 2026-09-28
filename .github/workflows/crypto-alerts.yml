@@ -173,6 +173,7 @@ jobs:
               const a15 = analyze(m15);
               const a1 = analyze(h1);
               const a4 = analyze(h4);
+              console.log(`${symbol} 15m L/S=${a15.long.toFixed(1)}/${a15.short.toFixed(1)} | 1H L/S=${a1.long.toFixed(1)}/${a1.short.toFixed(1)} | 4H L/S=${a4.long.toFixed(1)}/${a4.short.toFixed(1)}`);
 
               const longScore =
                 a15.long * 0.35 +
