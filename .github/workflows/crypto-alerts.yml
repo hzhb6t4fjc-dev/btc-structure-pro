@@ -154,6 +154,9 @@ jobs:
               throw new Error(`Telegram HTTP ${r.status}: ${await r.text()}`);
             }
           }
+          await telegram("🔔 TEST — Crypto Structure Pro Telegram is working!");
+console.log("TELEGRAM TEST SENT");
+process.exit(0);
 
           function money(n) {
             return Number(n).toLocaleString("en-US", {
