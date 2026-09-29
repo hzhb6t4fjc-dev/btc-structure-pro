@@ -148,13 +148,16 @@ z.t==='HIGH'
 :'#3cd2aa';
 
 ctx.font='bold 10px Arial';
-
 ctx.fillText(
 z.t+' LIQUIDITY',
-w-pad-105,
+z.t==='HIGH'
+?w-pad-105
+:z.t==='MEDIUM'
+?w-pad-220
+:w-pad-335,
 ly-5
 );
-}
+
 
 ctx.restore();
 }
