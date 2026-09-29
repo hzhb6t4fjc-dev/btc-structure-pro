@@ -107,19 +107,25 @@ ctx.restore();
 function drawConfluence(ctx,a,hi,lo,y,pad,w){
 const r=hi-lo;if(!r)return;
 const fibs=[0,.236,.382,.5,.618,.786,1,1.272,1.618,2];
-const g=a.slice(-32);
+const g=a.slice(-32),zones=[];
+for(let i=2;i<g.length-2;i++){
+const q=g[i];
+if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)zones.push(q.h);
+if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)zones.push(q.l);
+}
 ctx.save();ctx.font='bold 10px Arial';
 for(const f of fibs){
-const p=lo+r*f;let touches=0;
-for(const q of g){
-if(Math.abs(q.h-p)/p<.003||Math.abs(q.l-p)/p<.003)touches++;
+const p=lo+r*f;
+let touches=0;
+for(const z of zones){
+if(Math.abs(z-p)/p<.004)touches++;
 }
-if(touches>=2){
+if(touches>=1){
 const yy=y(p);
-ctx.fillStyle='rgba(255,180,0,.12)';
-ctx.fillRect(pad,yy-6,w-pad*2,12);
-ctx.fillStyle='#ffb400';
-ctx.fillText('HIGH CONFLUENCE '+(f*100).toFixed(1)+'%',pad+6,yy-8);
+ctx.fillStyle='rgba(255,180,0,.16)';
+ctx.fillRect(pad,yy-7,w-pad*2,14);
+ctx.fillStyle=touches>=2?'#ffb400':'#ffd166';
+ctx.fillText((touches>=2?'HIGH CONFLUENCE ':'LIQUIDITY + FIB ')+(f*100).toFixed(1)+'%',pad+6,yy-9);
 }
 }
 ctx.restore();
