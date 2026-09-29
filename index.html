@@ -130,15 +130,20 @@ for(const f of fibs){
 const p=lo+r*f;
 let touches=0;
 for(const z of pts){
-if(Math.abs(z-p)/p<.0035)touches++;
+if(Math.abs(z-p)/p<.004)touches++;
 }
 if(touches>=1){
 const yy=y(p);
-const strong=touches>=2;
-ctx.fillStyle=strong?'rgba(255,70,110,.24)':'rgba(255,180,0,.14)';
+const high=touches>=3;
+const medium=touches>=2;
+ctx.fillStyle=high?'rgba(255,70,110,.28)':medium?'rgba(255,180,0,.22)':'rgba(60,210,170,.12)';
 ctx.fillRect(pad,yy-8,w-pad*2,16);
-ctx.fillStyle=strong?'#ff466e':'#ffb400';
-ctx.fillText((strong?'HIGH CONFLUENCE':'FIB + LIQUIDITY')+' '+(f*100).toFixed(1)+'%',pad+6,yy-8);
+ctx.fillStyle=high?'#ff466e':medium?'#ffb400':'#3cd2aa';
+ctx.fillText(
+(high?'HIGH CONFLUENCE ':medium?'MEDIUM CONFLUENCE ':'FIB + LIQUIDITY ')+
+(f*100).toFixed(1)+'%',
+pad+6,yy-7
+);
 }
 }
 ctx.restore();
