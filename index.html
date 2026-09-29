@@ -99,21 +99,32 @@ if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l);
 }
 
 const zones=[];
+
 for(const p of pts){
 let touches=0;
 for(const z of pts)if(Math.abs(z-p)/p<.004)touches++;
+
 if(!zones.some(z=>Math.abs(z.p-p)/p<.004)){
-zones.push({p,touches,t:touches>=3?'HIGH':touches>=2?'MEDIUM':'LOW'});
+zones.push({
+p,
+touches,
+t:touches>=3?'HIGH':touches>=2?'MEDIUM':'LOW'
+});
 }
 }
 
+zones.sort((a,b)=>y(a.p)-y(b.p));
+
 ctx.save();
+
+const labelYs=[];
 
 for(const z of zones){
 const yy=y(z.p);
 const hh=z.t==='HIGH'?16:z.t==='MEDIUM'?12:8;
 
-ctx.fillStyle=z.t==='HIGH'
+ctx.fillStyle=
+z.t==='HIGH'
 ?'rgba(255,70,110,.22)'
 :z.t==='MEDIUM'
 ?'rgba(255,180,0,.16)'
@@ -121,14 +132,28 @@ ctx.fillStyle=z.t==='HIGH'
 
 ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);
 
-ctx.fillStyle=z.t==='HIGH'
+let ly=yy;
+
+for(const py of labelYs){
+if(Math.abs(ly-py)<16)ly=py+16;
+}
+
+labelYs.push(ly);
+
+ctx.fillStyle=
+z.t==='HIGH'
 ?'#ff466e'
 :z.t==='MEDIUM'
 ?'#ffb400'
 :'#3cd2aa';
 
 ctx.font='bold 10px Arial';
-ctx.fillText(z.t+' LIQUIDITY',pad+6,yy-7);
+
+ctx.fillText(
+z.t+' LIQUIDITY',
+w-pad-105,
+ly-5
+);
 }
 
 ctx.restore();
