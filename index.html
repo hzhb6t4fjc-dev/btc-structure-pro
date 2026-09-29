@@ -104,6 +104,26 @@ ctx.fillRect(pad,Math.min(z1,z2),w-pad*2,Math.abs(z2-z1));
 }
 ctx.restore();
 }
+function drawConfluence(ctx,a,hi,lo,y,pad,w){
+const r=hi-lo;if(!r)return;
+const fibs=[0,.236,.382,.5,.618,.786,1,1.272,1.618,2];
+const g=a.slice(-32);
+ctx.save();ctx.font='bold 10px Arial';
+for(const f of fibs){
+const p=lo+r*f;let touches=0;
+for(const q of g){
+if(Math.abs(q.h-p)/p<.003||Math.abs(q.l-p)/p<.003)touches++;
+}
+if(touches>=2){
+const yy=y(p);
+ctx.fillStyle='rgba(255,180,0,.12)';
+ctx.fillRect(pad,yy-6,w-pad*2,12);
+ctx.fillStyle='#ffb400';
+ctx.fillText('HIGH CONFLUENCE '+(f*100).toFixed(1)+'%',pad+6,yy-8);
+}
+}
+ctx.restore();
+}
   function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*d;c.height=h*d;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),pad=32,x=i=>pad+i*(w-pad*1.5)/(a.length-1),y=v=>h-pad-(v-lo)/(hi-lo||1)*(h-pad*1.5);ctx.strokeStyle='#1e2940';for(let k=0;k<6;k++){let yy=pad+k*(h-pad*1.5)/5;drawFib(ctx,state.data,hi,lo,y,pad,w); drawLiquidity(ctx,state.data,hi,lo,y,pad,w);ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}for(let i=0;i<a.length;i++){let q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(3,w/250);ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}}
 $('symbol').onchange=async e=>{state.symbol=e.target.value;state.mtf={};connectWS();await loadAll()};$('symbolSearch').oninput=e=>{const q=e.target.value.toUpperCase().replace('/','');renderSymbols(state.symbols.filter(s=>s.includes(q)))};$('refresh').onclick=loadAll;$('notifyBtn').onclick=async()=>{if('Notification'in window){const p=await Notification.requestPermission();$('notifyBtn').textContent=p==='granted'?'Alerts enabled':'Alerts blocked'}};$('clearAlerts').onclick=()=>{state.alerts=[];save()};document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{document.querySelectorAll('[data-tf]').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.tf=b.dataset.tf;$('tfLabel').textContent=state.tf.toUpperCase();connectWS();await loadAll()});window.addEventListener('resize',draw);renderAlerts();(async()=>{await loadSymbols();$('symbol').value=state.symbol;await loadAll();connectWS();setInterval(loadAll,30000)})();
 </script></body></html>
