@@ -90,17 +90,28 @@ ctx.restore();
 }
 function drawLiquidity(ctx,a,hi,lo,y,pad,w){
 const r=hi-lo;if(!r)return;
-const g=a.slice(-32),zones=[];
+const g=a.slice(-48),pts=[];
 for(let i=2;i<g.length-2;i++){
 const q=g[i];
-if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)zones.push({p:q.h,t:'HIGH'});
-if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)zones.push({p:q.l,t:'LOW'});
+if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);
+if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l);
+}
+const zones=[];
+for(const p of pts){
+let touches=0;
+for(const z of pts)if(Math.abs(z-p)/p<.004)touches++;
+if(!zones.some(z=>Math.abs(z.p-p)/p<.004)){
+zones.push({p,touches,t:touches>=3?'HIGH':touches>=2?'MEDIUM':'LOW'});
+}
 }
 ctx.save();
 for(const z of zones){
-const z1=y(z.p+r*.006),z2=y(z.p-r*.006);
-ctx.fillStyle=z.t==='HIGH'?'rgba(255,90,120,.10)':'rgba(60,210,170,.10)';
-ctx.fillRect(pad,Math.min(z1,z2),w-pad*2,Math.abs(z2-z1));
+const yy=y(z.p),hh=z.t==='HIGH'?16:z.t==='MEDIUM'?12:8;
+ctx.fillStyle=z.t==='HIGH'?'rgba(255,70,110,.22)':z.t==='MEDIUM'?'rgba(255,180,0,.16)':'rgba(60,210,170,.10)';
+ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);
+ctx.fillStyle=z.t==='HIGH'?'#ff466e':z.t==='MEDIUM'?'#ffb400':'#3cd2aa';
+ctx.font='bold 10px Arial';
+ctx.fillText(z.t+' LIQUIDITY',pad+6,yy-7);
 }
 ctx.restore();
 }
