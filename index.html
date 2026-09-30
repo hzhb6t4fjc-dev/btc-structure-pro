@@ -379,6 +379,23 @@ function getConfluenceScore(a,hi,lo){
   const final=Math.max(0,Math.min(100,Math.round(score)));state.confluenceBreakdown=breakdown;return {score:final,direction,breakdown};
 }
 
+function maybeAlert(d){
+  if(!d || !d.side) return;
+  const candle=d.s15.last.t;
+  const key=`${state.symbol}-${d.side}-${candle}`;
+  if(state.lastAlertKey===key) return;
+  const reasons=d.side==='LONG'?d.s15.L:d.s15.S;
+  const lv=buildLevels(d);
+  const score=d.side==='LONG'?d.longScore:d.shortScore;
+  const reason=`MTF ${d.side} · 15m ${d.side==='LONG'?d.s15.bull:d.s15.bear}/100 · 1H ${d.side==='LONG'?d.s1.bull:d.s1.bear}/100 · 4H ${d.side==='LONG'?d.s4.bull:d.s4.bear}/100 · ${reasons.slice(0,5).join(' + ')||'alignment'}`;
+  state.alerts.unshift({side:d.side,symbol:state.symbol,time:new Date().toLocaleString(),reason});
+  state.lastAlertKey=key;
+  saveAlerts();
+  if('Notification' in window && Notification.permission==='granted' && lv){
+    new Notification(`${state.symbol.replace('USDT','/USDT')} ${d.side} setup`,{body:`Score ${score}/100 · Entry ${fmt(lv.entry)} · TP2 ${fmt(lv.tp2)}`});
+  }
+}
+
 function updateUI(d){
   const s=d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
