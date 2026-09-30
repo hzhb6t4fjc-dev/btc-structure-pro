@@ -153,6 +153,11 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="stateDescription" id="monitorText">Watching the 15m trigger sequence automatically.</div>
           <div class="stateMeta" id="monitorMeta"></div>
         </div>
+        <div class="statePanel" id="alertEnginePanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Alert engine</span><span class="stateBadge confirmed" id="alertEngineBadge">ACTIVE</span></div>
+          <div class="stateDescription" id="alertEngineText">Unique event alerts are enabled. Duplicate alerts are suppressed.</div>
+          <div class="stateMeta" id="alertEngineMeta"></div>
+        </div>
         <div class="confirmation eventPanel" id="eventPanel">
           <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
           <div class="eventLog" id="eventLog">No confirmation events yet.</div>
@@ -189,7 +194,10 @@ const state={
   monitorWS:null,
   monitorTimer:null,
   lastScanTs:0,
-  lastCandleTs:0
+  lastCandleTs:0,
+  alertEvents:JSON.parse(localStorage.getItem('cspAlertEvents')||'{}'),
+  lastEngineAlert:null,
+  lastSetupStateKey:null
 };
 
 const $=id=>document.getElementById(id);
@@ -225,6 +233,42 @@ function renderAlerts(){
   $('alertLog').innerHTML=a.length
     ? a.map(x=>`<div class="alertItem"><b class="${x.side==='LONG'?'green':'red'}">${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.time}<br>${x.reason}</div>`).join('')
     : 'No alerts yet.';
+}
+
+function saveAlertEvents(){
+  const keys=Object.keys(state.alertEvents);
+  if(keys.length>300){
+    keys.sort((a,b)=>(state.alertEvents[a]||0)-(state.alertEvents[b]||0));
+    for(const k of keys.slice(0,keys.length-300)) delete state.alertEvents[k];
+  }
+  localStorage.setItem('cspAlertEvents',JSON.stringify(state.alertEvents));
+}
+function renderAlertEngine(){
+  const badge=$('alertEngineBadge'),text=$('alertEngineText'),meta=$('alertEngineMeta');
+  if(!badge||!text||!meta)return;
+  badge.textContent='ACTIVE'; badge.className='stateBadge confirmed';
+  text.textContent=state.lastEngineAlert
+    ? `Last alert: ${state.lastEngineAlert.side} · ${state.lastEngineAlert.label} · ${state.lastEngineAlert.type}. Duplicate events are suppressed.`
+    : 'Unique event alerts are enabled. Duplicate alerts are suppressed.';
+  const permission=('Notification' in window)?Notification.permission:'unsupported';
+  meta.innerHTML=`<span class="pill">EVENT DEDUPE ON</span><span class="pill">BROWSER ${permission.toUpperCase()}</span>${state.lastEngineAlert?`<span class="pill">LAST ${state.lastEngineAlert.time}</span>`:''}`;
+}
+function emitEngineAlert(side,label,type,reason,opts={}){
+  if(!side||!label||!type)return false;
+  const candle=opts.candle||state.lastCandleTs||0;
+  const key=`${state.symbol}|${side}|${label}|${type}|${candle}`;
+  if(state.alertEvents[key]) return false;
+  state.alertEvents[key]=Date.now();
+  saveAlertEvents();
+  const time=new Date().toLocaleTimeString();
+  state.lastEngineAlert={side,label,type,time};
+  state.alerts.unshift({side,symbol:state.symbol,time,reason:reason||`${label} · ${type}`});
+  saveAlerts();
+  renderAlertEngine();
+  if('Notification' in window && Notification.permission==='granted') {
+    try{ new Notification(`${state.symbol.replace('USDT','/USDT')} ${side} · ${type}`,{body:reason||`${label} · ${type}`}); }catch(e){}
+  }
+  return true;
 }
 
 async function loadSymbols(){
@@ -571,19 +615,12 @@ function getConfluenceScore(a,hi,lo){
 }
 function maybeAlert(d){
   if(!d || !d.side) return;
-  const candle=d.s15.last.t;
-  const key=`${state.symbol}-${d.side}-${candle}`;
-  if(state.lastAlertKey===key) return;
-  const reasons=d.side==='LONG'?d.s15.L:d.s15.S;
-  const lv=buildLevels(d);
   const score=d.side==='LONG'?d.longScore:d.shortScore;
-  const reason=`MTF ${d.side} · 15m ${d.side==='LONG'?d.s15.bull:d.s15.bear}/100 · 1H ${d.side==='LONG'?d.s1.bull:d.s1.bear}/100 · 4H ${d.side==='LONG'?d.s4.bull:d.s4.bear}/100 · ${reasons.slice(0,5).join(' + ')||'alignment'}`;
-  state.alerts.unshift({side:d.side,symbol:state.symbol,time:new Date().toLocaleString(),reason});
-  state.lastAlertKey=key;
-  saveAlerts();
-  if('Notification' in window && Notification.permission==='granted' && lv){
-    new Notification(`${state.symbol.replace('USDT','/USDT')} ${d.side} setup`,{body:`Score ${score}/100 · Entry ${fmt(lv.entry)} · TP2 ${fmt(lv.tp2)}`});
-  }
+  const lv=buildLevels(d);
+  const candle=d.s15&&d.s15.last?d.s15.last.t:state.lastCandleTs;
+  const reasons=d.side==='LONG'?d.s15.L:d.s15.S;
+  const reason=`${d.side} setup confirmed · Score ${score}/100 · ${reasons.slice(0,5).join(' + ')||'alignment'}`;
+  emitEngineAlert(d.side,'Setup confirmed','CONFIRMED',reason,{candle});
 }
 
 function buildRoadmap(d,side){
@@ -619,6 +656,8 @@ function addSequenceEvent(side,label,type){
   if(last && last.side===side && last.symbol===state.symbol && last.label===label && last.type===type && (Date.now()-last.ts)<15000)return;
   state.sequenceLog.unshift({symbol:state.symbol,side,label,type,time:now,ts:Date.now()});
   saveSequenceLog();
+  const action=type==='CONFIRMED'?'confirmed':type==='RECONFIRMED'?'reconfirmed':'invalidated';
+  emitEngineAlert(side,label,type,`${label} ${action} · sequence gate update`,{candle:state.lastCandleTs});
 }
 function renderSequenceLog(){
   const box=$('eventLog'),count=$('eventCount');
@@ -720,6 +759,11 @@ function updateSetupState(d,side){
   }else{
     stateName='WATCH'; cls='watch';
     desc=`${side} watch is active: the first confirmation gate has not been completed yet.`;
+  }
+  const setupKey=`${state.symbol}|${side}|${stateName}`;
+  if(state.lastSetupStateKey!==setupKey){
+    state.lastSetupStateKey=setupKey;
+    if(side==='LONG'||side==='SHORT') emitEngineAlert(side,'Setup state',stateName,`${side} setup state changed to ${stateName}`,{candle:state.lastCandleTs});
   }
   badge.textContent=stateName; badge.className='stateBadge '+cls;
   text.textContent=desc;
@@ -892,6 +936,7 @@ function updateLiveMonitor(d){
   const remaining=nextClose?Math.max(0,nextClose-Date.now()):0;
   const mins=Math.floor(remaining/60000), secs=Math.floor((remaining%60000)/1000);
   meta.innerHTML=`<span class="pill">AUTO SCAN 30s</span><span class="pill">SEQUENCE ${Math.min(idx,total)}/${total}</span><span class="pill">NEXT 15m CLOSE ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}</span>`;
+  renderAlertEngine();
 }
 
 function startMonitorWS(){
@@ -962,6 +1007,7 @@ $('notifyBtn').onclick=async()=>{
   if(!('Notification' in window)){showError('Notifications are not supported by this browser.');return}
   const p=await Notification.requestPermission();
   $('notifyBtn').textContent=p==='granted'?'Alerts enabled':'Alerts blocked';
+  renderAlertEngine();
 };
 
 $('clearAlerts').onclick=()=>{
@@ -978,6 +1024,7 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
 
 window.addEventListener('resize',draw);
 renderAlerts();
+renderAlertEngine();
 
 (async()=>{
   try{
