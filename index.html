@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v7.4 Professional</title>
+<title>Crypto Structure Pro v7.5 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -55,7 +55,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
 @media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
 
-.eventPanel{margin-top:12px}.eventLog{display:grid;gap:8px;max-height:260px;overflow:auto}.eventItem{border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:rgba(5,12,25,.45);font-size:13px}.eventItem b{font-weight:800}.eventItem .eventTime{opacity:.65;font-size:11px;margin-right:7px}.eventItem.confirmed b{color:var(--green)}.eventItem.invalidated b{color:var(--red)}.eventItem.reconfirmed b{color:var(--green)}.eventItem.info b{color:var(--yellow)}
+.statePanel{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.stateBadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;padding:5px 9px;border-radius:999px;border:1px solid var(--line)}.stateBadge.watch{color:var(--yellow);border-color:#5b4d24}.stateBadge.developing{color:var(--blue);border-color:#31578d}.stateBadge.triggered{color:#d9b6ff;border-color:#654a82}.stateBadge.confirmed{color:var(--green);border-color:#285a4b}.stateBadge.invalidated{color:var(--red);border-color:#6b3340}.stateBadge.wait{color:var(--muted)}.stateDescription{font-size:10px;color:#aebbd1;line-height:1.45;margin-top:7px}.stateMeta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.stateMeta .pill{font-size:9px}.eventPanel{margin-top:12px}.eventLog{display:grid;gap:8px;max-height:260px;overflow:auto}.eventItem{border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:rgba(5,12,25,.45);font-size:13px}.eventItem b{font-weight:800}.eventItem .eventTime{opacity:.65;font-size:11px;margin-right:7px}.eventItem.confirmed b{color:var(--green)}.eventItem.invalidated b{color:var(--red)}.eventItem.reconfirmed b{color:var(--green)}.eventItem.info b{color:var(--yellow)}
 
 </style>
 </head>
@@ -63,7 +63,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v7.4 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v7.5 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -142,6 +142,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="roadmapStatus" id="confirmationStatus">The engine will record trigger confirmations in order as they are observed.</div>
           <div class="confirmationSteps" id="confirmationSteps"></div>
         </div>
+        <div class="statePanel" id="statePanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Setup state</span><span class="stateBadge wait" id="setupStateBadge">WAIT</span></div>
+          <div class="stateDescription" id="setupStateText">Waiting for a directional side.</div>
+          <div class="stateMeta" id="setupStateMeta"></div>
+        </div>
+
         <div class="confirmation eventPanel" id="eventPanel">
           <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
           <div class="eventLog" id="eventLog">No confirmation events yet.</div>
@@ -681,6 +687,37 @@ function updateConfirmation(d,side){
   renderSequenceLog();
 }
 
+function updateSetupState(d,side){
+  const badge=$('setupStateBadge'),text=$('setupStateText'),meta=$('setupStateMeta');
+  if(!badge||!text||!meta)return;
+  let stateName='WAIT',cls='wait',desc='Waiting for a directional side.';
+  let index=state.confirmation.index||0;
+  const steps=side==='LONG'||side==='SHORT'?buildRoadmap(d,side):[];
+  const invalidated=index<steps.length && state.confirmation.statuses[index]==='INVALIDATED';
+  if(invalidated){
+    stateName='INVALIDATED'; cls='invalidated';
+    desc=`${side} setup paused: ${steps[index][0]} is no longer confirmed. The sequence must recover this gate before continuing.`;
+  }else if(d.side){
+    stateName='CONFIRMED'; cls='confirmed';
+    desc=`${d.side} confirmed: strict trigger conditions are satisfied.`;
+  }else if(side!=='LONG'&&side!=='SHORT'){
+    stateName='WAIT'; cls='wait'; desc='Waiting for a directional side.';
+  }else if((d.longTrigger&&side==='LONG')||(d.shortTrigger&&side==='SHORT')||index>=6){
+    stateName='TRIGGERED'; cls='triggered';
+    desc=`${side} trigger conditions are active; the remaining gate is the final confirmation threshold.`;
+  }else if(index>0){
+    stateName='DEVELOPING'; cls='developing';
+    desc=`${side} setup is developing: ${index}/${steps.length} confirmation gates have been observed in order.`;
+  }else{
+    stateName='WATCH'; cls='watch';
+    desc=`${side} watch is active: the first confirmation gate has not been completed yet.`;
+  }
+  badge.textContent=stateName; badge.className='stateBadge '+cls;
+  text.textContent=desc;
+  const next=(steps.length&&index<steps.length)?steps[index][0]:'';
+  meta.innerHTML=`<span class="pill">SIDE ${side||'—'}</span><span class="pill">SEQUENCE ${Math.min(index,steps.length)}/${steps.length||7}</span>${next?`<span class="pill">NEXT ${next}</span>`:''}`;
+}
+
 function renderRoadmap(d,side){
   const box=$('roadmap');
   if(!box)return;
@@ -765,6 +802,7 @@ function updateUI(d){
   $('checks').innerHTML=roadmap.map(([label,ok])=>`<span class="check ${ok?'green':''}">${ok?'✓':'○'} ${label}</span>`).join('');
   renderRoadmap(d,roadmapSide||'WAIT');
   updateConfirmation(d,roadmapSide||'WAIT');
+  updateSetupState(d,roadmapSide||'WAIT');
 
   if(d.side){
     const lv=buildLevels(d);
