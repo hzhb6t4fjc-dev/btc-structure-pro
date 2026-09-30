@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v7.3 Professional</title>
+<title>Crypto Structure Pro v7.4 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -54,13 +54,16 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
  .roadmapStatus{font-size:10px;color:#aebbd1;margin-top:7px;line-height:1.45}.roadmapStatus b{color:#e7edf8}.roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}.confirmation{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.confirmationSteps{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.cstep{font-size:9px;padding:6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.cstep.done{color:var(--green);border-color:#285a4b}.cstep.current{color:var(--yellow);border-color:#5b4d24}.cstep.locked{opacity:.62}.cstep small{display:block;font-size:8px;margin-top:2px;color:inherit}@media(max-width:560px){.confirmationSteps{grid-template-columns:1fr 1fr}}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
 @media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
+
+.eventPanel{margin-top:12px}.eventLog{display:grid;gap:8px;max-height:260px;overflow:auto}.eventItem{border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:rgba(5,12,25,.45);font-size:13px}.eventItem b{font-weight:800}.eventItem .eventTime{opacity:.65;font-size:11px;margin-right:7px}.eventItem.confirmed b{color:var(--green)}.eventItem.invalidated b{color:var(--red)}.eventItem.reconfirmed b{color:var(--green)}.eventItem.info b{color:var(--yellow)}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v7.3 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v7.4 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -139,6 +142,10 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="roadmapStatus" id="confirmationStatus">The engine will record trigger confirmations in order as they are observed.</div>
           <div class="confirmationSteps" id="confirmationSteps"></div>
         </div>
+        <div class="confirmation eventPanel" id="eventPanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
+          <div class="eventLog" id="eventLog">No confirmation events yet.</div>
+        </div>
         <div class="reason" style="margin-top:8px"><b>Risk/Reward:</b> <span id="rr">—</span> · <b>Trigger:</b> <span id="triggerText">—</span></div>
       </div>
 
@@ -166,7 +173,8 @@ const state={
   symbols:[],
   loading:false,
   confluenceBreakdown:{},
-  confirmation:{side:null,index:0,events:[],key:null}
+  confirmation:{side:null,index:0,events:[],key:null,statuses:[]},
+  sequenceLog:JSON.parse(localStorage.getItem('cspSequenceLog')||'[]')
 };
 
 const $=id=>document.getElementById(id);
@@ -585,11 +593,36 @@ function buildRoadmap(d,side){
   ];
 }
 
+function saveSequenceLog(){
+  state.sequenceLog=state.sequenceLog.slice(-100);
+  localStorage.setItem('cspSequenceLog',JSON.stringify(state.sequenceLog));
+  renderSequenceLog();
+}
+function addSequenceEvent(side,label,type){
+  const now=new Date().toLocaleTimeString();
+  const last=state.sequenceLog[0];
+  if(last && last.side===side && last.symbol===state.symbol && last.label===label && last.type===type && (Date.now()-last.ts)<15000)return;
+  state.sequenceLog.unshift({symbol:state.symbol,side,label,type,time:now,ts:Date.now()});
+  saveSequenceLog();
+}
+function renderSequenceLog(){
+  const box=$('eventLog'),count=$('eventCount');
+  if(!box||!count)return;
+  const items=state.sequenceLog.filter(x=>x.symbol===state.symbol).slice(0,20);
+  count.textContent=items.length+' EVENTS';
+  box.innerHTML=items.length?items.map(x=>{
+    const cls=x.type==='INVALIDATED'?'invalidated':x.type==='RECONFIRMED'?'reconfirmed':x.type==='CONFIRMED'?'confirmed':'info';
+    const icon=x.type==='INVALIDATED'?'✕':x.type==='RECONFIRMED'?'↻':x.type==='CONFIRMED'?'✓':'•';
+    return `<div class="eventItem ${cls}"><span class="eventTime">${x.time}</span><b>${icon} ${x.side} · ${x.label} · ${x.type}</b></div>`;
+  }).join(''):'No confirmation events yet.';
+}
+
 function updateConfirmation(d,side){
   const badge=$('confirmationBadge'),bar=$('confirmationBar'),status=$('confirmationStatus'),stepsBox=$('confirmationSteps');
   if(!badge||!bar||!status||!stepsBox)return;
+  renderSequenceLog();
   if(side!=='LONG'&&side!=='SHORT'){
-    state.confirmation={side:null,index:0,events:[],key:null};
+    state.confirmation={side:null,index:0,events:[],key:null,statuses:[]};
     badge.textContent='WAITING'; badge.className='roadmapNext yellow'; bar.style.width='0%';
     status.textContent='The engine will record trigger confirmations in order after a directional side is established.';
     stepsBox.innerHTML='<span class="cstep locked">Waiting for direction</span>';
@@ -598,13 +631,36 @@ function updateConfirmation(d,side){
   const steps=buildRoadmap(d,side);
   const key=`${state.symbol}-${side}`;
   if(state.confirmation.key!==key){
-    state.confirmation={side,index:0,events:[],key};
+    const saved=JSON.parse(localStorage.getItem('cspSequenceState')||'{}')[key]||{};
+    state.confirmation={side,index:Number(saved.index)||0,events:saved.events||[],key,statuses:saved.statuses||[]};
   }
+  const persist=()=>{
+    const all=JSON.parse(localStorage.getItem('cspSequenceState')||'{}');
+    all[key]={index:state.confirmation.index,events:state.confirmation.events,statuses:state.confirmation.statuses};
+    localStorage.setItem('cspSequenceState',JSON.stringify(all));
+  };
+  // Detect invalidation of an already confirmed gate. The sequence pauses at the first broken gate.
+  for(let i=0;i<state.confirmation.index;i++){
+    if(!steps[i][1] && state.confirmation.statuses[i]==='CONFIRMED'){
+      state.confirmation.statuses[i]='INVALIDATED';
+      addSequenceEvent(side,steps[i][0],'INVALIDATED');
+      for(let j=i+1;j<state.confirmation.statuses.length;j++) state.confirmation.statuses[j]='WAIT';
+      state.confirmation.index=i;
+      state.confirmation.events=state.confirmation.events.slice(0,i);
+      persist();
+      break;
+    }
+  }
+  // Advance only in order. A re-confirmed gate is logged once when it becomes true again.
   while(state.confirmation.index<steps.length && steps[state.confirmation.index][1]){
-    const label=steps[state.confirmation.index][0];
-    state.confirmation.events[state.confirmation.index]={label,time:new Date().toLocaleTimeString()};
+    const i=state.confirmation.index, label=steps[i][0];
+    const wasInvalidated=state.confirmation.statuses[i]==='INVALIDATED';
+    state.confirmation.events[i]={label,time:new Date().toLocaleTimeString()};
+    state.confirmation.statuses[i]='CONFIRMED';
+    addSequenceEvent(side,label,wasInvalidated?'RECONFIRMED':'CONFIRMED');
     state.confirmation.index++;
   }
+  persist();
   const idx=state.confirmation.index;
   const complete=idx>=steps.length;
   const observed=state.confirmation.events;
@@ -622,6 +678,7 @@ function updateConfirmation(d,side){
     if(i===idx) return `<span class="cstep current">→ ${label}<small>NEXT GATE</small></span>`;
     return `<span class="cstep locked">○ ${label}<small>WAIT</small></span>`;
   }).join('');
+  renderSequenceLog();
 }
 
 function renderRoadmap(d,side){
