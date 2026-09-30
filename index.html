@@ -40,6 +40,10 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .level b{display:block;font-size:10px;color:var(--muted);margin-bottom:3px}.level span{font-size:13px;font-weight:750}
 .checks{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .check{font-size:10px;padding:4px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.breakdown{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.bd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:#090f1a;font-size:10px}
+.bd span{color:var(--muted)}.bd b{font-size:11px}.bd i{display:block;height:4px;border-radius:9px;background:#202a3e;flex:1;min-width:35px;overflow:hidden}.bd i em{display:block;height:100%;background:var(--blue)}
+@media(max-width:560px){.breakdown{grid-template-columns:1fr 1fr}}
 .alertItem{padding:8px 0;border-bottom:1px solid var(--line)}
 .pill{font-size:10px;border:1px solid var(--line);padding:4px 7px;border-radius:999px;color:var(--muted)}
 .signal{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
@@ -93,6 +97,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="decisionLine"><span id="biasBadge" class="signalBadge">WAIT</span><span id="biasText" class="reason">Waiting for multi-timeframe data…</span></div>
         <div class="reason" id="qualityText">Waiting for data…</div>
         <div class="checks" id="qualityChecks"></div>
+        <div class="breakdown" id="confluenceBreakdown"></div>
       </div>
       <div class="errorBox" id="errorBox"></div>
     </section>
@@ -357,28 +362,57 @@ function buildLevels(d){
 function getConfluenceScore(a,hi,lo){
   if(!a||a.length<20)return {score:0,direction:'WAIT',breakdown:{}};
   const g=a.slice(-20),last=g[g.length-1],range=hi-lo||1;
-  const breakdown={structure:0,liquidity:0,displacement:0,mss:0,fvg:0,volume:0,fibonacci:0,mtf:0};
   const m15=state.mtf['15m'],m1=state.mtf['1h'],m4=state.mtf['4h'];
-  let direction=m1?(m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'WAIT'):'WAIT';
-  let score=m1?Math.max(m1.bull,m1.bear)*0.35:0;
-  const ph=g.slice(-8,-1).map(x=>x.h),pl=g.slice(-8,-1).map(x=>x.l);
-  if(last.h>=Math.max(...ph)||last.l<=Math.min(...pl)){breakdown.structure=15;score+=15}
-  const recent=g.slice(-8,-1);let eqH=0,eqL=0;
-  for(let i=0;i<recent.length;i++)for(let j=i+1;j<recent.length;j++){if(Math.abs(recent[i].h-recent[j].h)/Math.max(recent[i].h,1)<.004)eqH++;if(Math.abs(recent[i].l-recent[j].l)/Math.max(recent[i].l,1)<.004)eqL++}
+  if(!m1)return {score:0,direction:'WAIT',breakdown:{}};
+
+  const direction=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'WAIT';
+  const breakdown={structure:0,liquidity:0,displacement:0,mss:0,fvg:0,volume:0,fibonacci:0,mtf:0};
+  if(direction==='WAIT')return {score:0,direction,breakdown};
+  const bullish=direction==='LONG';
+
+  const recent=g.slice(-8,-1);
   const minL=Math.min(...recent.map(x=>x.l)),maxH=Math.max(...recent.map(x=>x.h));
   const sweepLong=last.l<minL&&last.c>minL,sweepShort=last.h>maxH&&last.c<maxH;
-  if(eqH>=2||eqL>=2||sweepLong||sweepShort){breakdown.liquidity=15;score+=15}
-  const body=Math.abs(last.c-last.o),avgBody=g.slice(0,-1).reduce((s,x)=>s+Math.abs(x.c-x.o),0)/(g.length-1);
-  if(body>avgBody*1.5){breakdown.displacement=15;score+=15}
-  const swingHigh=Math.max(...g.slice(-8,-1).map(x=>x.h)),swingLow=Math.min(...g.slice(-8,-1).map(x=>x.l));
-  if(last.c>swingHigh||last.c<swingLow){breakdown.mss=10;score+=10}
-  const c1=g[g.length-3];if(c1&&(c1.h<last.l||c1.l>last.h)){breakdown.fvg=10;score+=10}
-  const avgVol=g.slice(0,-1).reduce((s,x)=>s+(x.v||0),0)/(g.length-1);if((last.v||0)>avgVol*1.3){breakdown.volume=10;score+=10}
-  for(const f of [.236,.382,.5,.618,.786]){const fp=lo+range*f;if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;score+=10;break}}
-  if(m15&&m1&&m4){const bull=m15.bull>m15.bear&&m1.bull>m1.bear&&m4.bull>m4.bear,bear=m15.bear>m15.bull&&m1.bear>m1.bull&&m4.bear>m4.bull;if(bull||bear){breakdown.mtf=15;score+=15;direction=bull?'LONG':'SHORT'}}
-  const final=Math.max(0,Math.min(100,Math.round(score)));state.confluenceBreakdown=breakdown;return {score:final,direction,breakdown};
-}
+  const structureAligned=bullish?(m1.bull>=m1.bear+8):(m1.bear>=m1.bull+8);
+  if(structureAligned)breakdown.structure=15;
 
+  let eqH=0,eqL=0;
+  for(let i=0;i<recent.length;i++)for(let j=i+1;j<recent.length;j++){
+    if(Math.abs(recent[i].h-recent[j].h)/Math.max(recent[i].h,1)<.004)eqH++;
+    if(Math.abs(recent[i].l-recent[j].l)/Math.max(recent[i].l,1)<.004)eqL++;
+  }
+  if(sweepLong&&bullish||sweepShort&&!bullish||eqH>=2||eqL>=2)breakdown.liquidity=15;
+
+  const body=Math.abs(last.c-last.o),avgBody=g.slice(0,-1).reduce((s,x)=>s+Math.abs(x.c-x.o),0)/(g.length-1);
+  if(body>avgBody*1.5&&((bullish&&last.c>last.o)||(!bullish&&last.c<last.o)))breakdown.displacement=15;
+
+  const swingHigh=Math.max(...g.slice(-8,-1).map(x=>x.h)),swingLow=Math.min(...g.slice(-8,-1).map(x=>x.l));
+  if((bullish&&last.c>swingHigh)||(!bullish&&last.c<swingLow)||((bullish&&sweepLong)||(!bullish&&sweepShort)))breakdown.mss=10;
+
+  let fvg=false;
+  for(let i=2;i<g.length;i++){
+    const c1=g[i-2],c2=g[i-1],c3=g[i];
+    if(bullish&&c1.h<c3.l&&c2.c>c2.o)fvg=true;
+    if(!bullish&&c1.l>c3.h&&c2.c<c2.o)fvg=true;
+  }
+  if(fvg)breakdown.fvg=10;
+
+  const avgVol=g.slice(0,-1).reduce((s,x)=>s+(x.v||0),0)/(g.length-1);
+  if((last.v||0)>avgVol*1.3&&((bullish&&last.c>last.o)||(!bullish&&last.c<last.o)))breakdown.volume=10;
+
+  for(const f of [.236,.382,.5,.618,.786]){
+    const fp=lo+range*f;
+    if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
+  }
+
+  const mtfBull=m15&&m4&&m15.bull>m15.bear&&m1.bull>m1.bear&&m4.bull>m4.bear;
+  const mtfBear=m15&&m4&&m15.bear>m15.bull&&m1.bear>m1.bull&&m4.bear>m4.bull;
+  if((bullish&&mtfBull)||(!bullish&&mtfBear))breakdown.mtf=15;
+
+  const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
+  state.confluenceBreakdown=breakdown;
+  return {score,direction,breakdown};
+}
 function maybeAlert(d){
   if(!d || !d.side) return;
   const candle=d.s15.last.t;
@@ -405,8 +439,10 @@ function updateUI(d){
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
-  $('confluenceScore').textContent=conf.score;$('qualityText').textContent=`Long ${d.longScore}/100 · Short ${d.shortScore}/100 · Current bias: ${conf.direction}.`;
+  $('confluenceScore').textContent=conf.score;$('qualityText').textContent=`Long ${d.longScore}/100 · Short ${d.shortScore}/100 · Current bias: ${conf.direction} · Total = component points.`;
   $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF','mtf',15]];
+  $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
   const badge=$('biasBadge');badge.textContent=d.side?d.side:(conf.direction==='WAIT'?'WAIT':'BIAS '+conf.direction);badge.className='signalBadge '+(d.side==='LONG'||conf.direction==='LONG'?'green':d.side==='SHORT'||conf.direction==='SHORT'?'red':'yellow');
   $('biasText').textContent=d.side?'MTF trigger + higher-timeframe alignment.':conf.direction==='WAIT'?'No dominant directional bias.':'Directional bias exists, but the full trigger is not confirmed.';
   const trigger=d.side?'CONFIRMED':d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT';$('triggerBadge').textContent=trigger;$('triggerBadge').className='signalBadge '+(d.side==='LONG'?'green':d.side==='SHORT'?'red':trigger==='TRIGGER WATCH'?'yellow':'');
@@ -472,7 +508,7 @@ function connectWS(){
 }
 
 function drawFib(ctx,hi,lo,y,pad,w){const range=hi-lo;if(!range)return;const levels=[0,.236,.382,.5,.618,.786,1];ctx.save();ctx.font='10px Arial';ctx.setLineDash([4,4]);for(const r of levels){const price=lo+range*r,yy=y(price);ctx.strokeStyle='rgba(114,169,255,.25)';ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();ctx.fillStyle='#72a9ff';ctx.fillText((r*100).toFixed(1)+'%',pad+4,yy-3)}ctx.restore()}
-function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,6);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
+function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,3);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
 function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,hi,lo,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
 
 $('symbol').onchange=async e=>{
@@ -525,5 +561,4 @@ renderAlerts();
 </script>
 </body>
 </html>
-    
   
