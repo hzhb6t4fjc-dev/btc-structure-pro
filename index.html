@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.0 Professional</title>
+<title>Crypto Structure Pro v8.1 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -78,7 +78,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.0 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.1 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -973,25 +973,6 @@ function updateUI(d){
 
 const SCAN_WATCHLIST=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','TRXUSDT'];
 function scannerState(d){
-  if(!d)return {name:'WAIT',cls:'wait'};
-  if(d.side)return {name:'CONFIRMED',cls:'confirmed'};
-  const side=d.watchSide;
-  if(side!=='LONG'&&side!=='SHORT')return {name:'WAIT',cls:'wait'};
-  const roadmap=buildRoadmap(d,side);
-  const done=roadmap.filter(x=>x[1]).length;
-  if(done>=5)return {name:'TRIGGERED',cls:'triggered'};
-  if(done>=2)return {name:'DEVELOPING',cls:'developing'};
-  return {name:'WATCH',cls:'watch'};
-}
-function scannerNext(d){
-  if(!d)return '—';
-  if(d.side)return 'Snapshot';
-  const side=d.watchSide;
-  if(side!=='LONG'&&side!=='SHORT')return 'Directional bias';
-  const m=buildRoadmap(d,side).find(x=>!x[1]);
-  return m?m[0]:'Complete';
-}
-function scannerState(d){
   if(!d)return {name:'WAIT',cls:'wait',rank:0};
   if(d.side)return {name:'CONFIRMED',cls:'confirmed',rank:4};
   const side=d.watchSide;
@@ -1012,10 +993,12 @@ function scannerNext(d){
 }
 function scannerGates(d){
   const side=d&&(d.side||d.watchSide);
-  if(side!=='LONG'&&side!=='SHORT')return {done:0,total:7,gates:[]};
+  if(side!=='LONG'&&side!=='SHORT')return {done:0,sequenceDone:0,total:7,gates:[]};
   const steps=buildRoadmap(d,side);
   const first=steps.findIndex(x=>!x[1]);
-  return {done:steps.filter(x=>x[1]).length,total:steps.length,gates:steps.map(([label,ok],i)=>({label,ok,next:i===first}))};
+  const done=steps.filter(x=>x[1]).length;
+  const sequenceDone=first<0?steps.length:Math.max(0,first);
+  return {done,sequenceDone,total:steps.length,gates:steps.map(([label,ok],i)=>({label,ok,next:i===first}))};
 }
 function renderScanner(){
   const box=$('scanTable'),status=$('scannerStatus'),foot=$('scanFoot'),summary=$('scanSummary');
@@ -1033,13 +1016,13 @@ function renderScanner(){
   }
   status.textContent=state.scanner.busy?'SCANNING':(state.scanner.lastRun?`UPDATED ${new Date(state.scanner.lastRun).toLocaleTimeString()}`:'READY');
   status.className='roadmapNext '+(state.scanner.busy?'scanLoading':'');
-  foot.textContent=`${rows.length}/${state.scanner.rows.length||0} shown · Priority: state progression → score · Auto scan every 60s · ${state.scanner.rows.length||0} pairs checked.`;
+  foot.textContent=`${rows.length}/${state.scanner.rows.length||0} shown · Priority: state progression → score · Sequence and condition progress shown · Auto scan every 60s · ${state.scanner.rows.length||0} pairs checked.`;
   const head='<div class="scanRow head"><div>Pair</div><div>Side</div><div>Score</div><div>State</div><div>Next</div></div>';
   if(!rows.length){box.innerHTML=head+'<div class="reason">No pairs match this filter.</div>';return;}
   box.innerHTML=head+rows.map(r=>{
     const label=r.symbol.replace('USDT','/USDT');
     const detail=r.gates.gates.map(g=>`<span class="scanGate ${g.ok?'done':(g.next?'next':'')} ">${g.ok?'✓':'○'} ${g.label}</span>`).join('');
-    return `<div class="scanRow ${r.state.rank>=3?'highlight':''}"><div class="scanCell scanPair">${label}<div class="small">${r.gates.done}/${r.gates.total} gates</div></div><div class="scanCell scanSide ${r.side.toLowerCase()} ">${r.side}</div><div class="scanCell scanScore">${r.maxScore}/100</div><div class="scanCell"><span class="scanState ${r.state.cls}">${r.state.name}</span></div><div class="scanCell scanNext">${r.next}</div><div class="scanDetails">${detail}</div></div>`;
+    return `<div class="scanRow ${r.state.rank>=3?'highlight':''}"><div class="scanCell scanPair">${label}<div class="small">${r.gates.sequenceDone}/${r.gates.total} sequence · ${r.gates.done}/${r.gates.total} conditions</div></div><div class="scanCell scanSide ${r.side.toLowerCase()} ">${r.side}</div><div class="scanCell scanScore">${r.maxScore}/100</div><div class="scanCell"><span class="scanState ${r.state.cls}">${r.state.name}</span></div><div class="scanCell scanNext">${r.next}</div><div class="scanDetails">${detail}</div></div>`;
   }).join('');
 }
 async function scanOneSymbol(sym){
