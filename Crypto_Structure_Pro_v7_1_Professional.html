@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b14">
+<title>Crypto Structure Pro v7.1 Professional</title>
+<style>
+:root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1500px;margin:auto;padding:12px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.brand{font-size:24px;font-weight:850}.sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+.status{border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:#0c1321;font-size:12px;white-space:nowrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--yellow)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.input,.select,.btn{background:#111a2b;border:1px solid var(--line);color:var(--text);padding:10px 11px;border-radius:10px;font-size:12px}
+.input{min-width:170px}.select{min-width:190px}.btn{cursor:pointer}.btn.active{background:#243a60;border-color:#547ab9}
+.grid{display:grid;grid-template-columns:1.55fr 1fr;gap:13px}
+.panel{background:rgba(16,23,38,.96);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.head{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.title{font-weight:750}.muted{color:var(--muted)}.controls{display:flex;gap:6px;flex-wrap:wrap}
+.chartbox{height:500px}.chartbox canvas{width:100%;height:100%;display:block}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:11px}
+.metric{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px}
+.metric .k{font-size:10px;color:var(--muted)}.metric .v{font-size:15px;font-weight:750;margin-top:4px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:11px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.card h3{font-size:12px;margin:0 0 6px}.big{font-size:24px;font-weight:850}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--blue)}
+.reason{font-size:11px;color:#b9c4d9;line-height:1.55}.bar{height:7px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--blue)}
+.scanner{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 11px 11px}
+.scanner .box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px}
+.scanner b{font-size:11px}.small{font-size:10px;color:#b8c3d7;margin-top:4px}
+.setup{margin:11px;padding:13px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(180deg,#111a2b,#0c1322)}
+.setup h2{font-size:14px;margin:0 0 8px}.levels{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}
+.level{background:#090f1a;border:1px solid var(--line);border-radius:9px;padding:9px}
+.level b{display:block;font-size:10px;color:var(--muted);margin-bottom:3px}.level span{font-size:13px;font-weight:750}
+.checks{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.check{font-size:10px;padding:4px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.breakdown{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.bd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:#090f1a;font-size:10px}
+.bd span{color:var(--muted)}.bd b{font-size:11px}.bd i{display:block;height:4px;border-radius:9px;background:#202a3e;flex:1;min-width:35px;overflow:hidden}.bd i em{display:block;height:100%;background:var(--blue)}
+@media(max-width:560px){.breakdown{grid-template-columns:1fr 1fr}}
+.alertItem{padding:8px 0;border-bottom:1px solid var(--line)}
+.pill{font-size:10px;border:1px solid var(--line);padding:4px 7px;border-radius:999px;color:var(--muted)}
+.signal{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.signalBadge{font-size:11px;font-weight:850;padding:6px 9px;border-radius:999px;border:1px solid var(--line)}
+.foot{padding:11px 14px;border-top:1px solid var(--line);color:#7f8ba2;font-size:10px;line-height:1.5}
+.errorBox{margin:0 11px 11px;padding:9px;border:1px solid #6b3340;border-radius:9px;color:#ff9aaa;background:#24131a;display:none;font-size:11px}
+.scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
+ .roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}
+@media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
+@media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v7.1 Professional</span></div>
+      <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
+    </div>
+    <div class="status" id="status"><span class="dot"></span>Starting…</div>
+  </div>
+
+  <div class="toolbar">
+    <input id="symbolSearch" class="input" placeholder="Search USDT pair…">
+    <select id="symbol" class="select"></select>
+    <button class="btn" id="refresh">Analyze</button>
+    <button class="btn" id="notifyBtn">Enable alerts</button>
+    <button class="btn" id="clearAlerts">Clear history</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="head">
+        <div><span class="title" id="pairTitle">BTC / USDT</span> <span class="muted" id="tfLabel">1H</span></div>
+        <div class="controls">
+          <button class="btn" data-tf="15m">15m</button>
+          <button class="btn active" data-tf="1h">1H</button>
+          <button class="btn" data-tf="4h">4H</button>
+          <button class="btn" data-tf="1d">1D</button>
+        </div>
+      </div>
+      <div class="chartbox"><canvas id="chart"></canvas></div>
+      <div class="metrics">
+        <div class="metric"><div class="k">Price</div><div class="v" id="price">—</div></div>
+        <div class="metric"><div class="k">Structure</div><div class="v" id="structure">—</div></div>
+        <div class="metric"><div class="k">Swing high</div><div class="v" id="sh">—</div></div>
+        <div class="metric"><div class="k">Swing low</div><div class="v" id="sl">—</div></div>
+        <div class="metric"><div class="k">Data</div><div class="v" id="dataStatus">—</div></div>
+      </div>
+      <div class="setup">
+        <div class="scoreHead"><div><h2 style="margin:0">Signal quality</h2><div class="scoreSub">Rule-based confluence</div></div><div class="scoreCircle"><span id="confluenceScore">—</span><small>/100</small></div></div>
+        <div class="decisionLine"><span id="biasBadge" class="signalBadge">WAIT</span><span id="biasText" class="reason">Waiting for multi-timeframe data…</span></div>
+        <div class="reason" id="qualityText">Waiting for data…</div>
+        <div class="checks" id="qualityChecks"></div>
+        <div class="breakdown" id="confluenceBreakdown"></div>
+      </div>
+      <div class="errorBox" id="errorBox"></div>
+    </section>
+
+    <aside class="panel">
+      <div class="head"><span class="title">Professional Long / Short Engine</span><span class="muted" id="updated">—</span></div>
+      <div class="cards">
+        <div class="card"><h3>LONG confluence</h3><div class="big green" id="longScore">—</div><div class="reason" id="longReason">Waiting…</div><div class="bar"><i id="longBar"></i></div></div>
+        <div class="card"><h3>SHORT confluence</h3><div class="big red" id="shortScore">—</div><div class="reason" id="shortReason">Waiting…</div><div class="bar"><i id="shortBar"></i></div></div>
+      </div>
+
+      <div class="scanner">
+        <div class="box"><b>15m trigger</b><div class="small" id="s15">—</div></div>
+        <div class="box"><b>1H bias</b><div class="small" id="s1">—</div></div>
+        <div class="box"><b>4H bias</b><div class="small" id="s4">—</div></div>
+        <div class="box"><b>1D context</b><div class="small" id="sD">—</div></div>
+      </div>
+
+      <div class="setup">
+        <div class="signal"><h2 id="setupTitle">No confirmed setup</h2><span class="signalBadge" id="triggerBadge">WAIT</span></div>
+        <div class="reason" id="setupText">The engine requires multi-timeframe alignment plus a lower-timeframe trigger. Scores are rule-based references, not predictions.</div>
+        <div class="levels">
+          <div class="level"><b>Entry</b><span id="entry">—</span></div>
+          <div class="level"><b>Invalidation</b><span id="invalid">—</span></div>
+          <div class="level"><b>TP1 (1R)</b><span id="tp1">—</span></div>
+          <div class="level"><b>TP2 (2R)</b><span id="tp2">—</span></div>
+        </div>
+        <div class="checks" id="checks"></div>
+        <div class="roadmap" id="roadmap">
+          <div class="roadmapHead"><span class="roadmapTitle">Trigger roadmap</span><span class="roadmapNext" id="nextConfirmation">Waiting for data…</span></div>
+          <div class="roadmapBar"><i id="roadmapBar"></i></div>
+          <div class="roadmapSteps" id="roadmapSteps"></div>
+        </div>
+        <div class="reason" style="margin-top:8px"><b>Risk/Reward:</b> <span id="rr">—</span> · <b>Trigger:</b> <span id="triggerText">—</span></div>
+      </div>
+
+      <div class="setup" style="margin-top:0">
+        <h2>Alert history</h2>
+        <div id="alertLog" class="reason">No alerts yet.</div>
+      </div>
+      <div class="foot">Educational technical-analysis tool. Not financial advice. A setup can fail. Browser notifications depend on device/browser permissions.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const state={
+  symbol:'BTCUSDT',
+  tf:'1h',
+  data:[],
+  mtf:{},
+  ws:null,
+  wsTimer:null,
+  lastAlertKey:null,
+  alerts:JSON.parse(localStorage.getItem('cspAlerts')||'[]'),
+  symbols:[],
+  loading:false,
+  confluenceBreakdown:{}
+};
+
+const $=id=>document.getElementById(id);
+const tfs=['15m','1h','4h','1d'];
+const FALLBACK_SYMBOLS=['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','TRXUSDT'];
+const API='https://api.binance.com/api/v3';
+const fmt=n=>{
+  if(n==null||Number.isNaN(Number(n)))return '—';
+  const v=Number(n);
+  return v>100? v.toLocaleString('en-US',{maximumFractionDigits:2}) : v.toLocaleString('en-US',{maximumFractionDigits:6});
+};
+
+function setStatus(text,color){
+  $('status').innerHTML=`<span class="dot" style="background:var(--${color})"></span>${text}`;
+}
+function showError(msg){
+  const box=$('errorBox');
+  box.textContent=msg||'Data feed unavailable.';
+  box.style.display='block';
+}
+function clearError(){$('errorBox').style.display='none'}
+function timeoutFetch(url,ms=9000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),ms);
+  return fetch(url,{cache:'no-store',signal:controller.signal}).finally(()=>clearTimeout(timer));
+}
+function saveAlerts(){
+  localStorage.setItem('cspAlerts',JSON.stringify(state.alerts.slice(0,50)));
+  renderAlerts();
+}
+function renderAlerts(){
+  const a=state.alerts.slice(0,15);
+  $('alertLog').innerHTML=a.length
+    ? a.map(x=>`<div class="alertItem"><b class="${x.side==='LONG'?'green':'red'}">${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.time}<br>${x.reason}</div>`).join('')
+    : 'No alerts yet.';
+}
+
+async function loadSymbols(){
+  setStatus('Loading pairs…','yellow');
+  try{
+    const r=await timeoutFetch(`${API}/exchangeInfo`,9000);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    const list=j.symbols
+      .filter(s=>s.status==='TRADING'&&s.quoteAsset==='USDT'&&s.isSpotTradingAllowed!==false)
+      .map(s=>s.symbol)
+      .sort();
+    if(!list.length)throw new Error('No USDT pairs returned');
+    state.symbols=list;
+    renderSymbols(list);
+    $('dataStatus').textContent=`${list.length} pairs`;
+  }catch(e){
+    state.symbols=[...FALLBACK_SYMBOLS];
+    renderSymbols(state.symbols);
+    $('dataStatus').textContent='Fallback pairs';
+  }
+}
+
+function renderSymbols(list){
+  const sel=$('symbol');
+  sel.innerHTML=list.slice(0,600).map(s=>`<option value="${s}">${s.replace('USDT','/USDT')}</option>`).join('');
+  if(list.includes(state.symbol))sel.value=state.symbol;
+  else if(list.length){state.symbol=list[0];sel.value=state.symbol;}
+}
+
+async function loadTF(tf){
+  const r=await timeoutFetch(`${API}/klines?symbol=${encodeURIComponent(state.symbol)}&interval=${tf}&limit=240`,9000);
+  if(!r.ok)throw new Error(`HTTP ${r.status} · ${state.symbol} · ${tf}`);
+  const raw=await r.json();
+  if(!Array.isArray(raw)||raw.length<50)throw new Error(`Insufficient data · ${state.symbol} · ${tf}`);
+  return raw.map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
+}
+
+function pivots(a,n=3){
+  const hi=[],lo=[];
+  for(let i=n;i<a.length-n;i++){
+    let H=true,L=true;
+    for(let j=1;j<=n;j++){
+      if(a[i].h<=a[i-j].h||a[i].h<=a[i+j].h)H=false;
+      if(a[i].l>=a[i-j].l||a[i].l>=a[i+j].l)L=false;
+    }
+    if(H)hi.push({i,p:a[i].h});
+    if(L)lo.push({i,p:a[i].l});
+  }
+  return {hi,lo};
+}
+
+function scan(a){
+  const x=a.slice(0,-1);
+  const last=x[x.length-1];
+  const p=pivots(x,3);
+  let bull=0,bear=0,L=[],S=[];
+
+  const hh1=p.hi[p.hi.length-2],hh2=p.hi[p.hi.length-1];
+  const ll1=p.lo[p.lo.length-2],ll2=p.lo[p.lo.length-1];
+
+  if(hh1&&hh2){
+    if(hh2.p>hh1.p){bull+=14;L.push('HH')}
+    else{bear+=14;S.push('LH')}
+  }
+  if(ll1&&ll2){
+    if(ll2.p>ll1.p){bull+=14;L.push('HL')}
+    else{bear+=14;S.push('LL')}
+  }
+
+  const bodies=x.slice(-32,-1).map(q=>Math.abs(q.c-q.o));
+  const avgBody=bodies.reduce((s,v)=>s+v,0)/(bodies.length||1);
+  const body=Math.abs(last.c-last.o);
+  if(body>avgBody*1.8){
+    if(last.c>last.o){bull+=16;L.push('displacement')}
+    else{bear+=16;S.push('displacement')}
+  }
+
+  const recent=x.slice(-32,-1);
+  const low=Math.min(...recent.map(q=>q.l));
+  const high=Math.max(...recent.map(q=>q.h));
+  const sellSweep=last.l<low&&last.c>low;
+  const buySweep=last.h>high&&last.c<high;
+
+  if(sellSweep){bull+=22;L.push('sell-side sweep')}
+  if(buySweep){bear+=22;S.push('buy-side sweep')}
+  if(last.c>high){bull+=12;L.push('breakout')}
+  if(last.c<low){bear+=12;S.push('breakdown')}
+
+  const swingHigh=hh2&&hh2.p;
+  const swingLow=ll2&&ll2.p;
+  if(sellSweep&&swingHigh!=null&&last.c>swingHigh){bull+=8;L.push('MSS up')}
+  if(buySweep&&swingLow!=null&&last.c<swingLow){bear+=8;S.push('MSS down')}
+
+  const g=x.slice(-12);
+  let bullFVG=false,bearFVG=false;
+  for(let i=2;i<g.length;i++){
+    const c1=g[i-2],c2=g[i-1],c3=g[i];
+    if(c1.h<c3.l&&c2.c>c2.o)bullFVG=true;
+    if(c1.l>c3.h&&c2.c<c2.o)bearFVG=true;
+  }
+  if(bullFVG){bull+=5;L.push('bullish FVG')}
+  if(bearFVG){bear+=5;S.push('bearish FVG')}
+
+  const vols=x.slice(-21,-1).map(q=>q.v);
+  const avgVol=vols.reduce((s,v)=>s+v,0)/(vols.length||1);
+  if(last.v>avgVol*1.6){
+    if(last.c>last.o){bull+=5;L.push('volume expansion')}
+    else{bear+=5;S.push('volume expansion')}
+  }
+
+  const range=last.h-last.l;
+  if(range>0){
+    const closePos=(last.c-last.l)/range;
+    if(closePos>=.75){bull+=4;L.push('strong close')}
+    if(closePos<=.25){bear+=4;S.push('strong close')}
+  }
+
+  return{
+    bull:Math.min(100,bull),
+    bear:Math.min(100,bear),
+    last,p,low,high,
+    L:[...new Set(L)],
+    S:[...new Set(S)]
+  };
+}
+
+function mtfDecision(){
+  const a=state.mtf;
+  if(!a['15m']||!a['1h']||!a['4h'])return null;
+
+  const s15=a['15m'],s1=a['1h'],s4=a['4h'],sd=a['1d'];
+
+  let longScore=Math.round(s15.bull*.35+s1.bull*.30+s4.bull*.35);
+  let shortScore=Math.round(s15.bear*.35+s1.bear*.30+s4.bear*.35);
+
+  if(sd){
+    longScore=Math.round(longScore+(sd.bull-sd.bear)*.06);
+    shortScore=Math.round(shortScore+(sd.bear-sd.bull)*.06);
+  }
+
+  longScore=Math.max(0,Math.min(100,longScore));
+  shortScore=Math.max(0,Math.min(100,shortScore));
+
+  const longBias=s1.bull>=35&&s4.bull>=30&&longScore>shortScore+10;
+  const shortBias=s1.bear>=35&&s4.bear>=30&&shortScore>longScore+10;
+
+  const longSweep=s15.L.some(x=>x.includes('sweep'));
+  const shortSweep=s15.S.some(x=>x.includes('sweep'));
+  const longDisp=s15.L.includes('displacement');
+  const shortDisp=s15.S.includes('displacement');
+  const longMSS=s15.L.includes('MSS up');
+  const shortMSS=s15.S.includes('MSS down');
+  const longFVG=s15.L.includes('bullish FVG');
+  const shortFVG=s15.S.includes('bearish FVG');
+  const longStructure=s15.bull>s15.bear+8;
+  const shortStructure=s15.bear>s15.bull+8;
+
+  /*
+    Strict trigger:
+    LONG/SHORT is confirmed only when the 15m trigger has:
+    1) directional structure
+    2) liquidity sweep
+    3) displacement
+    4) MSS
+    5) FVG
+    plus higher-timeframe alignment and score separation.
+  */
+  const longTrigger=longStructure&&longSweep&&longDisp&&longMSS&&longFVG;
+  const shortTrigger=shortStructure&&shortSweep&&shortDisp&&shortMSS&&shortFVG;
+
+  const side=
+    longBias&&longScore>=70&&longTrigger
+      ?'LONG'
+      :shortBias&&shortScore>=70&&shortTrigger
+        ?'SHORT'
+        :null;
+
+  const missingLong=[];
+  if(!longStructure)missingLong.push('15m structure');
+  if(!longSweep)missingLong.push('liquidity sweep');
+  if(!longDisp)missingLong.push('displacement');
+  if(!longMSS)missingLong.push('MSS');
+  if(!longFVG)missingLong.push('FVG');
+  if(!longBias)missingLong.push('1H/4H alignment');
+  if(longScore<70)missingLong.push('score ≥70');
+
+  const missingShort=[];
+  if(!shortStructure)missingShort.push('15m structure');
+  if(!shortSweep)missingShort.push('liquidity sweep');
+  if(!shortDisp)missingShort.push('displacement');
+  if(!shortMSS)missingShort.push('MSS');
+  if(!shortFVG)missingShort.push('FVG');
+  if(!shortBias)missingShort.push('1H/4H alignment');
+  if(shortScore<70)missingShort.push('score ≥70');
+
+  const watchSide=longScore>shortScore? 'LONG':shortScore>longScore?'SHORT':'WAIT';
+  const triggerReason=side
+    ? `CONFIRMED ${side}: 15m trigger + liquidity + displacement + MSS + FVG + MTF alignment.`
+    : watchSide==='LONG'
+      ? `LONG WATCH — waiting for: ${missingLong.join(', ')}.`
+      : watchSide==='SHORT'
+        ? `SHORT WATCH — waiting for: ${missingShort.join(', ')}.`
+        : 'WAIT — no directional trigger is dominant.';
+
+  return{
+    longScore,shortScore,side,s15,s1,s4,sd,
+    longTrigger,shortTrigger,
+    longBias,shortBias,
+    missingLong,missingShort,
+    watchSide,triggerReason
+  };
+}
+
+function buildLevels(d){
+  const s=d.side==='LONG'?d.s15:d.s15;
+  const last=s.last;
+
+  const swingLow=d.s4.p.lo.length?s4SafeLow(d.s4):null;
+  const swingHigh=d.s4.p.hi.length?s4SafeHigh(d.s4):null;
+
+  let invalid;
+  if(d.side==='LONG'){
+    invalid=Math.min(
+      d.s15.last.l,
+      d.s1.p.lo.length?d.s1.p.lo[d.s1.p.lo.length-1].p:d.s15.last.l,
+      swingLow??d.s15.last.l
+    );
+  }else{
+    invalid=Math.max(
+      d.s15.last.h,
+      d.s1.p.hi.length?d.s1.p.hi[d.s1.p.hi.length-1].p:d.s15.last.h,
+      swingHigh??d.s15.last.h
+    );
+  }
+
+  const entry=last.c;
+  const risk=Math.abs(entry-invalid);
+  if(!risk||!Number.isFinite(risk))return null;
+
+  return{
+    entry,
+    invalid,
+    tp1:d.side==='LONG'?entry+risk:entry-risk,
+    tp2:d.side==='LONG'?entry+2*risk:entry-2*risk,
+    rr:2
+  };
+}
+
+function s4SafeLow(s){return s.p.lo[s.p.lo.length-1]?.p??null}
+function s4SafeHigh(s){return s.p.hi[s.p.hi.length-1]?.p??null}
+
+function getConfluenceScore(a,hi,lo){
+  if(!a||a.length<20)return {score:0,direction:'WAIT',breakdown:{}};
+  const g=a.slice(-20),last=g[g.length-1],range=hi-lo||1;
+  const m15=state.mtf['15m'],m1=state.mtf['1h'],m4=state.mtf['4h'];
+  if(!m1)return {score:0,direction:'WAIT',breakdown:{}};
+
+  const direction=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'WAIT';
+  const breakdown={structure:0,liquidity:0,displacement:0,mss:0,fvg:0,volume:0,fibonacci:0,mtf:0};
+  if(direction==='WAIT')return {score:0,direction,breakdown};
+  const bullish=direction==='LONG';
+
+  const recent=g.slice(-8,-1);
+  const minL=Math.min(...recent.map(x=>x.l)),maxH=Math.max(...recent.map(x=>x.h));
+  const sweepLong=last.l<minL&&last.c>minL,sweepShort=last.h>maxH&&last.c<maxH;
+  const structureAligned=bullish?(m1.bull>=m1.bear+8):(m1.bear>=m1.bull+8);
+  if(structureAligned)breakdown.structure=15;
+
+  let eqH=0,eqL=0;
+  for(let i=0;i<recent.length;i++)for(let j=i+1;j<recent.length;j++){
+    if(Math.abs(recent[i].h-recent[j].h)/Math.max(recent[i].h,1)<.004)eqH++;
+    if(Math.abs(recent[i].l-recent[j].l)/Math.max(recent[i].l,1)<.004)eqL++;
+  }
+  if(sweepLong&&bullish||sweepShort&&!bullish||eqH>=2||eqL>=2)breakdown.liquidity=15;
+
+  const body=Math.abs(last.c-last.o),avgBody=g.slice(0,-1).reduce((s,x)=>s+Math.abs(x.c-x.o),0)/(g.length-1);
+  if(body>avgBody*1.5&&((bullish&&last.c>last.o)||(!bullish&&last.c<last.o)))breakdown.displacement=15;
+
+  const swingHigh=Math.max(...g.slice(-8,-1).map(x=>x.h)),swingLow=Math.min(...g.slice(-8,-1).map(x=>x.l));
+  if((bullish&&last.c>swingHigh)||(!bullish&&last.c<swingLow)||((bullish&&sweepLong)||(!bullish&&sweepShort)))breakdown.mss=10;
+
+  let fvg=false;
+  for(let i=2;i<g.length;i++){
+    const c1=g[i-2],c2=g[i-1],c3=g[i];
+    if(bullish&&c1.h<c3.l&&c2.c>c2.o)fvg=true;
+    if(!bullish&&c1.l>c3.h&&c2.c<c2.o)fvg=true;
+  }
+  if(fvg)breakdown.fvg=10;
+
+  const avgVol=g.slice(0,-1).reduce((s,x)=>s+(x.v||0),0)/(g.length-1);
+  if((last.v||0)>avgVol*1.3&&((bullish&&last.c>last.o)||(!bullish&&last.c<last.o)))breakdown.volume=10;
+
+  for(const f of [.236,.382,.5,.618,.786]){
+    const fp=lo+range*f;
+    if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
+  }
+
+  /* MTF Alignment — 15
+     1H + 4H aligned with the current direction = 15/15
+     one higher timeframe aligned while the other is neutral = 10/15
+     both neutral = 0/15
+     opposite higher-timeframe directions = 0/15
+     15m remains the trigger timeframe and is not allowed to
+     manufacture higher-timeframe alignment.
+  */
+  const oneHourDir=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'NEUTRAL';
+  const fourHourDir=m4?
+    (m4.bull>m4.bear?'LONG':m4.bear>m4.bull?'SHORT':'NEUTRAL'):
+    'NEUTRAL';
+
+  if(bullish){
+    if(oneHourDir==='LONG'&&fourHourDir==='LONG')breakdown.mtf=15;
+    else if((oneHourDir==='LONG'&&fourHourDir==='NEUTRAL')||
+            (oneHourDir==='NEUTRAL'&&fourHourDir==='LONG'))breakdown.mtf=10;
+    else breakdown.mtf=0;
+  }else{
+    if(oneHourDir==='SHORT'&&fourHourDir==='SHORT')breakdown.mtf=15;
+    else if((oneHourDir==='SHORT'&&fourHourDir==='NEUTRAL')||
+            (oneHourDir==='NEUTRAL'&&fourHourDir==='SHORT'))breakdown.mtf=10;
+    else breakdown.mtf=0;
+  }
+
+  const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
+  state.confluenceBreakdown=breakdown;
+  return {score,direction,breakdown};
+}
+function maybeAlert(d){
+  if(!d || !d.side) return;
+  const candle=d.s15.last.t;
+  const key=`${state.symbol}-${d.side}-${candle}`;
+  if(state.lastAlertKey===key) return;
+  const reasons=d.side==='LONG'?d.s15.L:d.s15.S;
+  const lv=buildLevels(d);
+  const score=d.side==='LONG'?d.longScore:d.shortScore;
+  const reason=`MTF ${d.side} · 15m ${d.side==='LONG'?d.s15.bull:d.s15.bear}/100 · 1H ${d.side==='LONG'?d.s1.bull:d.s1.bear}/100 · 4H ${d.side==='LONG'?d.s4.bull:d.s4.bear}/100 · ${reasons.slice(0,5).join(' + ')||'alignment'}`;
+  state.alerts.unshift({side:d.side,symbol:state.symbol,time:new Date().toLocaleString(),reason});
+  state.lastAlertKey=key;
+  saveAlerts();
+  if('Notification' in window && Notification.permission==='granted' && lv){
+    new Notification(`${state.symbol.replace('USDT','/USDT')} ${d.side} setup`,{body:`Score ${score}/100 · Entry ${fmt(lv.entry)} · TP2 ${fmt(lv.tp2)}`});
+  }
+}
+
+function buildRoadmap(d,side){
+  const long=side==='LONG';
+  const s=d.s15;
+  const structure=long ? s.bull>s.bear+8 : s.bear>s.bull+8;
+  const sweep=long ? s.L.some(x=>x.includes('sweep')) : s.S.some(x=>x.includes('sweep'));
+  const displacement=long ? s.L.includes('displacement') : s.S.includes('displacement');
+  const mss=long ? s.L.includes('MSS up') : s.S.includes('MSS down');
+  const fvg=long ? s.L.includes('bullish FVG') : s.S.includes('bearish FVG');
+  const alignment=long ? d.longBias : d.shortBias;
+  const score=long ? d.longScore>=70 : d.shortScore>=70;
+  return [
+    ['15m structure',structure],
+    ['Liquidity sweep',sweep],
+    ['Displacement',displacement],
+    ['MSS',mss],
+    ['FVG',fvg],
+    ['1H + 4H',alignment],
+    ['Score ≥70',score]
+  ];
+}
+
+function renderRoadmap(d,side){
+  const box=$('roadmap');
+  if(!box)return;
+  if(side==='WAIT'){
+    $('nextConfirmation').textContent='No dominant side';
+    $('nextConfirmation').className='roadmapNext yellow';
+    $('roadmapBar').style.width='0%';
+    $('roadmapSteps').innerHTML='<span class="rstep wait">Waiting for direction</span>';
+    return;
+  }
+  const steps=buildRoadmap(d,side);
+  const done=steps.filter(x=>x[1]).length;
+  const firstMissing=steps.find(x=>!x[1]);
+  $('roadmapBar').style.width=(done/steps.length*100)+'%';
+  if(d.side===side){
+    $('nextConfirmation').textContent='CONFIRMED '+side;
+    $('nextConfirmation').className='roadmapNext green';
+  }else{
+    $('nextConfirmation').textContent=firstMissing?`NEXT: ${firstMissing[0]}`:'Ready for confirmation';
+    $('nextConfirmation').className='roadmapNext '+(firstMissing?'yellow':'green');
+  }
+  $('roadmapSteps').innerHTML=steps.map(([label,ok],i)=>{
+    const cls=ok?'done':(i===steps.findIndex(x=>!x[1])?'wait':'');
+    return `<span class="rstep ${cls}">${ok?'✓':'○'} ${label}</span>`;
+  }).join('');
+}
+
+function updateUI(d){
+  const s=d.s1,last=s.last;
+  $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
+  $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
+  $('structure').textContent=s.bull>s.bear+10?'Bullish':s.bear>s.bull+10?'Bearish':'Mixed';
+  $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
+  $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
+  $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
+  const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
+  $('confluenceScore').textContent=conf.score;
+  const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
+  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${conf.breakdown.mtf||0}/15 · TRIGGER ${trigger}.`;
+  $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+
+  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF Alignment','mtf',15]];
+  $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
+
+  const badge=$('biasBadge');
+  badge.textContent=d.side?d.side:(conf.direction==='WAIT'?'WAIT':'BIAS '+conf.direction);
+  badge.className='signalBadge '+(d.side==='LONG'||conf.direction==='LONG'?'green':d.side==='SHORT'||conf.direction==='SHORT'?'red':'yellow');
+
+  $('biasText').textContent=d.side
+    ? `Confirmed ${d.side} MTF setup.`
+    : conf.direction==='WAIT'
+      ? 'No dominant directional bias.'
+      : `Directional bias: ${conf.direction}, but the full trigger is not confirmed.`;
+
+  $('triggerBadge').textContent=trigger;
+  $('triggerBadge').className='signalBadge '+(d.side==='LONG'?'green':d.side==='SHORT'?'red':trigger==='TRIGGER WATCH'?'yellow':'');
+
+  const missing=[];
+  for(const [k,label,max] of bd){
+    const value=conf.breakdown[k]||0;
+    if(value<max) missing.push(`${label} ${value}/${max}`);
+  }
+
+  const displaySide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+  const displayMissing=displaySide==='LONG'?d.missingLong:displaySide==='SHORT'?d.missingShort:[];
+  $('triggerText').textContent=d.side
+    ? d.triggerReason
+    : displaySide==='LONG'
+      ? `LONG WATCH — waiting for: ${displayMissing.join(', ')||'rule-based trigger'}.`
+      : displaySide==='SHORT'
+        ? `SHORT WATCH — waiting for: ${displayMissing.join(', ')||'rule-based trigger'}.`
+        : 'WAIT — no directional trigger is dominant.';
+
+  const roadmapSide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+  const roadmap=roadmapSide==='LONG'||roadmapSide==='SHORT'?buildRoadmap(d,roadmapSide):[];
+  $('checks').innerHTML=roadmap.map(([label,ok])=>`<span class="check ${ok?'green':''}">${ok?'✓':'○'} ${label}</span>`).join('');
+  renderRoadmap(d,roadmapSide||'WAIT');
+
+  if(d.side){
+    const lv=buildLevels(d);
+    if(lv){
+      $('setupTitle').textContent=`${d.side} setup · ${state.symbol.replace('USDT','/USDT')}`;
+      $('setupText').textContent=`CONFIRMED ${d.side}. Strict trigger conditions are satisfied. Total confluence ${conf.score}/100. These are conditional reference levels, not a prediction or guarantee.`;
+      $('entry').textContent='$'+fmt(lv.entry);
+      $('invalid').textContent='$'+fmt(lv.invalid);
+      $('tp1').textContent='$'+fmt(lv.tp1);
+      $('tp2').textContent='$'+fmt(lv.tp2);
+      $('rr').textContent='1:'+lv.rr.toFixed(1);
+    }
+  }else{
+    $('setupTitle').textContent=conf.direction==='WAIT'?'No directional setup':`${conf.direction} bias · waiting for trigger`;
+    const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
+    const firstMissing=(conf.direction==='LONG'?buildRoadmap(d,'LONG'):conf.direction==='SHORT'?buildRoadmap(d,'SHORT'):[]).find(x=>!x[1]);
+    $('setupText').textContent=conf.direction==='WAIT'
+      ? 'No dominant directional bias is confirmed by the current rules.'
+      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Waiting for: ${sideMissing.join(', ')||'lower-timeframe trigger'}.`;
+    $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
+  }
+  $('updated').textContent=new Date().toLocaleTimeString();
+}
+
+async function loadAll(){
+  if(state.loading)return;
+  state.loading=true;
+  clearError();
+  setStatus('Scanning…','yellow');
+
+  try{
+    const results=await Promise.all(tfs.map(tf=>loadTF(tf)));
+    for(let i=0;i<tfs.length;i++)state.mtf[tfs[i]]=scan(results[i]);
+
+    state.data=state.mtf[state.tf] ? await loadTF(state.tf) : results[tfs.indexOf(state.tf)];
+    draw();
+
+    const d=mtfDecision();
+    if(d){updateUI(d);maybeAlert(d)}
+
+    $('dataStatus').textContent='LIVE';
+    setStatus('LIVE','green');
+  }catch(e){
+    console.error(e);
+    $('dataStatus').textContent='ERROR';
+    setStatus('Connection error','red');
+    $('updated').textContent='Feed unavailable';
+    showError(`Binance data could not be loaded. ${e&&e.message?e.message:'Check your connection or browser network permissions.'}`);
+  }finally{
+    state.loading=false;
+  }
+}
+
+function connectWS(){
+  if(state.wsTimer)clearTimeout(state.wsTimer);
+  if(state.ws){try{state.ws.close()}catch(e){}state.ws=null}
+
+  const stream=`wss://stream.binance.com:9443/ws/${state.symbol.toLowerCase()}@kline_${state.tf}`;
+  try{
+    state.ws=new WebSocket(stream);
+    state.ws.onopen=()=>{if(!state.loading)setStatus('LIVE','green')};
+    state.ws.onmessage=ev=>{
+      try{
+        const k=JSON.parse(ev.data).k;
+        if(!k)return;
+        $('price').textContent='$'+fmt(+k.c);
+        if(k.x)loadAll();
+      }catch(e){}
+    };
+    state.ws.onerror=()=>{};
+    state.ws.onclose=()=>{
+      state.wsTimer=setTimeout(connectWS,5000);
+    };
+  }catch(e){
+    state.wsTimer=setTimeout(connectWS,5000);
+  }
+}
+
+function drawFib(ctx,hi,lo,y,pad,w){const range=hi-lo;if(!range)return;const levels=[0,.236,.382,.5,.618,.786,1];ctx.save();ctx.font='10px Arial';ctx.setLineDash([4,4]);for(const r of levels){const price=lo+range*r,yy=y(price);ctx.strokeStyle='rgba(114,169,255,.25)';ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();ctx.fillStyle='#72a9ff';ctx.fillText((r*100).toFixed(1)+'%',pad+4,yy-3)}ctx.restore()}
+function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,3);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
+function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,hi,lo,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
+
+$('symbol').onchange=async e=>{
+  state.symbol=e.target.value;
+  state.mtf={};state.lastAlertKey=null;
+  connectWS();await loadAll();
+};
+
+$('symbolSearch').oninput=e=>{
+  const q=e.target.value.toUpperCase().replace('/','');
+  renderSymbols(state.symbols.filter(s=>s.includes(q)));
+};
+
+$('refresh').onclick=loadAll;
+
+$('notifyBtn').onclick=async()=>{
+  if(!('Notification' in window)){showError('Notifications are not supported by this browser.');return}
+  const p=await Notification.requestPermission();
+  $('notifyBtn').textContent=p==='granted'?'Alerts enabled':'Alerts blocked';
+};
+
+$('clearAlerts').onclick=()=>{
+  state.alerts=[];state.lastAlertKey=null;saveAlerts();
+};
+
+document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
+  document.querySelectorAll('[data-tf]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  state.tf=b.dataset.tf;
+  $('tfLabel').textContent=state.tf.toUpperCase();
+  connectWS();await loadAll();
+});
+
+window.addEventListener('resize',draw);
+renderAlerts();
+
+(async()=>{
+  try{
+    await loadSymbols();
+    $('symbol').value=state.symbol;
+    await loadAll();
+    connectWS();
+    setInterval(loadAll,30000);
+  }catch(e){
+    console.error(e);
+    setStatus('Startup error','red');
+    showError('Startup failed. Reload the page once.');
+  }
+})();
+</script>
+</body>
+</html>
