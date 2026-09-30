@@ -148,6 +148,11 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="stateMeta" id="setupStateMeta"></div>
         </div>
 
+        <div class="statePanel" id="monitorPanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Live trigger monitor</span><span class="stateBadge watch" id="monitorBadge">ACTIVE</span></div>
+          <div class="stateDescription" id="monitorText">Watching the 15m trigger sequence automatically.</div>
+          <div class="stateMeta" id="monitorMeta"></div>
+        </div>
         <div class="confirmation eventPanel" id="eventPanel">
           <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
           <div class="eventLog" id="eventLog">No confirmation events yet.</div>
@@ -180,7 +185,11 @@ const state={
   loading:false,
   confluenceBreakdown:{},
   confirmation:{side:null,index:0,events:[],key:null,statuses:[]},
-  sequenceLog:JSON.parse(localStorage.getItem('cspSequenceLog')||'[]')
+  sequenceLog:JSON.parse(localStorage.getItem('cspSequenceLog')||'[]'),
+  monitorWS:null,
+  monitorTimer:null,
+  lastScanTs:0,
+  lastCandleTs:0
 };
 
 const $=id=>document.getElementById(id);
@@ -803,6 +812,7 @@ function updateUI(d){
   renderRoadmap(d,roadmapSide||'WAIT');
   updateConfirmation(d,roadmapSide||'WAIT');
   updateSetupState(d,roadmapSide||'WAIT');
+  updateLiveMonitor(d);
 
   if(d.side){
     const lv=buildLevels(d);
@@ -858,6 +868,53 @@ async function loadAll(){
   }
 }
 
+function updateLiveMonitor(d){
+  const badge=$('monitorBadge'),text=$('monitorText'),meta=$('monitorMeta');
+  if(!badge||!text||!meta)return;
+  state.lastScanTs=Date.now();
+  const s15=state.mtf['15m'];
+  state.lastCandleTs=s15&&s15.last?s15.last.t:0;
+  const side=d && (d.side || d.watchSide) ? (d.side||d.watchSide) : 'WAIT';
+  const idx=state.confirmation.index||0;
+  const total=7;
+  if(d&&d.side){
+    badge.textContent='CONFIRMED'; badge.className='stateBadge confirmed';
+    text.textContent=`${d.side} confirmed. Live monitor is watching for invalidation or a new setup cycle.`;
+  }else if(side==='LONG'||side==='SHORT'){
+    badge.textContent='ACTIVE'; badge.className='stateBadge watch';
+    const next=(buildRoadmap(d,side).find(x=>!x[1])||[])[0]||'sequence complete';
+    text.textContent=`Watching ${side} setup continuously. Next gate: ${next}.`;
+  }else{
+    badge.textContent='SCANNING'; badge.className='stateBadge watch';
+    text.textContent='No dominant side. Monitor is scanning for a new directional setup.';
+  }
+  const nextClose=s15&&s15.last ? (s15.last.t+15*60*1000) : 0;
+  const remaining=nextClose?Math.max(0,nextClose-Date.now()):0;
+  const mins=Math.floor(remaining/60000), secs=Math.floor((remaining%60000)/1000);
+  meta.innerHTML=`<span class="pill">AUTO SCAN 30s</span><span class="pill">SEQUENCE ${Math.min(idx,total)}/${total}</span><span class="pill">NEXT 15m CLOSE ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}</span>`;
+}
+
+function startMonitorWS(){
+  if(state.monitorTimer)clearTimeout(state.monitorTimer);
+  if(state.monitorWS){try{state.monitorWS.close()}catch(e){}state.monitorWS=null;}
+  const stream=`wss://stream.binance.com:9443/ws/${state.symbol.toLowerCase()}@kline_15m`;
+  try{
+    state.monitorWS=new WebSocket(stream);
+    state.monitorWS.onmessage=ev=>{
+      try{
+        const k=JSON.parse(ev.data).k;
+        if(k&&k.x){ loadAll(); }
+        else if(k){
+          const s15=state.mtf['15m'];
+          if(s15){$('monitorText').textContent=`Live 15m candle active. Watching ${state.symbol.replace('USDT','/USDT')} for trigger changes.`;}
+        }
+      }catch(e){}
+    };
+    state.monitorWS.onclose=()=>{state.monitorTimer=setTimeout(startMonitorWS,5000);};
+    state.monitorWS.onerror=()=>{};
+  }catch(e){state.monitorTimer=setTimeout(startMonitorWS,5000);}
+}
+
 function connectWS(){
   if(state.wsTimer)clearTimeout(state.wsTimer);
   if(state.ws){try{state.ws.close()}catch(e){}state.ws=null}
@@ -890,6 +947,7 @@ function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRa
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
   state.mtf={};state.lastAlertKey=null;
+  startMonitorWS();
   connectWS();await loadAll();
 };
 
@@ -927,7 +985,12 @@ renderAlerts();
     $('symbol').value=state.symbol;
     await loadAll();
     connectWS();
+    startMonitorWS();
     setInterval(loadAll,30000);
+    setInterval(()=>{
+      const d=mtfDecision();
+      if(d)updateLiveMonitor(d);
+    },1000);
   }catch(e){
     console.error(e);
     setStatus('Startup error','red');
