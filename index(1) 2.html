@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v6.5.1</title>
+<title>Crypto Structure Pro v6.6</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -59,7 +59,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v6.5.1</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v6.6</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -486,9 +486,30 @@ function getConfluenceScore(a,hi,lo){
     if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
   }
 
-  const mtfBull=m1&&m4&&m1.bull>m1.bear&&m4.bull>m4.bear;
-  const mtfBear=m1&&m4&&m1.bear>m1.bull&&m4.bear>m4.bull;
-  if((bullish&&mtfBull)||(!bullish&&mtfBear))breakdown.mtf=15;
+  /* MTF Alignment — 15
+     1H + 4H aligned with the current direction = 15/15
+     one higher timeframe aligned while the other is neutral = 10/15
+     both neutral = 0/15
+     opposite higher-timeframe directions = 0/15
+     15m remains the trigger timeframe and is not allowed to
+     manufacture higher-timeframe alignment.
+  */
+  const oneHourDir=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'NEUTRAL';
+  const fourHourDir=m4?
+    (m4.bull>m4.bear?'LONG':m4.bear>m4.bull?'SHORT':'NEUTRAL'):
+    'NEUTRAL';
+
+  if(bullish){
+    if(oneHourDir==='LONG'&&fourHourDir==='LONG')breakdown.mtf=15;
+    else if((oneHourDir==='LONG'&&fourHourDir==='NEUTRAL')||
+            (oneHourDir==='NEUTRAL'&&fourHourDir==='LONG'))breakdown.mtf=10;
+    else breakdown.mtf=0;
+  }else{
+    if(oneHourDir==='SHORT'&&fourHourDir==='SHORT')breakdown.mtf=15;
+    else if((oneHourDir==='SHORT'&&fourHourDir==='NEUTRAL')||
+            (oneHourDir==='NEUTRAL'&&fourHourDir==='SHORT'))breakdown.mtf=10;
+    else breakdown.mtf=0;
+  }
 
   const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
   state.confluenceBreakdown=breakdown;
@@ -522,10 +543,10 @@ function updateUI(d){
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
-  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · TRIGGER ${trigger}.`;
+  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${conf.breakdown.mtf||0}/15 · TRIGGER ${trigger}.`;
   $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
 
-  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF','mtf',15]];
+  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF Alignment','mtf',15]];
   $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
 
   const badge=$('biasBadge');
