@@ -213,9 +213,12 @@ async function loadSymbols(){
 
 function renderSymbols(list){
   const sel=$('symbol');
-  sel.innerHTML=list.slice(0,600).map(s=>`<option value="${s}">${s.replace('USDT','/USDT')}</option>`).join('');
-  if(list.includes(state.symbol))sel.value=state.symbol;
-  else if(list.length){state.symbol=list[0];sel.value=state.symbol;}
+  const visible=list.slice(0,600);
+  sel.innerHTML=visible.length
+    ? visible.map(s=>`<option value="${s}">${s.replace('USDT','/USDT')}</option>`).join('')
+    : '<option value="">No matching USDT pair</option>';
+  if(visible.includes(state.symbol))sel.value=state.symbol;
+  else if(visible.length){state.symbol=visible[0];sel.value=state.symbol;}
 }
 
 async function loadTF(tf){
@@ -486,30 +489,9 @@ function getConfluenceScore(a,hi,lo){
     if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
   }
 
-  /* MTF Alignment — 15
-     1H + 4H aligned with the current direction = 15/15
-     one higher timeframe aligned while the other is neutral = 10/15
-     both neutral = 0/15
-     opposite higher-timeframe directions = 0/15
-     15m remains the trigger timeframe and is not allowed to
-     manufacture higher-timeframe alignment.
-  */
-  const oneHourDir=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'NEUTRAL';
-  const fourHourDir=m4?
-    (m4.bull>m4.bear?'LONG':m4.bear>m4.bull?'SHORT':'NEUTRAL'):
-    'NEUTRAL';
-
-  if(bullish){
-    if(oneHourDir==='LONG'&&fourHourDir==='LONG')breakdown.mtf=15;
-    else if((oneHourDir==='LONG'&&fourHourDir==='NEUTRAL')||
-            (oneHourDir==='NEUTRAL'&&fourHourDir==='LONG'))breakdown.mtf=10;
-    else breakdown.mtf=0;
-  }else{
-    if(oneHourDir==='SHORT'&&fourHourDir==='SHORT')breakdown.mtf=15;
-    else if((oneHourDir==='SHORT'&&fourHourDir==='NEUTRAL')||
-            (oneHourDir==='NEUTRAL'&&fourHourDir==='SHORT'))breakdown.mtf=10;
-    else breakdown.mtf=0;
-  }
+  const mtfBull=m1&&m4&&m1.bull>m1.bear&&m4.bull>m4.bear;
+  const mtfBear=m1&&m4&&m1.bear>m1.bull&&m4.bear>m4.bull;
+  if((bullish&&mtfBull)||(!bullish&&mtfBear))breakdown.mtf=15;
 
   const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
   state.confluenceBreakdown=breakdown;
@@ -543,10 +525,10 @@ function updateUI(d){
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
-  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${conf.breakdown.mtf||0}/15 · TRIGGER ${trigger}.`;
+  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · TRIGGER ${trigger}.`;
   $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
 
-  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF Alignment','mtf',15]];
+  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF','mtf',15]];
   $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
 
   const badge=$('biasBadge');
@@ -616,7 +598,8 @@ async function loadAll(){
     const results=await Promise.all(tfs.map(tf=>loadTF(tf)));
     for(let i=0;i<tfs.length;i++)state.mtf[tfs[i]]=scan(results[i]);
 
-    state.data=state.mtf[state.tf] ? await loadTF(state.tf) : results[tfs.indexOf(state.tf)];
+    const selectedIndex=tfs.indexOf(state.tf);
+    state.data=selectedIndex>=0?results[selectedIndex]:results[1];
     draw();
 
     const d=mtfDecision();
@@ -672,7 +655,11 @@ $('symbol').onchange=async e=>{
 
 $('symbolSearch').oninput=e=>{
   const q=e.target.value.toUpperCase().replace('/','');
-  renderSymbols(state.symbols.filter(s=>s.includes(q)));
+  const filtered=state.symbols.filter(s=>s.includes(q));
+  renderSymbols(filtered);
+  if(!filtered.length){
+    $('symbol').value='';
+  }
 };
 
 $('refresh').onclick=loadAll;
