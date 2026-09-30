@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v6.5</title>
+<title>Crypto Structure Pro v6.5.1</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -59,7 +59,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v6.5</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v6.5.1</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -547,7 +547,15 @@ function updateUI(d){
     if(value<max) missing.push(`${label} ${value}/${max}`);
   }
 
-  $('triggerText').textContent=d.triggerReason;
+  const displaySide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+  const displayMissing=displaySide==='LONG'?d.missingLong:displaySide==='SHORT'?d.missingShort:[];
+  $('triggerText').textContent=d.side
+    ? d.triggerReason
+    : displaySide==='LONG'
+      ? `LONG WATCH — waiting for: ${displayMissing.join(', ')||'rule-based trigger'}.`
+      : displaySide==='SHORT'
+        ? `SHORT WATCH — waiting for: ${displayMissing.join(', ')||'rule-based trigger'}.`
+        : 'WAIT — no directional trigger is dominant.';
 
   const checks=d.side
     ? (d.side==='LONG'?[...d.s15.L,...d.s1.L,...d.s4.L]:[...d.s15.S,...d.s1.S,...d.s4.S])
@@ -568,9 +576,10 @@ function updateUI(d){
     }
   }else{
     $('setupTitle').textContent=conf.direction==='WAIT'?'No directional setup':`${conf.direction} bias · waiting for trigger`;
+    const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
-      : `Bias ${conf.direction}, but no confirmed entry. Missing or incomplete components: ${missing.join(', ')||'lower-timeframe trigger'}.`;
+      : `Bias ${conf.direction}, but no confirmed entry. Waiting for: ${sideMissing.join(', ')||'lower-timeframe trigger'}.`;
     $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
   }
   $('updated').textContent=new Date().toLocaleTimeString();
