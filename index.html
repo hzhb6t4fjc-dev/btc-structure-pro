@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v7.0 Professional</title>
+<title>Crypto Structure Pro v7.1 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -51,6 +51,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .foot{padding:11px 14px;border-top:1px solid var(--line);color:#7f8ba2;font-size:10px;line-height:1.5}
 .errorBox{margin:0 11px 11px;padding:9px;border:1px solid #6b3340;border-radius:9px;color:#ff9aaa;background:#24131a;display:none;font-size:11px}
 .scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
+ .roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
 @media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
 </style>
@@ -59,7 +60,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v7.0 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v7.1 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -126,6 +127,11 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="level"><b>TP2 (2R)</b><span id="tp2">—</span></div>
         </div>
         <div class="checks" id="checks"></div>
+        <div class="roadmap" id="roadmap">
+          <div class="roadmapHead"><span class="roadmapTitle">Trigger roadmap</span><span class="roadmapNext" id="nextConfirmation">Waiting for data…</span></div>
+          <div class="roadmapBar"><i id="roadmapBar"></i></div>
+          <div class="roadmapSteps" id="roadmapSteps"></div>
+        </div>
         <div class="reason" style="margin-top:8px"><b>Risk/Reward:</b> <span id="rr">—</span> · <b>Trigger:</b> <span id="triggerText">—</span></div>
       </div>
 
@@ -532,6 +538,54 @@ function maybeAlert(d){
   }
 }
 
+function buildRoadmap(d,side){
+  const long=side==='LONG';
+  const s=d.s15;
+  const structure=long ? s.bull>s.bear+8 : s.bear>s.bull+8;
+  const sweep=long ? s.L.some(x=>x.includes('sweep')) : s.S.some(x=>x.includes('sweep'));
+  const displacement=long ? s.L.includes('displacement') : s.S.includes('displacement');
+  const mss=long ? s.L.includes('MSS up') : s.S.includes('MSS down');
+  const fvg=long ? s.L.includes('bullish FVG') : s.S.includes('bearish FVG');
+  const alignment=long ? d.longBias : d.shortBias;
+  const score=long ? d.longScore>=70 : d.shortScore>=70;
+  return [
+    ['15m structure',structure],
+    ['Liquidity sweep',sweep],
+    ['Displacement',displacement],
+    ['MSS',mss],
+    ['FVG',fvg],
+    ['1H + 4H',alignment],
+    ['Score ≥70',score]
+  ];
+}
+
+function renderRoadmap(d,side){
+  const box=$('roadmap');
+  if(!box)return;
+  if(side==='WAIT'){
+    $('nextConfirmation').textContent='No dominant side';
+    $('nextConfirmation').className='roadmapNext yellow';
+    $('roadmapBar').style.width='0%';
+    $('roadmapSteps').innerHTML='<span class="rstep wait">Waiting for direction</span>';
+    return;
+  }
+  const steps=buildRoadmap(d,side);
+  const done=steps.filter(x=>x[1]).length;
+  const firstMissing=steps.find(x=>!x[1]);
+  $('roadmapBar').style.width=(done/steps.length*100)+'%';
+  if(d.side===side){
+    $('nextConfirmation').textContent='CONFIRMED '+side;
+    $('nextConfirmation').className='roadmapNext green';
+  }else{
+    $('nextConfirmation').textContent=firstMissing?`NEXT: ${firstMissing[0]}`:'Ready for confirmation';
+    $('nextConfirmation').className='roadmapNext '+(firstMissing?'yellow':'green');
+  }
+  $('roadmapSteps').innerHTML=steps.map(([label,ok],i)=>{
+    const cls=ok?'done':(i===steps.findIndex(x=>!x[1])?'wait':'');
+    return `<span class="rstep ${cls}">${ok?'✓':'○'} ${label}</span>`;
+  }).join('');
+}
+
 function updateUI(d){
   const s=d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
@@ -578,11 +632,10 @@ function updateUI(d){
         ? `SHORT WATCH — waiting for: ${displayMissing.join(', ')||'rule-based trigger'}.`
         : 'WAIT — no directional trigger is dominant.';
 
-  const checks=d.side
-    ? (d.side==='LONG'?[...d.s15.L,...d.s1.L,...d.s4.L]:[...d.s15.S,...d.s1.S,...d.s4.S])
-    : [...d.s15.L.slice(0,2),...d.s15.S.slice(0,2)];
-
-  $('checks').innerHTML=[...new Set(checks)].slice(0,9).map(x=>`<span class="check">✓ ${x}</span>`).join('');
+  const roadmapSide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+  const roadmap=roadmapSide==='LONG'||roadmapSide==='SHORT'?buildRoadmap(d,roadmapSide):[];
+  $('checks').innerHTML=roadmap.map(([label,ok])=>`<span class="check ${ok?'green':''}">${ok?'✓':'○'} ${label}</span>`).join('');
+  renderRoadmap(d,roadmapSide||'WAIT');
 
   if(d.side){
     const lv=buildLevels(d);
@@ -598,9 +651,10 @@ function updateUI(d){
   }else{
     $('setupTitle').textContent=conf.direction==='WAIT'?'No directional setup':`${conf.direction} bias · waiting for trigger`;
     const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
+    const firstMissing=(conf.direction==='LONG'?buildRoadmap(d,'LONG'):conf.direction==='SHORT'?buildRoadmap(d,'SHORT'):[]).find(x=>!x[1]);
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
-      : `Bias ${conf.direction}, but no confirmed entry. Waiting for: ${sideMissing.join(', ')||'lower-timeframe trigger'}.`;
+      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Waiting for: ${sideMissing.join(', ')||'lower-timeframe trigger'}.`;
     $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
   }
   $('updated').textContent=new Date().toLocaleTimeString();
