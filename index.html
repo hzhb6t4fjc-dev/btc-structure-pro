@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v7.2 Professional</title>
+<title>Crypto Structure Pro v7.3 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -51,7 +51,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .foot{padding:11px 14px;border-top:1px solid var(--line);color:#7f8ba2;font-size:10px;line-height:1.5}
 .errorBox{margin:0 11px 11px;padding:9px;border:1px solid #6b3340;border-radius:9px;color:#ff9aaa;background:#24131a;display:none;font-size:11px}
 .scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
- .roadmapStatus{font-size:10px;color:#aebbd1;margin-top:7px;line-height:1.45}.roadmapStatus b{color:#e7edf8}.roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}
+ .roadmapStatus{font-size:10px;color:#aebbd1;margin-top:7px;line-height:1.45}.roadmapStatus b{color:#e7edf8}.roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}.confirmation{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.confirmationSteps{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.cstep{font-size:9px;padding:6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.cstep.done{color:var(--green);border-color:#285a4b}.cstep.current{color:var(--yellow);border-color:#5b4d24}.cstep.locked{opacity:.62}.cstep small{display:block;font-size:8px;margin-top:2px;color:inherit}@media(max-width:560px){.confirmationSteps{grid-template-columns:1fr 1fr}}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
 @media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
 </style>
@@ -60,7 +60,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v7.2 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v7.3 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -133,6 +133,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="roadmapStatus" id="roadmapStatus">Waiting for structure data…</div>
           <div class="roadmapSteps" id="roadmapSteps"></div>
         </div>
+        <div class="confirmation" id="confirmationPanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Confirmation sequence</span><span class="roadmapNext" id="confirmationBadge">WAITING</span></div>
+          <div class="roadmapBar"><i id="confirmationBar"></i></div>
+          <div class="roadmapStatus" id="confirmationStatus">The engine will record trigger confirmations in order as they are observed.</div>
+          <div class="confirmationSteps" id="confirmationSteps"></div>
+        </div>
         <div class="reason" style="margin-top:8px"><b>Risk/Reward:</b> <span id="rr">—</span> · <b>Trigger:</b> <span id="triggerText">—</span></div>
       </div>
 
@@ -159,7 +165,8 @@ const state={
   alerts:JSON.parse(localStorage.getItem('cspAlerts')||'[]'),
   symbols:[],
   loading:false,
-  confluenceBreakdown:{}
+  confluenceBreakdown:{},
+  confirmation:{side:null,index:0,events:[],key:null}
 };
 
 const $=id=>document.getElementById(id);
@@ -578,6 +585,45 @@ function buildRoadmap(d,side){
   ];
 }
 
+function updateConfirmation(d,side){
+  const badge=$('confirmationBadge'),bar=$('confirmationBar'),status=$('confirmationStatus'),stepsBox=$('confirmationSteps');
+  if(!badge||!bar||!status||!stepsBox)return;
+  if(side!=='LONG'&&side!=='SHORT'){
+    state.confirmation={side:null,index:0,events:[],key:null};
+    badge.textContent='WAITING'; badge.className='roadmapNext yellow'; bar.style.width='0%';
+    status.textContent='The engine will record trigger confirmations in order after a directional side is established.';
+    stepsBox.innerHTML='<span class="cstep locked">Waiting for direction</span>';
+    return;
+  }
+  const steps=buildRoadmap(d,side);
+  const key=`${state.symbol}-${side}`;
+  if(state.confirmation.key!==key){
+    state.confirmation={side,index:0,events:[],key};
+  }
+  while(state.confirmation.index<steps.length && steps[state.confirmation.index][1]){
+    const label=steps[state.confirmation.index][0];
+    state.confirmation.events[state.confirmation.index]={label,time:new Date().toLocaleTimeString()};
+    state.confirmation.index++;
+  }
+  const idx=state.confirmation.index;
+  const complete=idx>=steps.length;
+  const observed=state.confirmation.events;
+  badge.textContent=complete?`COMPLETE ${side}`:`${idx}/${steps.length} CONFIRMED`;
+  badge.className='roadmapNext '+(complete?'green':'yellow');
+  bar.style.width=(idx/steps.length*100)+'%';
+  if(complete){
+    status.innerHTML=`<b>${side}</b> confirmation sequence completed in order. The current setup can pass the strict trigger gate.`;
+  }else{
+    const next=steps[idx][0];
+    status.innerHTML=`Next sequence gate: <b>${next}</b>. Previously observed confirmations remain recorded for this ${side} watch.`;
+  }
+  stepsBox.innerHTML=steps.map(([label],i)=>{
+    if(observed[i]) return `<span class="cstep done">✓ ${label}<small>${observed[i].time}</small></span>`;
+    if(i===idx) return `<span class="cstep current">→ ${label}<small>NEXT GATE</small></span>`;
+    return `<span class="cstep locked">○ ${label}<small>WAIT</small></span>`;
+  }).join('');
+}
+
 function renderRoadmap(d,side){
   const box=$('roadmap');
   if(!box)return;
@@ -661,6 +707,7 @@ function updateUI(d){
   const roadmap=roadmapSide==='LONG'||roadmapSide==='SHORT'?buildRoadmap(d,roadmapSide):[];
   $('checks').innerHTML=roadmap.map(([label,ok])=>`<span class="check ${ok?'green':''}">${ok?'✓':'○'} ${label}</span>`).join('');
   renderRoadmap(d,roadmapSide||'WAIT');
+  updateConfirmation(d,roadmapSide||'WAIT');
 
   if(d.side){
     const lv=buildLevels(d);
