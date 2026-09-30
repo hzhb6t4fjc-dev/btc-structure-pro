@@ -486,8 +486,8 @@ function getConfluenceScore(a,hi,lo){
     if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
   }
 
-  const mtfBull=m15&&m4&&m15.bull>m15.bear&&m1.bull>m1.bear&&m4.bull>m4.bear;
-  const mtfBear=m15&&m4&&m15.bear>m15.bull&&m1.bear>m1.bull&&m4.bear>m4.bull;
+  const mtfBull=m1&&m4&&m1.bull>m1.bear&&m4.bull>m4.bear;
+  const mtfBear=m1&&m4&&m1.bear>m1.bull&&m4.bear>m4.bull;
   if((bullish&&mtfBull)||(!bullish&&mtfBear))breakdown.mtf=15;
 
   const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
