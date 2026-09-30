@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v6.4</title>
+<title>Crypto Structure Pro v6.5</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -59,7 +59,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v6.4</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v6.5</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -318,6 +318,7 @@ function scan(a){
 function mtfDecision(){
   const a=state.mtf;
   if(!a['15m']||!a['1h']||!a['4h'])return null;
+
   const s15=a['15m'],s1=a['1h'],s4=a['4h'],sd=a['1d'];
 
   let longScore=Math.round(s15.bull*.35+s1.bull*.30+s4.bull*.35);
@@ -331,33 +332,113 @@ function mtfDecision(){
   longScore=Math.max(0,Math.min(100,longScore));
   shortScore=Math.max(0,Math.min(100,shortScore));
 
-  const longTrigger=s15.bull>=35&&s15.bull>s15.bear+8;
-  const shortTrigger=s15.bear>=35&&s15.bear>s15.bull+8;
+  const longBias=s1.bull>=35&&s4.bull>=30&&longScore>shortScore+10;
+  const shortBias=s1.bear>=35&&s4.bear>=30&&shortScore>longScore+10;
+
+  const longSweep=s15.L.some(x=>x.includes('sweep'));
+  const shortSweep=s15.S.some(x=>x.includes('sweep'));
+  const longDisp=s15.L.includes('displacement');
+  const shortDisp=s15.S.includes('displacement');
+  const longMSS=s15.L.includes('MSS up');
+  const shortMSS=s15.S.includes('MSS down');
+  const longFVG=s15.L.includes('bullish FVG');
+  const shortFVG=s15.S.includes('bearish FVG');
+  const longStructure=s15.bull>s15.bear+8;
+  const shortStructure=s15.bear>s15.bull+8;
+
+  /*
+    Strict trigger:
+    LONG/SHORT is confirmed only when the 15m trigger has:
+    1) directional structure
+    2) liquidity sweep
+    3) displacement
+    4) MSS
+    5) FVG
+    plus higher-timeframe alignment and score separation.
+  */
+  const longTrigger=longStructure&&longSweep&&longDisp&&longMSS&&longFVG;
+  const shortTrigger=shortStructure&&shortSweep&&shortDisp&&shortMSS&&shortFVG;
 
   const side=
-    longScore>=70&&longScore>shortScore+14&&s1.bull>=35&&s4.bull>=30&&longTrigger
+    longBias&&longScore>=70&&longTrigger
       ?'LONG'
-      :shortScore>=70&&shortScore>longScore+14&&s1.bear>=35&&s4.bear>=30&&shortTrigger
+      :shortBias&&shortScore>=70&&shortTrigger
         ?'SHORT'
         :null;
 
-  return{longScore,shortScore,side,s15,s1,s4,sd,longTrigger,shortTrigger};
+  const missingLong=[];
+  if(!longStructure)missingLong.push('15m structure');
+  if(!longSweep)missingLong.push('liquidity sweep');
+  if(!longDisp)missingLong.push('displacement');
+  if(!longMSS)missingLong.push('MSS');
+  if(!longFVG)missingLong.push('FVG');
+  if(!longBias)missingLong.push('1H/4H alignment');
+  if(longScore<70)missingLong.push('score ≥70');
+
+  const missingShort=[];
+  if(!shortStructure)missingShort.push('15m structure');
+  if(!shortSweep)missingShort.push('liquidity sweep');
+  if(!shortDisp)missingShort.push('displacement');
+  if(!shortMSS)missingShort.push('MSS');
+  if(!shortFVG)missingShort.push('FVG');
+  if(!shortBias)missingShort.push('1H/4H alignment');
+  if(shortScore<70)missingShort.push('score ≥70');
+
+  const watchSide=longScore>shortScore? 'LONG':shortScore>longScore?'SHORT':'WAIT';
+  const triggerReason=side
+    ? `CONFIRMED ${side}: 15m trigger + liquidity + displacement + MSS + FVG + MTF alignment.`
+    : watchSide==='LONG'
+      ? `LONG WATCH — waiting for: ${missingLong.join(', ')}.`
+      : watchSide==='SHORT'
+        ? `SHORT WATCH — waiting for: ${missingShort.join(', ')}.`
+        : 'WAIT — no directional trigger is dominant.';
+
+  return{
+    longScore,shortScore,side,s15,s1,s4,sd,
+    longTrigger,shortTrigger,
+    longBias,shortBias,
+    missingLong,missingShort,
+    watchSide,triggerReason
+  };
 }
 
 function buildLevels(d){
-  const s=d.s1,last=s.last;
-  const invalid=d.side==='LONG'
-    ?(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:last.l)
-    :(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:last.h);
-  const risk=Math.abs(last.c-invalid);
+  const s=d.side==='LONG'?d.s15:d.s15;
+  const last=s.last;
+
+  const swingLow=d.s4.p.lo.length?s4SafeLow(d.s4):null;
+  const swingHigh=d.s4.p.hi.length?s4SafeHigh(d.s4):null;
+
+  let invalid;
+  if(d.side==='LONG'){
+    invalid=Math.min(
+      d.s15.last.l,
+      d.s1.p.lo.length?d.s1.p.lo[d.s1.p.lo.length-1].p:d.s15.last.l,
+      swingLow??d.s15.last.l
+    );
+  }else{
+    invalid=Math.max(
+      d.s15.last.h,
+      d.s1.p.hi.length?d.s1.p.hi[d.s1.p.hi.length-1].p:d.s15.last.h,
+      swingHigh??d.s15.last.h
+    );
+  }
+
+  const entry=last.c;
+  const risk=Math.abs(entry-invalid);
   if(!risk||!Number.isFinite(risk))return null;
+
   return{
-    entry:last.c,invalid,
-    tp1:d.side==='LONG'?last.c+risk:last.c-risk,
-    tp2:d.side==='LONG'?last.c+2*risk:last.c-2*risk,
+    entry,
+    invalid,
+    tp1:d.side==='LONG'?entry+risk:entry-risk,
+    tp2:d.side==='LONG'?entry+2*risk:entry-2*risk,
     rr:2
   };
 }
+
+function s4SafeLow(s){return s.p.lo[s.p.lo.length-1]?.p??null}
+function s4SafeHigh(s){return s.p.hi[s.p.hi.length-1]?.p??null}
 
 function getConfluenceScore(a,hi,lo){
   if(!a||a.length<20)return {score:0,direction:'WAIT',breakdown:{}};
@@ -466,11 +547,7 @@ function updateUI(d){
     if(value<max) missing.push(`${label} ${value}/${max}`);
   }
 
-  $('triggerText').textContent=d.side
-    ? 'CONFIRMED: 15m trigger + 1H/4H alignment'
-    : missing.length
-      ? `Waiting for stronger confirmation: ${missing.join(', ')}`
-      : 'Components aligned; waiting for the rule-based trigger.';
+  $('triggerText').textContent=d.triggerReason;
 
   const checks=d.side
     ? (d.side==='LONG'?[...d.s15.L,...d.s1.L,...d.s4.L]:[...d.s15.S,...d.s1.S,...d.s4.S])
@@ -482,7 +559,7 @@ function updateUI(d){
     const lv=buildLevels(d);
     if(lv){
       $('setupTitle').textContent=`${d.side} setup · ${state.symbol.replace('USDT','/USDT')}`;
-      $('setupText').textContent=`CONFIRMED ${d.side}. Total confluence ${conf.score}/100. These are conditional reference levels, not a prediction or guarantee.`;
+      $('setupText').textContent=`CONFIRMED ${d.side}. Strict trigger conditions are satisfied. Total confluence ${conf.score}/100. These are conditional reference levels, not a prediction or guarantee.`;
       $('entry').textContent='$'+fmt(lv.entry);
       $('invalid').textContent='$'+fmt(lv.invalid);
       $('tp1').textContent='$'+fmt(lv.tp1);
