@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v6.1</title>
+<title>Crypto Structure Pro v6.4.1</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -439,17 +439,63 @@ function updateUI(d){
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
-  $('confluenceScore').textContent=conf.score;$('qualityText').textContent=`Long ${d.longScore}/100 · Short ${d.shortScore}/100 · Current bias: ${conf.direction} · Total = component points.`;
+  $('confluenceScore').textContent=conf.score;
+  const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
+  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · TRIGGER ${trigger}.`;
   $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+
   const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],['MTF','mtf',15]];
   $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
-  const badge=$('biasBadge');badge.textContent=d.side?d.side:(conf.direction==='WAIT'?'WAIT':'BIAS '+conf.direction);badge.className='signalBadge '+(d.side==='LONG'||conf.direction==='LONG'?'green':d.side==='SHORT'||conf.direction==='SHORT'?'red':'yellow');
-  $('biasText').textContent=d.side?'MTF trigger + higher-timeframe alignment.':conf.direction==='WAIT'?'No dominant directional bias.':'Directional bias exists, but the full trigger is not confirmed.';
-  const trigger=d.side?'CONFIRMED':d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT';$('triggerBadge').textContent=trigger;$('triggerBadge').className='signalBadge '+(d.side==='LONG'?'green':d.side==='SHORT'?'red':trigger==='TRIGGER WATCH'?'yellow':'');
-  $('triggerText').textContent=d.side?'15m trigger + 1H/4H alignment':'Need stronger 15m trigger and higher-timeframe alignment';
-  const checks=d.side?(d.side==='LONG'?[...d.s15.L,...d.s1.L,...d.s4.L]:[...d.s15.S,...d.s1.S,...d.s4.S]):[...d.s15.L.slice(0,2),...d.s15.S.slice(0,2)];
+
+  const badge=$('biasBadge');
+  badge.textContent=d.side?d.side:(conf.direction==='WAIT'?'WAIT':'BIAS '+conf.direction);
+  badge.className='signalBadge '+(d.side==='LONG'||conf.direction==='LONG'?'green':d.side==='SHORT'||conf.direction==='SHORT'?'red':'yellow');
+
+  $('biasText').textContent=d.side
+    ? `Confirmed ${d.side} MTF setup.`
+    : conf.direction==='WAIT'
+      ? 'No dominant directional bias.'
+      : `Directional bias: ${conf.direction}, but the full trigger is not confirmed.`;
+
+  $('triggerBadge').textContent=trigger;
+  $('triggerBadge').className='signalBadge '+(d.side==='LONG'?'green':d.side==='SHORT'?'red':trigger==='TRIGGER WATCH'?'yellow':'');
+
+  const missing=[];
+  const names={structure:'Structure',liquidity:'Liquidity',displacement:'Displacement',mss:'MSS',fvg:'FVG',volume:'Volume',fibonacci:'Fibonacci',mtf:'MTF'};
+  for(const [k,label,max] of bd){
+    if((conf.breakdown[k]||0)<max)missing.push(label);
+  }
+
+  $('triggerText').textContent=d.side
+    ? 'CONFIRMED: 15m trigger + 1H/4H alignment'
+    : missing.length
+      ? `Waiting for stronger confirmation: ${missing.join(', ')}`
+      : 'Components aligned; waiting for the rule-based trigger.';
+
+  const checks=d.side
+    ? (d.side==='LONG'?[...d.s15.L,...d.s1.L,...d.s4.L]:[...d.s15.S,...d.s1.S,...d.s4.S])
+    : [...d.s15.L.slice(0,2),...d.s15.S.slice(0,2)];
+
   $('checks').innerHTML=[...new Set(checks)].slice(0,9).map(x=>`<span class="check">✓ ${x}</span>`).join('');
-  if(d.side){const lv=buildLevels(d);if(lv){$('setupTitle').textContent=`${d.side} setup · ${state.symbol.replace('USDT','/USDT')}`;$('setupText').textContent='Rule-based confluence detected. These are conditional reference levels, not a prediction or guarantee.';$('entry').textContent='$'+fmt(lv.entry);$('invalid').textContent='$'+fmt(lv.invalid);$('tp1').textContent='$'+fmt(lv.tp1);$('tp2').textContent='$'+fmt(lv.tp2);$('rr').textContent='1:'+lv.rr.toFixed(1)}}else{$('setupTitle').textContent='No confirmed setup';$('setupText').textContent='Waiting for stronger alignment between the 15m trigger and 1H/4H context.';$('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—'}
+
+  if(d.side){
+    const lv=buildLevels(d);
+    if(lv){
+      $('setupTitle').textContent=`${d.side} setup · ${state.symbol.replace('USDT','/USDT')}`;
+      $('setupText').textContent=`CONFIRMED ${d.side}. Total confluence ${conf.score}/100. These are conditional reference levels, not a prediction or guarantee.`;
+      $('entry').textContent='$'+fmt(lv.entry);
+      $('invalid').textContent='$'+fmt(lv.invalid);
+      $('tp1').textContent='$'+fmt(lv.tp1);
+      $('tp2').textContent='$'+fmt(lv.tp2);
+      $('rr').textContent='1:'+lv.rr.toFixed(1);
+    }
+  }else{
+    $('setupTitle').textContent=conf.direction==='WAIT'?'No directional setup':`${conf.direction} bias · waiting for trigger`;
+    $('setupText').textContent=conf.direction==='WAIT'
+      ? 'No dominant directional bias is confirmed by the current rules.'
+      : `Bias ${conf.direction}, but no confirmed entry. Missing or incomplete components: ${missing.join(', ')||'lower-timeframe trigger'}.`;
+    $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
+  }
   $('updated').textContent=new Date().toLocaleTimeString();
 }
 
