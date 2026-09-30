@@ -47,19 +47,105 @@ async function loadSymbols(){try{const r=await fetch('https://api.binance.com/ap
 function renderSymbols(list){const sel=$('symbol'),cur=state.symbol;sel.innerHTML=list.slice(0,500).map(s=>`<option value="${s}">${s.replace('USDT','/USDT')}</option>`).join('');if(list.includes(cur))sel.value=cur}
 async function loadTF(tf){const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${state.symbol}&interval=${tf}&limit=240`,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return(await r.json()).map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}))}
 function pivots(a,n=3){const hi=[],lo=[];for(let i=n;i<a.length-n;i++){let H=true,L=true;for(let j=1;j<=n;j++){if(a[i].h<=a[i-j].h||a[i].h<=a[i+j].h)H=false;if(a[i].l>=a[i-j].l||a[i].l>=a[i+j].l)L=false}if(H)hi.push({i,p:a[i].h});if(L)lo.push({i,p:a[i].l})}return{hi,lo}}
-function scan(a){const x=a.slice(0,-1),last=x.at(-1),p=pivots(x,3);let bull=0,bear=0,L=[],S=[];const hh1=p.hi.at(-2),hh2=p.hi.at(-1),ll1=p.lo.at(-2),ll2=p.lo.at(-1);
-if(hh1&&hh2){if(hh2.p>hh1.p){bull+=14;L.push('HH')}else{bear+=14;S.push('LH')}}if(ll1&&ll2){if(ll2.p>ll1.p){bull+=14;L.push('HL')}else{bear+=14;S.push('LL')}}
-const bodies=x.slice(-32,-1).map(q=>Math.abs(q.c-q.o)),avg=bodies.reduce((s,v)=>s+v,0)/(bodies.length||1),body=Math.abs(last.c-last.o);
-if(body>avg*1.8){if(last.c>last.o){bull+=16;L.push('displacement')}else{bear+=16;S.push('displacement')}}
-const recent=x.slice(-32,-1),low=Math.min(...recent.map(q=>q.l)),high=Math.max(...recent.map(q=>q.h));
-if(last.l<low&&last.c>low){bull+=22;L.push('sell-side sweep')}if(last.h>high&&last.c<high){bear+=22;S.push('buy-side sweep')}
-if(last.c>high){bull+=12;L.push('breakout')}if(last.c<low){bear+=12;S.push('breakdown')}
-// MSS proxy: close through the most recent pivot after a sweep
-const prev=x.at(-2);
-if(prev){if(prev.c<low&&last.c>low){bull+=8;L.push('MSS up')}if(prev.c>high&&last.c<high){bear+=8;S.push('MSS down')}}
-const g=x.slice(-9);for(let i=2;i<g.length;i++){if(g[i-2].h<g[i].l){bull+=5;L.push('bullish FVG')}if(g[i-2].l>g[i].h){bear+=5;S.push('bearish FVG')}}
-const vols=x.slice(-21,-1).map(q=>q.v),avgv=vols.reduce((s,v)=>s+v,0)/(vols.length||1);if(last.v>avgv*1.6){if(last.c>last.o){bull+=5;L.push('volume expansion')}else{bear+=5;S.push('volume expansion')}}
-return{bull:Math.min(100,bull),bear:Math.min(100,bear),last,p,low,high,L:[...new Set(L)],S:[...new Set(S)]}}
+function scan(a){
+const x=a.slice(0,-1),last=x.at(-1),prev=x.at(-2),p=pivots(x,3);
+let bull=0,bear=0,L=[],S=[];
+
+const hh1=p.hi.at(-2),hh2=p.hi.at(-1),ll1=p.lo.at(-2),ll2=p.lo.at(-1);
+
+if(hh1&&hh2){
+if(hh2.p>hh1.p){bull+=14;L.push('HH')}
+else{bear+=14;S.push('LH')}
+}
+
+if(ll1&&ll2){
+if(ll2.p>ll1.p){bull+=14;L.push('HL')}
+else{bear+=14;S.push('LL')}
+}
+
+const bodies=x.slice(-32,-1).map(q=>Math.abs(q.c-q.o));
+const avg=bodies.reduce((s,v)=>s+v,0)/(bodies.length||1);
+const body=Math.abs(last.c-last.o);
+
+if(body>avg*1.8){
+if(last.c>last.o){bull+=16;L.push('displacement')}
+else{bear+=16;S.push('displacement')}
+}
+
+const recent=x.slice(-32,-1);
+const low=Math.min(...recent.map(q=>q.l));
+const high=Math.max(...recent.map(q=>q.h));
+
+const sellSweep=last.l<low&&last.c>low;
+const buySweep=last.h>high&&last.c<high;
+
+if(sellSweep){bull+=22;L.push('sell-side sweep')}
+if(buySweep){bear+=22;S.push('buy-side sweep')}
+
+if(last.c>high){bull+=12;L.push('breakout')}
+if(last.c<low){bear+=12;L.push('breakdown')}
+
+const swingHigh=hh2?.p;
+const swingLow=ll2?.p;
+
+if(sellSweep&&swingHigh!==undefined&&last.c>swingHigh){
+bull+=8;
+L.push('MSS up');
+}
+
+if(buySweep&&swingLow!==undefined&&last.c<swingLow){
+bear+=8;
+S.push('MSS down');
+}
+
+const g=x.slice(-12);
+let bullFVG=false,bearFVG=false;
+
+for(let i=2;i<g.length;i++){
+const c1=g[i-2],c2=g[i-1],c3=g[i];
+
+if(c1.h<c3.l&&c2.c>c2.o)bullFVG=true;
+if(c1.l>c3.h&&c2.c<c2.o)bearFVG=true;
+}
+
+if(bullFVG){bull+=5;L.push('bullish FVG')}
+if(bearFVG){bear+=5;S.push('bearish FVG')}
+
+const vols=x.slice(-21,-1).map(q=>q.v);
+const avgv=vols.reduce((s,v)=>s+v,0)/(vols.length||1);
+
+if(last.v>avgv*1.6){
+if(last.c>last.o){bull+=5;L.push('volume expansion')}
+else{bear+=5;S.push('volume expansion')}
+}
+
+const range=last.h-last.l;
+
+if(range>0){
+const closePos=(last.c-last.l)/range;
+
+if(closePos>=0.75){
+bull+=4;
+L.push('strong close');
+}
+
+if(closePos<=0.25){
+bear+=4;
+S.push('strong close');
+}
+}
+
+return{
+bull:Math.min(100,bull),
+bear:Math.min(100,bear),
+last,
+p,
+low,
+high,
+L:[...new Set(L)],
+S:[...new Set(S)]
+};
+}
 function mtfDecision(){const a=state.mtf;if(!a['15m']||!a['1h']||!a['4h'])return null;const s15=a['15m'],s1=a['1h'],s4=a['4h'],sd=a['1d'];let longScore=Math.round(s15.bull*.35+s1.bull*.30+s4.bull*.35),shortScore=Math.round(s15.bear*.35+s1.bear*.30+s4.bear*.35);
 if(sd){longScore=Math.round(longScore+(sd.bull-sd.bear)*.06);shortScore=Math.round(shortScore+(sd.bear-sd.bull)*.06)}
 longScore=Math.max(0,Math.min(100,longScore));shortScore=Math.max(0,Math.min(100,shortScore));
