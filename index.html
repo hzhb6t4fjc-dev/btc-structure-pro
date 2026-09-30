@@ -57,6 +57,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
 .statePanel{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.stateBadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;padding:5px 9px;border-radius:999px;border:1px solid var(--line)}.stateBadge.watch{color:var(--yellow);border-color:#5b4d24}.stateBadge.developing{color:var(--blue);border-color:#31578d}.stateBadge.triggered{color:#d9b6ff;border-color:#654a82}.stateBadge.confirmed{color:var(--green);border-color:#285a4b}.stateBadge.invalidated{color:var(--red);border-color:#6b3340}.stateBadge.wait{color:var(--muted)}.stateDescription{font-size:10px;color:#aebbd1;line-height:1.45;margin-top:7px}.stateMeta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.stateMeta .pill{font-size:9px}.eventPanel{margin-top:12px}.eventLog{display:grid;gap:8px;max-height:260px;overflow:auto}.eventItem{border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:rgba(5,12,25,.45);font-size:13px}.eventItem b{font-weight:800}.eventItem .eventTime{opacity:.65;font-size:11px;margin-right:7px}.eventItem.confirmed b{color:var(--green)}.eventItem.invalidated b{color:var(--red)}.eventItem.reconfirmed b{color:var(--green)}.eventItem.info b{color:var(--yellow)}
 
+
+.snapshotGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.snapshotItem{border:1px solid var(--border);border-radius:14px;padding:10px;background:rgba(7,14,28,.5)}
+.snapshotItem small{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.snapshotItem b{font-size:15px}
+.snapshotHistory{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
+@media(max-width:520px){.snapshotGrid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -158,6 +164,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="stateDescription" id="alertEngineText">Unique event alerts are enabled. Duplicate alerts are suppressed.</div>
           <div class="stateMeta" id="alertEngineMeta"></div>
         </div>
+        <div class="statePanel" id="snapshotPanel">
+          <div class="roadmapHead"><span class="roadmapTitle">Signal snapshot &amp; trade plan</span><span class="roadmapNext" id="snapshotBadge">WAITING</span></div>
+          <div class="stateDescription" id="snapshotText">No confirmed setup snapshot yet.</div>
+          <div class="snapshotGrid" id="snapshotGrid"></div>
+          <div class="stateMeta" id="snapshotMeta"></div>
+        </div>
         <div class="confirmation eventPanel" id="eventPanel">
           <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
           <div class="eventLog" id="eventLog">No confirmation events yet.</div>
@@ -197,7 +209,9 @@ const state={
   lastCandleTs:0,
   alertEvents:JSON.parse(localStorage.getItem('cspAlertEvents')||'{}'),
   lastEngineAlert:null,
-  lastSetupStateKey:null
+  lastSetupStateKey:null,
+  snapshots:JSON.parse(localStorage.getItem('cspSnapshots')||'[]'),
+  lastSnapshotKey:null
 };
 
 const $=id=>document.getElementById(id);
@@ -613,6 +627,51 @@ function getConfluenceScore(a,hi,lo){
   state.confluenceBreakdown=breakdown;
   return {score,direction,breakdown};
 }
+function saveSnapshots(){
+  state.snapshots=state.snapshots.slice(0,30);
+  localStorage.setItem('cspSnapshots',JSON.stringify(state.snapshots));
+}
+function renderSnapshot(){
+  const badge=$('snapshotBadge'),text=$('snapshotText'),grid=$('snapshotGrid'),meta=$('snapshotMeta');
+  if(!badge||!text||!grid||!meta)return;
+  const current=state.snapshots[0];
+  if(!current){
+    badge.textContent='WAITING'; badge.className='roadmapNext yellow';
+    text.textContent='No confirmed setup snapshot yet.'; grid.innerHTML=''; meta.innerHTML='<span class="pill">CONFIRMATION REQUIRED</span>'; return;
+  }
+  badge.textContent='CONFIRMED'; badge.className='roadmapNext green';
+  text.innerHTML=`<b>${current.side} CONFIRMED</b> · ${current.symbol.replace('USDT','/USDT')} · ${current.time}`;
+  const items=[
+    ['Entry','$'+fmt(current.entry)],['Invalidation','$'+fmt(current.invalid)],
+    ['TP1 (1R)','$'+fmt(current.tp1)],['TP2 (2R)','$'+fmt(current.tp2)],
+    ['Risk / Reward','1:'+Number(current.rr||2).toFixed(1)],['Score',`${current.score}/100`],
+    ['Timeframe',current.timeframe||'15m trigger'],['Sequence',`${current.sequence||7}/7`]
+  ];
+  grid.innerHTML=items.map(([a,b])=>`<div class="snapshotItem"><small>${a}</small><b>${b}</b></div>`).join('');
+  const recent=state.snapshots.slice(0,5);
+  meta.innerHTML=`<span class="pill">SNAPSHOT SAVED</span><span class="pill">${recent.length} STORED</span>`+
+    `<div class="snapshotHistory">${recent.map(x=>`${x.time} · <b>${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.score}/100`).join('<br>')}</div>`;
+}
+function maybeCreateSnapshot(d,conf){
+  if(!d||!d.side)return false;
+  const lv=buildLevels(d);
+  if(!lv)return false;
+  const candle=d.s15&&d.s15.last?d.s15.last.t:state.lastCandleTs;
+  const key=`${state.symbol}|${d.side}|${candle}|${d.longScore||d.shortScore}`;
+  if(state.lastSnapshotKey===key)return false;
+  const existing=state.snapshots.find(x=>x.key===key);
+  if(existing){state.lastSnapshotKey=key;renderSnapshot();return false;}
+  const score=d.side==='LONG'?d.longScore:d.shortScore;
+  state.snapshots.unshift({
+    key,symbol:state.symbol,side:d.side,score,entry:lv.entry,invalid:lv.invalid,tp1:lv.tp1,tp2:lv.tp2,rr:lv.rr,
+    timeframe:'15m trigger',sequence:7,time:new Date().toLocaleTimeString(),ts:Date.now()
+  });
+  state.lastSnapshotKey=key;
+  saveSnapshots(); renderSnapshot();
+  emitEngineAlert(d.side,'Signal snapshot','SNAPSHOT_CREATED',`${d.side} snapshot saved · Entry ${fmt(lv.entry)} · TP1 ${fmt(lv.tp1)} · TP2 ${fmt(lv.tp2)} · Score ${score}/100`,{candle});
+  return true;
+}
+
 function maybeAlert(d){
   if(!d || !d.side) return;
   const score=d.side==='LONG'?d.longScore:d.shortScore;
@@ -859,6 +918,7 @@ function updateUI(d){
   updateLiveMonitor(d);
 
   if(d.side){
+    maybeCreateSnapshot(d,conf);
     const lv=buildLevels(d);
     if(lv){
       $('setupTitle').textContent=`${d.side} setup · ${state.symbol.replace('USDT','/USDT')}`;
@@ -1025,6 +1085,7 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
 window.addEventListener('resize',draw);
 renderAlerts();
 renderAlertEngine();
+renderSnapshot();
 
 (async()=>{
   try{
