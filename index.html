@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v7.9 Professional</title>
+<title>Crypto Structure Pro v8.0 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -64,6 +64,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .snapshotHistory{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
+.scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
 .scanTable{display:grid;gap:7px}.scanRow{display:grid;grid-template-columns:1.25fr .7fr .75fr 1.4fr .65fr;gap:7px;align-items:center;padding:10px 9px;border:1px solid var(--border);border-radius:13px;background:rgba(7,14,28,.48)}
 .scanRow.head{background:transparent;border:0;padding:2px 9px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.scanCell{min-width:0}.scanPair{font-weight:700}.scanScore{font-weight:800}.scanState{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border:1px solid var(--border);border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.scanState.watch{color:#ffcf52;border-color:rgba(255,207,82,.4)}.scanState.developing{color:#72a9ff;border-color:rgba(114,169,255,.4)}.scanState.triggered{color:#c58cff;border-color:rgba(197,140,255,.4)}.scanState.confirmed{color:#39d99a;border-color:rgba(57,217,154,.4)}.scanState.wait{color:var(--muted)}.scanState.invalidated{color:#ff6478;border-color:rgba(255,100,120,.4)}
 .scanNext{color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.scanSide.long{color:#39d99a}.scanSide.short{color:#ff6478}.scanSide.wait{color:var(--muted)}
@@ -77,7 +78,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v7.9 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.0 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -188,15 +189,19 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="setup scannerPanel" style="margin-top:0">
         <div class="roadmapHead"><span class="roadmapTitle">Multi-pair setup scanner</span><span class="roadmapNext" id="scannerStatus">READY</span></div>
         <div class="scanToolbar">
-          <button class="btn active" id="scanAllBtn">Scan watchlist</button>
-          <button class="btn" id="scanConfirmedBtn">Confirmed only</button>
-          <button class="btn" id="scanWatchBtn">Watch / developing</button>
+          <input class="scanSearch" id="scanSearch" type="search" placeholder="Search pair…" autocomplete="off">
+          <button class="btn active" id="scanAllBtn">All</button>
+          <button class="btn" id="scanConfirmedBtn">Confirmed</button>
+          <button class="btn" id="scanWatchBtn">Active setups</button>
+          <button class="btn" id="scanLongBtn">LONG</button>
+          <button class="btn" id="scanShortBtn">SHORT</button>
         </div>
+        <div class="scanSummary" id="scanSummary"></div>
         <div class="scanTable" id="scanTable">
           <div class="scanRow head"><div>Pair</div><div>Side</div><div>Score</div><div>State</div><div>Next</div></div>
           <div class="reason">Scanner is ready. It checks the selected watchlist across 15m / 1H / 4H / 1D.</div>
         </div>
-        <div class="scanFoot" id="scanFoot">Auto scan every 60s · Watchlist is limited to major USDT spot pairs to control API load.</div>
+        <div class="scanFoot" id="scanFoot">State-priority scanner · Auto scan every 60s · Watchlist is limited to major USDT spot pairs to control API load.</div>
       </div>
 
       <div class="setup" style="margin-top:0">
@@ -234,7 +239,7 @@ const state={
   lastSetupStateKey:null,
   snapshots:JSON.parse(localStorage.getItem('cspSnapshots')||'[]'),
   lastSnapshotKey:null,
-  scanner:{rows:[],filter:'all',timer:null,busy:false,lastRun:0}
+  scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0}
 };
 
 const $=id=>document.getElementById(id);
@@ -986,20 +991,56 @@ function scannerNext(d){
   const m=buildRoadmap(d,side).find(x=>!x[1]);
   return m?m[0]:'Complete';
 }
+function scannerState(d){
+  if(!d)return {name:'WAIT',cls:'wait',rank:0};
+  if(d.side)return {name:'CONFIRMED',cls:'confirmed',rank:4};
+  const side=d.watchSide;
+  if(side!=='LONG'&&side!=='SHORT')return {name:'WAIT',cls:'wait',rank:0};
+  const roadmap=buildRoadmap(d,side);
+  const done=roadmap.filter(x=>x[1]).length;
+  if(done>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
+  if(done>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
+  return {name:'WATCH',cls:'watch',rank:1};
+}
+function scannerNext(d){
+  if(!d)return '—';
+  if(d.side)return 'Snapshot';
+  const side=d.watchSide;
+  if(side!=='LONG'&&side!=='SHORT')return 'Directional bias';
+  const m=buildRoadmap(d,side).find(x=>!x[1]);
+  return m?m[0]:'Complete';
+}
+function scannerGates(d){
+  const side=d&&(d.side||d.watchSide);
+  if(side!=='LONG'&&side!=='SHORT')return {done:0,total:7,gates:[]};
+  const steps=buildRoadmap(d,side);
+  const first=steps.findIndex(x=>!x[1]);
+  return {done:steps.filter(x=>x[1]).length,total:steps.length,gates:steps.map(([label,ok],i)=>({label,ok,next:i===first}))};
+}
 function renderScanner(){
-  const box=$('scanTable'),status=$('scannerStatus'),foot=$('scanFoot');
+  const box=$('scanTable'),status=$('scannerStatus'),foot=$('scanFoot'),summary=$('scanSummary');
   if(!box)return;
-  const filter=state.scanner.filter;
+  const filter=state.scanner.filter, sideFilter=state.scanner.side, q=state.scanner.query.trim().toUpperCase();
   let rows=state.scanner.rows.slice();
   if(filter==='confirmed')rows=rows.filter(r=>r.state.name==='CONFIRMED');
   if(filter==='watch')rows=rows.filter(r=>['WATCH','DEVELOPING','TRIGGERED'].includes(r.state.name));
-  rows.sort((a,b)=>b.maxScore-a.maxScore);
-  const head='<div class="scanRow head"><div>Pair</div><div>Side</div><div>Score</div><div>State</div><div>Next</div></div>';
-  if(!rows.length){box.innerHTML=head+'<div class="reason">No pairs match this filter.</div>';return;}
-  box.innerHTML=head+rows.map(r=>`<div class="scanRow"><div class="scanCell scanPair">${r.symbol.replace('USDT','/USDT')}</div><div class="scanCell scanSide ${r.side.toLowerCase()} ">${r.side}</div><div class="scanCell scanScore">${r.maxScore}/100</div><div class="scanCell"><span class="scanState ${r.state.cls}">${r.state.name}</span></div><div class="scanCell scanNext">${r.next}</div></div>`).join('');
+  if(sideFilter!=='all')rows=rows.filter(r=>r.side===sideFilter);
+  if(q)rows=rows.filter(r=>r.symbol.includes(q));
+  rows.sort((a,b)=>b.state.rank-a.state.rank || b.maxScore-a.maxScore || b.gates.done-a.gates.done || a.symbol.localeCompare(b.symbol));
+  const counts=state.scanner.rows.reduce((m,r)=>{m[r.state.name]=(m[r.state.name]||0)+1;return m},{});
+  if(summary){
+    summary.innerHTML=[['CONFIRMED',counts.CONFIRMED||0],['TRIGGERED',counts.TRIGGERED||0],['DEVELOPING',counts.DEVELOPING||0],['WATCH',counts.WATCH||0],['WAIT',counts.WAIT||0]].map(([k,v])=>`<span class="pill"><b>${v}</b> ${k}</span>`).join('');
+  }
   status.textContent=state.scanner.busy?'SCANNING':(state.scanner.lastRun?`UPDATED ${new Date(state.scanner.lastRun).toLocaleTimeString()}`:'READY');
   status.className='roadmapNext '+(state.scanner.busy?'scanLoading':'');
-  foot.textContent=`${rows.length}/${state.scanner.rows.length||0} shown · Auto scan every 60s · ${state.scanner.rows.length||0} pairs checked · Major USDT spot watchlist.`;
+  foot.textContent=`${rows.length}/${state.scanner.rows.length||0} shown · Priority: state progression → score · Auto scan every 60s · ${state.scanner.rows.length||0} pairs checked.`;
+  const head='<div class="scanRow head"><div>Pair</div><div>Side</div><div>Score</div><div>State</div><div>Next</div></div>';
+  if(!rows.length){box.innerHTML=head+'<div class="reason">No pairs match this filter.</div>';return;}
+  box.innerHTML=head+rows.map(r=>{
+    const label=r.symbol.replace('USDT','/USDT');
+    const detail=r.gates.gates.map(g=>`<span class="scanGate ${g.ok?'done':(g.next?'next':'')} ">${g.ok?'✓':'○'} ${g.label}</span>`).join('');
+    return `<div class="scanRow ${r.state.rank>=3?'highlight':''}"><div class="scanCell scanPair">${label}<div class="small">${r.gates.done}/${r.gates.total} gates</div></div><div class="scanCell scanSide ${r.side.toLowerCase()} ">${r.side}</div><div class="scanCell scanScore">${r.maxScore}/100</div><div class="scanCell"><span class="scanState ${r.state.cls}">${r.state.name}</span></div><div class="scanCell scanNext">${r.next}</div><div class="scanDetails">${detail}</div></div>`;
+  }).join('');
 }
 async function scanOneSymbol(sym){
   const [r15,r1,r4,rD]=await Promise.all(['15m','1h','4h','1d'].map(tf=>loadTFSymbol(sym,tf)));
@@ -1011,7 +1052,7 @@ async function scanOneSymbol(sym){
     const side=d&&d.side?d.side:(d?d.watchSide:'WAIT');
     const maxScore=d?Math.max(d.longScore,d.shortScore):0;
     const stateName=scannerState(d);
-    return {symbol:sym,side,maxScore,state:stateName,next:scannerNext(d)};
+    return {symbol:sym,side,maxScore,state:stateName,next:scannerNext(d),gates:scannerGates(d)};
   }finally{state.mtf=oldMtf;state.symbol=oldSymbol;}
 }
 async function loadTFSymbol(sym,tf){
@@ -1151,9 +1192,13 @@ $('symbolSearch').oninput=e=>{
   renderSymbols(state.symbols.filter(s=>s.includes(q)));
 };
 
-$('scanAllBtn').onclick=()=>{state.scanner.filter='all';document.querySelectorAll('#scanAllBtn,#scanConfirmedBtn,#scanWatchBtn').forEach(x=>x.classList.remove('active'));$('scanAllBtn').classList.add('active');renderScanner();runScanner();};
-$('scanConfirmedBtn').onclick=()=>{state.scanner.filter='confirmed';document.querySelectorAll('#scanAllBtn,#scanConfirmedBtn,#scanWatchBtn').forEach(x=>x.classList.remove('active'));$('scanConfirmedBtn').classList.add('active');renderScanner();};
-$('scanWatchBtn').onclick=()=>{state.scanner.filter='watch';document.querySelectorAll('#scanAllBtn,#scanConfirmedBtn,#scanWatchBtn').forEach(x=>x.classList.remove('active'));$('scanWatchBtn').classList.add('active');renderScanner();};
+function setScannerFilter(filter){state.scanner.filter=filter;document.querySelectorAll('#scanAllBtn,#scanConfirmedBtn,#scanWatchBtn').forEach(x=>x.classList.remove('active'));const id=filter==='all'?'scanAllBtn':filter==='confirmed'?'scanConfirmedBtn':'scanWatchBtn';$(id).classList.add('active');renderScanner();}
+$('scanAllBtn').onclick=()=>{setScannerFilter('all');runScanner();};
+$('scanConfirmedBtn').onclick=()=>setScannerFilter('confirmed');
+$('scanWatchBtn').onclick=()=>setScannerFilter('watch');
+$('scanLongBtn').onclick=()=>{state.scanner.side=state.scanner.side==='LONG'?'all':'LONG';$('scanLongBtn').classList.toggle('active',state.scanner.side==='LONG');$('scanShortBtn').classList.remove('active');renderScanner();};
+$('scanShortBtn').onclick=()=>{state.scanner.side=state.scanner.side==='SHORT'?'all':'SHORT';$('scanShortBtn').classList.toggle('active',state.scanner.side==='SHORT');$('scanLongBtn').classList.remove('active');renderScanner();};
+$('scanSearch').oninput=e=>{state.scanner.query=e.target.value||'';renderScanner();};
 
 $('refresh').onclick=loadAll;
 
