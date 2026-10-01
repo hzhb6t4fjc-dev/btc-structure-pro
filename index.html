@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.45 Professional</title>
+<title>Crypto Structure Pro v8.46 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -189,14 +189,14 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
-.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
+.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.active{border-color:#72a9ff;background:#182b4f}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.45 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.46 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -373,14 +373,24 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
       <div class="liqFibPanel riskScenarioPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Trading Planner Engine</span><span class="liqFibBadge separate" id="scenarioBadge">PLANNER</span></div>
-        <div class="scenarioNote">Daily planning and what-if calculator for scalping, intraday, swing and daily setups. It remains independent from the live Risk Management Engine and never overrides a live trade decision.</div>
+        <div class="scenarioNote"><b>MANUAL PLANNER:</b> LONG / SHORT, Entry, Stop and Targets are always editable. Live hierarchy may block a live trade, but it never locks this planner. Daily planning and what-if calculator for scalping, intraday, swing and daily setups. It remains independent from the live Risk Management Engine and never overrides a live trade decision.</div>
         <div class="liqFibGrid scenarioGrid">
           <div class="liqFibBox"><small>TRADING MODE</small><select class="riskInput" id="scenarioMode"><option value="SCALPING">SCALPING · 15m</option><option value="INTRADAY" selected>INTRADAY · 15m/1H</option><option value="SWING">SWING · 4H/12H</option><option value="DAILY">DAILY · 1D</option></select></div>
           <div class="liqFibBox"><small>LIVE PLANNER SOURCE</small><b id="scenarioSourceStatus">1H SETUP</b></div>
           <div class="liqFibBox"><small>LIVE MAJOR BIAS</small><b id="scenarioBiasStatus">WAIT</b></div>
           <div class="liqFibBox"><small>ACCOUNT EQUITY · USDT</small><input class="riskInput" id="scenarioEquity" type="number" min="0" step="0.01" placeholder="Account equity"></div>
           <div class="liqFibBox"><small>RISK / TRADE %</small><input class="riskInput" id="scenarioRiskPct" type="number" min="0.1" max="100" step="0.1" value="1"></div>
-          <div class="liqFibBox"><small>DIRECTION</small><select class="riskInput" id="scenarioSide"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select></div>
+          <div class="liqFibBox">
+<small>DIRECTION · MANUAL PLANNER</small>
+<select class="riskInput" id="scenarioSide">
+<option value="LONG">LONG</option>
+<option value="SHORT">SHORT</option>
+</select>
+<div class="scenarioManualSide">
+<button class="btn" type="button" id="scenarioLongBtn">LONG</button>
+<button class="btn" type="button" id="scenarioShortBtn">SHORT</button>
+</div>
+</div>
           <div class="liqFibBox"><small>ENTRY</small><input class="riskInput" id="scenarioEntry" type="number" min="0" step="0.01" placeholder="Entry price"></div>
           <div class="liqFibBox"><small>STOP</small><input class="riskInput" id="scenarioStop" type="number" min="0" step="0.01" placeholder="Stop price"></div>
           <div class="liqFibBox"><small>TP1 · 1.272</small><input class="riskInput" id="scenarioTP1" type="number" min="0" step="0.01" placeholder="TP1"></div>
@@ -1944,10 +1954,23 @@ function updateRiskScenario(){
   if(badge){badge.textContent='CALCULATED';badge.className='liqFibBadge confirmed'};
 }
 function initRiskScenario(){
-  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v845')||'null')}catch(e){return null}})();
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v846')||'null')}catch(e){return null}})();
   if(saved){['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if(saved[id]!=null&&$(id))$(id).value=saved[id]})}
-  const persist=()=>{try{localStorage.setItem('cspScenario_v845',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
+  const persist=()=>{try{localStorage.setItem('cspScenario_v846',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
   ['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{persist();updateRiskScenario()})});
+  const manualSide=(side)=>{
+    const e=$('scenarioSide');
+    if(!e)return;
+    e.value=side;
+    persist();
+    updateRiskScenario();
+    $('scenarioLongBtn')?.classList.toggle('active',side==='LONG');
+    $('scenarioShortBtn')?.classList.toggle('active',side==='SHORT');
+  };
+  $('scenarioLongBtn')?.addEventListener('click',()=>manualSide('LONG'));
+  $('scenarioShortBtn')?.addEventListener('click',()=>manualSide('SHORT'));
+  $('scenarioSide')?.addEventListener('change',()=>manualSide($('scenarioSide').value==='SHORT'?'SHORT':'LONG'));
+
   const usePrice=$('scenarioUsePrice');if(usePrice)usePrice.addEventListener('click',()=>{const p=Number(state.livePrice)||Number(state.mtf?.[state.tf]?.last?.c);if(p&&$('scenarioEntry')){$('scenarioEntry').value=p.toFixed(2);persist();updateRiskScenario()}});
   const build=$('scenarioBuildLive');if(build)build.addEventListener('click',()=>{
     const mode=$('scenarioMode')?.value||'INTRADAY';
@@ -1994,6 +2017,9 @@ function initRiskScenario(){
   });
   const clear=$('scenarioClear');if(clear)clear.addEventListener('click',()=>{['scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if($(id))$(id).value='' });persist();updateRiskScenario()});
   updateRiskScenario();
+  const initialSide=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
+  $('scenarioLongBtn')?.classList.toggle('active',initialSide==='LONG');
+  $('scenarioShortBtn')?.classList.toggle('active',initialSide==='SHORT');
 }
 
 function updateFinalDecision(entryConf,consensus){
