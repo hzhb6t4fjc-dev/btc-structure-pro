@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.23 Professional</title>
+<title>Crypto Structure Pro v8.24 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -101,6 +101,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .liqFibNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.45}
 @media(max-width:560px){.liqFibGrid{grid-template-columns:1fr}}
 
+
+.entryConfirmPanel{border-color:#31578d}
+.entryConfirmPanel .liqFibTitle{color:#72a9ff}
+#entryConfirmBadge.confirmed{color:var(--green);border-color:#285a4b}
+#entryConfirmBadge.ready{color:#72a9ff;border-color:#31578d}
+#entryConfirmBadge.developing{color:var(--yellow);border-color:#5b4d24}
+#entryConfirmBadge.wait{color:var(--muted)}
+.entryGate{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:#0c1321;font-size:10px}
+.entryGate b{font-size:10px}
+.entryGate.ok b{color:var(--green)}
+.entryGate.pending b{color:var(--yellow)}
+.entryGate.fail b{color:var(--red)}
+.entryGateGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+@media(max-width:560px){.entryGateGrid{grid-template-columns:1fr}}
+
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -121,7 +136,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.23 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.24 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -208,6 +223,8 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="liqFibPanel reaction75Panel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Retracement 75% · Reaction Engine</span><span class="liqFibBadge separate" id="fib75ReactionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>REACTION</small><b id="fib75Reaction">—</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="fib75ReactionStructure">—</b></div><div class="liqFibBox"><small>DISPLACEMENT</small><b id="fib75ReactionDisp">—</b></div><div class="liqFibBox"><small>VOLUME</small><b id="fib75ReactionVolume">—</b></div></div><div class="liqFibNote" id="fib75ReactionNote">Waiting for price behavior at the 75% retracement. Touching 75% alone is not a signal.</div></div>
       <div class="liqFibPanel extensionPanel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Extension · Target Engine</span><span class="liqFibBadge extBadge wait" id="fibExtBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TP1 · 1.272</small><b class="extTarget" id="fibExt1272">—</b></div><div class="liqFibBox"><small>TP2 · 1.618</small><b class="extTarget" id="fibExt1618">—</b></div><div class="liqFibBox"><small>TP3 · 2.000</small><b class="extTarget" id="fibExt2000">—</b></div><div class="liqFibBox"><small>TP4 · 2.618</small><b class="extTarget" id="fibExt2618">—</b></div><div class="liqFibBox"><small>NEXT TARGET</small><b id="fibExtNext">—</b></div><div class="liqFibBox"><small>DIRECTION</small><b id="fibExtDirection">—</b></div></div><div class="liqFibNote" id="fibExtNote">Fibonacci Extension projects target levels beyond the confirmed swing. Targets are reference zones, not guaranteed take-profit signals.</div></div>
 
+
+      <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → MTF → volume.</div></div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -910,6 +927,47 @@ function getFibExtensionContext(a){
   return {direction,targets,next,passed,swing,note};
 }
 
+
+function getEntryConfirmation(d,r75,ext,conf){
+  const side=d.side || (d.watchSide==='LONG'||d.watchSide==='SHORT'?d.watchSide:null);
+  const direction=side;
+  const m15=state.mtf['15m'];
+  const m1=state.mtf['1h'];
+  const m4=state.mtf['4h'];
+  const reaction=r75.state==='REJECTION'||r75.state==='RECLAIM';
+  const sweep=!!m15 && (direction==='LONG' ? m15.L.some(x=>x.includes('sweep')) : direction==='SHORT' ? m15.S.some(x=>x.includes('sweep')) : false);
+  const displacement=!!m15 && (direction==='LONG' ? m15.L.includes('displacement') : direction==='SHORT' ? m15.S.includes('displacement') : false);
+  const mss=!!m15 && (direction==='LONG' ? m15.L.includes('MSS up') : direction==='SHORT' ? m15.S.includes('MSS down') : false);
+  const fvg=!!m15 && (direction==='LONG' ? m15.L.includes('bullish FVG') : direction==='SHORT' ? m15.S.includes('bearish FVG') : false);
+  const mtf=!!m1&&!!m4 && (direction==='LONG' ? m1.bull>=35&&m4.bull>=30 : direction==='SHORT' ? m1.bear>=35&&m4.bear>=30 : false);
+  const volume=r75.volume==='EXPANSION';
+  const gates=[
+    ['75% reaction',reaction],
+    ['Liquidity sweep',sweep],
+    ['Displacement',displacement],
+    ['MSS',mss],
+    ['FVG',fvg],
+    ['MTF alignment',mtf],
+    ['Volume expansion',volume]
+  ];
+  const done=gates.filter(x=>x[1]).length;
+  let status='WAIT';
+  if(direction){
+    if(d.side && done===7)status='CONFIRMED';
+    else if(done>=5)status='READY';
+    else if(done>0)status='DEVELOPING';
+  }
+  const next=gates.find(x=>!x[1]);
+  const note=status==='CONFIRMED'
+    ? `All seven confirmation gates are satisfied for ${direction}. Fibonacci Extension remains a target map, not an independent entry signal.`
+    : status==='READY'
+      ? `${direction} has a strong confirmation sequence (${done}/7). Wait for the remaining gate${next?' · '+next[0]:''} before treating the setup as fully confirmed.`
+      : status==='DEVELOPING'
+        ? `${direction} confirmation is developing (${done}/7). The next required gate is ${next?next[0]:'final confirmation'}.`
+        : 'Waiting for a directional side and the first confirmation gate.';
+  return {side:direction,status,done,gates,next:next?next[0]:null,note,extension:ext};
+}
+
 function getFib75SRContext(a){
   const swing=getFibSwing(a);
   if(!swing)return {swing:null,fib75:null,resistance:null,support:null,relation:'NEUTRAL',priceRelation:'UNKNOWN'};
@@ -1343,6 +1401,20 @@ function updateUI(d){
   if($('fibExtNext')) $('fibExtNext').textContent=ext.next?`${ext.next.r.toFixed(3)} · ${fmt(ext.next.p)}`:'—';
   if($('fibExtDirection')) $('fibExtDirection').textContent=ext.direction;
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
+
+
+  const entryConf=getEntryConfirmation(d,r75,ext,conf);
+  const ecBadge=$('entryConfirmBadge');
+  if(ecBadge){
+    ecBadge.textContent=entryConf.status;
+    ecBadge.className='liqFibBadge '+(entryConf.status==='CONFIRMED'?'confirmed':entryConf.status==='READY'?'ready':entryConf.status==='DEVELOPING'?'developing':'wait');
+  }
+  if($('entryConfirmState'))$('entryConfirmState').textContent=entryConf.status;
+  if($('entryConfirmSide'))$('entryConfirmSide').textContent=entryConf.side||'—';
+  if($('entryConfirmGates'))$('entryConfirmGates').textContent=`${entryConf.done}/7`;
+  if($('entryConfirmNext'))$('entryConfirmNext').textContent=entryConf.next||'—';
+  if($('entryConfirmGateGrid'))$('entryConfirmGateGrid').innerHTML=entryConf.gates.map(([label,ok])=>`<div class="entryGate ${ok?'ok':'pending'}"><span>${label}</span><b>${ok?'PASS':'WAIT'}</b></div>`).join('');
+  if($('entryConfirmNote'))$('entryConfirmNote').textContent=entryConf.note;
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
