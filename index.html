@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.30 Professional</title>
+<title>Crypto Structure Pro v8.31 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -135,6 +135,17 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
 
 .consensusPanel{border-color:#31578d;background:linear-gradient(180deg,#0b1525,#090f1a)}
+.finalDecisionPanel{border-color:#3b4f74;background:linear-gradient(180deg,#0b1525,#09111e)}
+.finalDecisionPanel .liqFibTitle{color:#72a9ff}
+.finalDecisionBadge{font-weight:850}
+.finalDecisionBadge.confirmed{color:var(--green);border-color:#285a4b}
+.finalDecisionBadge.ready{color:var(--yellow);border-color:#5b4d24}
+.finalDecisionBadge.watch{color:var(--yellow);border-color:#5b4d24}
+.finalDecisionBadge.counter{color:var(--red);border-color:#6b3340}
+.finalDecisionBadge.wait{color:var(--muted);border-color:#31578d}
+.finalDecisionAction{font-size:14px;font-weight:800;line-height:1.4}
+.finalDecisionReason{font-size:12px;color:var(--muted);line-height:1.55}
+
 .consensusPanel .liqFibTitle{color:#72a9ff}
 #consensusBadge.long{color:var(--green);border-color:#285a4b}
 #consensusBadge.short{color:var(--red);border-color:#6b3340}
@@ -153,7 +164,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.30 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.31 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -274,6 +285,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
 
       <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="entryConfirmMajor">WAIT</b></div><div class="liqFibBox"><small>SETUP SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="entryConfirmHierarchy">WAIT</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → hierarchy alignment → volume.</div></div>
+      <div class="liqFibPanel finalDecisionPanel"><div class="liqFibHead"><span class="liqFibTitle">Final Decision Engine</span><span class="liqFibBadge finalDecisionBadge wait" id="finalDecisionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>FINAL STATUS</small><b id="finalDecisionStatus">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="finalDecisionBias">WAIT</b></div><div class="liqFibBox"><small>SETUP</small><b id="finalDecisionSetup">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="finalDecisionHierarchy">WAIT</b></div><div class="liqFibBox"><small>CONFIRMATION</small><b id="finalDecisionGates">0/7</b></div><div class="liqFibBox"><small>NEXT ACTION</small><b id="finalDecisionNext">Wait</b></div></div><div class="liqFibNote finalDecisionAction" id="finalDecisionAction">WAIT — no confirmed entry.</div><div class="liqFibNote finalDecisionReason" id="finalDecisionReason">The Final Decision Engine summarizes the hierarchy and the seven confirmation gates. It does not create an entry by itself.</div></div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -1557,6 +1569,26 @@ function updateConsensus(d,macro,r75,conf){
     :`Consensus ${c.dominant} BIAS · ${c.biasLevel}. Long ${c.longPct}% · Short ${c.shortPct}%. Lower timeframes can confirm the bias but cannot override the 12H authority or a 12H/4H conflict.`;
 }
 
+function updateFinalDecision(entryConf,consensus){
+  const side=entryConf.side||'WAIT';
+  let status='WAIT', badge='wait', action='WAIT — no confirmed entry.', reason='The Final Decision Engine summarizes hierarchy and confirmation gates.';
+  let next=entryConf.next||'Wait';
+  if(entryConf.status==='CONFIRMED' && entryConf.hierarchy==='ALIGNED'){
+    status=`CONFIRMED ${side}`; badge='confirmed'; action=`CONFIRMED ${side} — all 7 confirmation gates are satisfied.`; reason=`Major bias ${entryConf.major} · hierarchy aligned · Entry Confirmation ${entryConf.done}/7.`; next='Monitor';
+  }else if(entryConf.hierarchy==='COUNTER-TREND'){
+    status='WAIT — COUNTER-TREND'; badge='counter'; action=`WAIT — ${side} setup is counter-trend to the ${entryConf.major} Major Authority.`; reason=`The setup can be observed, but it is not treated as a normal confirmed entry while hierarchy remains counter-trend.`; next='Wait for alignment';
+  }else if(entryConf.status==='READY'){
+    status=`READY ${side}`; badge='ready'; action=`READY ${side} — confirmation is strong, but one or more gates remain.`; reason=`Hierarchy is aligned with the ${entryConf.major} Major Authority · ${entryConf.done}/7 gates passed.`; next=entryConf.next||'Final gate';
+  }else if(entryConf.status==='DEVELOPING'){
+    status=`WATCH ${side}`; badge='watch'; action=`WATCH ${side} — confirmation is developing.`; reason=`${entryConf.done}/7 gates passed · next required gate: ${entryConf.next||'—'}.`; next=entryConf.next||'Next gate';
+  }else if(consensus && consensus.dominant!=='WAIT'){
+    status=`WAIT ${consensus.dominant}`; badge='wait'; action=`WAIT — ${consensus.dominant} is the current major bias, but entry confirmation is incomplete.`; reason=`Consensus is bias only. Entry Confirmation remains the final gate.`; next=entryConf.next||'Build confirmation';
+  }
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  set('finalDecisionStatus',status); set('finalDecisionBias',entryConf.major||'WAIT'); set('finalDecisionSetup',entryConf.side||'—'); set('finalDecisionHierarchy',entryConf.hierarchy||'WAIT'); set('finalDecisionGates',`${entryConf.done}/7`); set('finalDecisionNext',next); set('finalDecisionAction',action); set('finalDecisionReason',reason);
+  const b=$('finalDecisionBadge'); if(b){b.textContent=status; b.className=`liqFibBadge finalDecisionBadge ${badge}`;}
+}
+
 function updateUI(d){
   const s=state.mtf[state.tf]||d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
@@ -1643,6 +1675,7 @@ function updateUI(d){
   if($('entryConfirmNext'))$('entryConfirmNext').textContent=entryConf.next||'—';
   if($('entryConfirmGateGrid'))$('entryConfirmGateGrid').innerHTML=entryConf.gates.map(([label,ok])=>`<div class="entryGate ${ok?'ok':'pending'}"><span>${label}</span><b>${ok?'PASS':'WAIT'}</b></div>`).join('');
   if($('entryConfirmNote'))$('entryConfirmNote').textContent=entryConf.note;
+  updateFinalDecision(entryConf,getConsensus(d,macro,r75,conf));
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
@@ -2116,6 +2149,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.11: Live Trigger Monitor is locked to the same active side as Setup State / Signal Quality. -->
+<!-- v8.31: Final Decision Engine is locked to the same active side as Setup State / Signal Quality. -->
 </body>
 </html>
