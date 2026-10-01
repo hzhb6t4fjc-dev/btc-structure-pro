@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.36 Professional</title>
+<title>Crypto Structure Pro v8.37 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -130,6 +130,16 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .scenarioBadge.wait{color:var(--muted)}
 .scenarioAction{font-weight:800}
 
+.tradePlanPanel{border-color:#31578d}
+.tradePlanPanel .liqFibTitle{color:#72a9ff}
+#tradePlanBadge.confirmed{color:var(--green);border-color:#285a4b}
+#tradePlanBadge.ready{color:#72a9ff;border-color:#31578d}
+#tradePlanBadge.building{color:var(--yellow);border-color:#5b4d24}
+#tradePlanBadge.blocked{color:var(--red);border-color:#6b3340}
+#tradePlanBadge.wait{color:var(--muted)}
+.tradePlanRR{font-size:14px!important}
+.tradePlanWarn{color:var(--yellow)!important}
+
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -177,7 +187,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.36 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.37 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -318,6 +328,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote scenarioAction" id="scenarioAction">WAIT — the engine is building the primary scenario from Major Authority and trigger state.</div>
         <div class="liqFibNote" id="scenarioCounterNote">Counter-trend scenario is inactive until the required hierarchy change occurs.</div>
+      </div>
+      <div class="liqFibPanel tradePlanPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Trade Plan Engine</span><span class="liqFibBadge" id="tradePlanBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>STATUS</small><b id="tradePlanStatus">WAIT</b></div>
+          <div class="liqFibBox"><small>DIRECTION</small><b id="tradePlanDirection">—</b></div>
+          <div class="liqFibBox"><small>ENTRY REFERENCE</small><b id="tradePlanEntry">—</b></div>
+          <div class="liqFibBox"><small>TRIGGER</small><b id="tradePlanTrigger">—</b></div>
+          <div class="liqFibBox"><small>INVALIDATION</small><b id="tradePlanInvalidation">—</b></div>
+          <div class="liqFibBox"><small>RISK / REWARD</small><b class="tradePlanRR" id="tradePlanRR">—</b></div>
+          <div class="liqFibBox"><small>TP1 · 1.272</small><b id="tradePlanTP1">—</b></div>
+          <div class="liqFibBox"><small>TP2 · 1.618</small><b id="tradePlanTP2">—</b></div>
+          <div class="liqFibBox"><small>TP3 · 2.000</small><b id="tradePlanTP3">—</b></div>
+        </div>
+        <div class="liqFibNote" id="tradePlanNote">The Trade Plan Engine remains inactive until scenario hierarchy and confirmation conditions support a normal aligned setup.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -1704,6 +1729,52 @@ function updateScenarioEngine(d,entryConf,trigger,ext,r75){
   if(b){b.textContent=s.active?'ACTIVE':s.counterStatus==='COUNTER-TREND'?'COUNTER-TREND':s.primaryStatus;b.className='liqFibBadge scenarioBadge '+(s.active?'active':s.counterStatus==='COUNTER-TREND'?'counter':s.primaryStatus==='DEVELOPING'?'primary':'wait');}
 }
 
+function getTradePlan(a,entryConf,scenario,ext,r75,trigger){
+  const major=entryConf.major==='LONG'||entryConf.major==='SHORT'?entryConf.major:null;
+  const side=entryConf.side==='LONG'||entryConf.side==='SHORT'?entryConf.side:null;
+  const aligned=!!side && entryConf.hierarchy==='ALIGNED' && side===major;
+  const counter=!!side && entryConf.hierarchy==='COUNTER-TREND';
+  const status=counter?'BLOCKED':entryConf.status==='CONFIRMED'&&aligned?'CONFIRMED':aligned&&entryConf.status==='READY'?'READY':aligned?'BUILDING':'WAIT';
+  if(!aligned){
+    return {status,badge:counter?'blocked':status==='BUILDING'?'building':'wait',direction:side||major||'WAIT',entry:'—',trigger:'Wait for aligned confirmation',invalidation:'—',rr:'—',tp1:'—',tp2:'—',tp3:'—',note:counter
+      ?`${side} setup is counter-trend to the ${major} Major Authority. No normal trade plan is activated until hierarchy aligns.`
+      :'No aligned directional setup. The engine will build the plan only after the hierarchy supports the setup side.'};
+  }
+  const swing=getFibSwing(a);
+  const f75=r75?.fib75 ?? (swing?swing.low.p+swing.range*.75:null);
+  const price=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):(a.at(-1)?.c||null);
+  const tol=f75?f75*0.0025:null;
+  const entry=f75&&tol?`${fmt(f75-tol)} – ${fmt(f75+tol)}`:f75?fmt(f75):'—';
+  const stop=swing?(side==='LONG'?swing.low.p:swing.high.p):null;
+  const targets=(ext?.targets||[]).filter(t=>t.status==='PENDING'||Number.isFinite(t.p));
+  const wanted=[1.272,1.618,2].map(r=>targets.find(t=>t.r===r));
+  const tps=wanted.map(t=>t?.p||null);
+  const ref=f75;
+  const risk=ref&&stop?Math.abs(ref-stop):null;
+  const reward=tps[0]&&ref?(side==='LONG'?tps[0]-ref:ref-tps[0]):null;
+  const rr=risk&&reward&&risk>0&&reward>0?(reward/risk).toFixed(2)+'R':'—';
+  const triggerText='75% reaction + liquidity sweep + displacement/MSS + volume';
+  const invalidationText=stop?`${fmt(stop)} + Major Authority flip`:'Major Authority flip / structure invalidation';
+  return {status,badge:status==='CONFIRMED'?'confirmed':status==='READY'?'ready':'building',direction:side,entry,trigger:triggerText,invalidation:invalidationText,rr,tp1:tps[0]?fmt(tps[0]):'—',tp2:tps[1]?fmt(tps[1]):'—',tp3:tps[2]?fmt(tps[2]):'—',note:status==='CONFIRMED'
+    ?`Aligned ${side} plan. Reference entry is centered on the 75% retracement; confirmation remains required before treating this as an executable setup.`
+    :`Aligned ${side} scenario is building. The reference plan becomes actionable only after the remaining confirmation gates are satisfied.`};
+}
+
+function updateTradePlan(a,entryConf,scenario,ext,r75,trigger){
+  const p=getTradePlan(a,entryConf,scenario,ext,r75,trigger);
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  set('tradePlanStatus',p.status==='BLOCKED'?'BLOCKED — COUNTER-TREND':p.status);
+  set('tradePlanDirection',p.direction);
+  set('tradePlanEntry',p.entry);
+  set('tradePlanTrigger',p.trigger);
+  set('tradePlanInvalidation',p.invalidation);
+  set('tradePlanRR',p.rr);
+  set('tradePlanTP1',p.tp1);set('tradePlanTP2',p.tp2);set('tradePlanTP3',p.tp3);
+  set('tradePlanNote',p.note);
+  const b=$('tradePlanBadge');
+  if(b){b.textContent=p.status==='BLOCKED'?'COUNTER-TREND':p.status;b.className='liqFibBadge '+(p.badge||'wait');}
+}
+
 function updateFinalDecision(entryConf,consensus){
   const side=entryConf.side||'WAIT';
   let status='WAIT', badge='wait', action='WAIT — no confirmed entry.', reason='The Final Decision Engine summarizes hierarchy and confirmation gates.';
@@ -1816,6 +1887,7 @@ function updateUI(d){
   const triggerState=getTriggerProximity(a,d,r75,entryConf);
   updateTriggerProximity(a,d,r75,entryConf);
   updateScenarioEngine(d,entryConf,triggerState,ext,r75);
+  updateTradePlan(a,entryConf,getScenarioPlan(d,entryConf,triggerState,ext,r75),ext,r75,triggerState);
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
@@ -2425,6 +2497,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.36: Scenario Engine follows Trigger Proximity and keeps hierarchy protection. adds location/structure/trigger readiness with hierarchy protection. -->
+<!-- v8.37: Trade Plan Engine converts aligned scenario/confirmation state into a structured reference plan. -->
 </body>
 </html>
