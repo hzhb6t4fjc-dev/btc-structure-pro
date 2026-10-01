@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.2 Professional</title>
+<title>Crypto Structure Pro v8.3 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.2 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.3 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -430,29 +430,51 @@ function scan(a){
     if(closePos<=.25){bear+=4;S.push('strong close')}
   }
 
+  const context=structureContext(a);
+  if(context.consolidation){
+    bear=Math.max(0,bear-14);
+    L.push('consolidation');
+  }
+
   return{
     bull:Math.min(100,bull),
     bear:Math.min(100,bear),
-    last,p,low,high,
+    last,p,low,high,context,
     L:[...new Set(L)],
     S:[...new Set(S)]
   };
 }
 
+function structureContext(a){
+  const x=a.slice(0,-1);
+  if(x.length<24)return {consolidation:false,support:null,resistance:null,rangeHigh:null,rangeLow:null};
+  const recent=x.slice(-28), prior=x.slice(-56,-28);
+  const hi=Math.max(...recent.map(q=>q.h)), lo=Math.min(...recent.map(q=>q.l));
+  const mid=(hi+lo)/2||1;
+  const trs=recent.map((q,i)=>{const prev=i?recent[i-1].c:q.o;return Math.max(q.h-q.l,Math.abs(q.h-prev),Math.abs(q.l-prev))});
+  const avgTR=trs.reduce((a,b)=>a+b,0)/(trs.length||1);
+  const priorHi=prior.length?Math.max(...prior.map(q=>q.h)):hi, priorLo=prior.length?Math.min(...prior.map(q=>q.l)):lo;
+  const priorRange=priorHi-priorLo||hi-lo||1;
+  const tol=Math.max(mid*.005,avgTR*.8);
+  const lows=recent.filter(q=>Math.abs(q.l-lo)<=tol), highs=recent.filter(q=>Math.abs(q.h-hi)<=tol);
+  const last12=recent.slice(-12), last12Hi=Math.max(...last12.map(q=>q.h)), last12Lo=Math.min(...last12.map(q=>q.l));
+  const last12Range=last12Hi-last12Lo||1;
+  const compressed=last12Range<=priorRange*.72 || last12Range<=avgTR*11;
+  const stableRange=(hi-lo)/mid<=.018;
+  const support=lows.length>=3?{low:Math.min(...lows.map(q=>q.l)),high:Math.min(...lows.map(q=>q.l))+tol*.9,touches:lows.length}:null;
+  const resistance=highs.length>=3?{low:Math.max(...highs.map(q=>q.h))-tol*.9,high:Math.max(...highs.map(q=>q.h)),touches:highs.length}:null;
+  const consolidation=!!(support&&compressed&&(stableRange||resistance));
+  return {consolidation,support,resistance,rangeHigh:hi,rangeLow:lo,rangePct:(hi-lo)/mid};
+}
+
 function structureState(s){
-  const hasHH=s.L.includes('HH');
-  const hasHL=s.L.includes('HL');
-  const hasLH=s.S.includes('LH');
-  const hasLL=s.S.includes('LL');
-  const bullish=hasHH&&hasHL;
-  const bearish=hasLH&&hasLL;
+  const hasHH=s.L.includes('HH'),hasHL=s.L.includes('HL'),hasLH=s.S.includes('LH'),hasLL=s.S.includes('LL');
+  const ctx=s.context||{consolidation:false};
+  const bullish=hasHH&&hasHL&&!ctx.consolidation, bearish=hasLH&&hasLL&&!ctx.consolidation;
   const parts=[];
-  if(hasHH)parts.push('HH');
-  if(hasHL)parts.push('HL');
-  if(hasLH)parts.push('LH');
-  if(hasLL)parts.push('LL');
-  const state=bullish?'BULLISH':bearish?'BEARISH':parts.length?'TRANSITION':'MIXED';
-  return {state,bullish,bearish,parts};
+  if(hasHH)parts.push('HH'); if(hasHL)parts.push('HL'); if(hasLH)parts.push('LH'); if(hasLL)parts.push('LL');
+  const state=ctx.consolidation?'CONSOLIDATION':bullish?'BULLISH':bearish?'BEARISH':parts.length?'TRANSITION':'MIXED';
+  return {state,bullish,bearish,parts,context:ctx};
 }
 
 function mtfDecision(){
@@ -903,7 +925,7 @@ function updateUI(d){
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
-  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
+  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
@@ -973,7 +995,7 @@ function updateUI(d){
     const currentStructure=st.parts.length?st.parts.join(' + ')+' → '+st.state:'No clear swing sequence';
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
-      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}.`;
+      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}${st.state==='CONSOLIDATION'?' · support/consolidation zone detected':''}.`;
     $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
   }
   $('updated').textContent=new Date().toLocaleTimeString();
@@ -1169,7 +1191,20 @@ function connectWS(){
 
 function drawFib(ctx,hi,lo,y,pad,w){const range=hi-lo;if(!range)return;const levels=[0,.236,.382,.5,.618,.786,1];ctx.save();ctx.font='10px Arial';ctx.setLineDash([4,4]);for(const r of levels){const price=lo+range*r,yy=y(price);ctx.strokeStyle='rgba(114,169,255,.25)';ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();ctx.fillStyle='#72a9ff';ctx.fillText((r*100).toFixed(1)+'%',pad+4,yy-3)}ctx.restore()}
 function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,3);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
-function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,hi,lo,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
+function drawStructureOverlay(ctx,a,y,x,pad,w,h){
+  const p=pivots(a,3);
+  const recentHi=p.hi.filter(v=>v.i>=Math.max(0,a.length-55)).slice(-4);
+  const recentLo=p.lo.filter(v=>v.i>=Math.max(0,a.length-55)).slice(-4);
+  ctx.save();ctx.font='bold 10px sans-serif';
+  for(const q of recentHi){const prev=recentHi.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HH':'LH'):'H';ctx.fillStyle=label==='HH'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.max(pad+10,y(q.p)-7));}
+  for(const q of recentLo){const prev=recentLo.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HL':'LL'):'L';ctx.fillStyle=label==='HL'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.min(h-pad-4,y(q.p)+14));}
+  const c=structureContext(a);
+  if(c.consolidation&&c.support){const y1=y(c.support.high),y2=y(c.support.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(57,217,154,.10)';ctx.strokeStyle='rgba(57,217,154,.45)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#39d99a';ctx.fillText('SUPPORT / CONSOLIDATION',pad+5,Math.max(pad+10,top-5));}
+  if(c.consolidation&&c.resistance){const y1=y(c.resistance.high),y2=y(c.resistance.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(255,207,82,.08)';ctx.strokeStyle='rgba(255,207,82,.35)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#ffcf52';ctx.fillText('RANGE RESISTANCE',pad+5,Math.max(pad+10,top-5));}
+  ctx.restore();
+}
+
+function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,hi,lo,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}drawStructureOverlay(ctx,a,y,x,pad,w,h);const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
 
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
@@ -1238,7 +1273,7 @@ renderScanner();
     showError('Startup failed. Reload the page once.');
   }
 })();
-/* v8.2: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
+/* v8.3: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
 </body>
 </html>
