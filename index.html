@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.38 Professional</title>
+<title>Crypto Structure Pro v8.39 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -195,7 +195,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.38 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.39 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -355,16 +355,20 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="liqFibPanel riskPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Risk Management Engine</span><span class="liqFibBadge" id="riskBadge">WAIT</span></div>
         <div class="liqFibGrid">
-          <div class="liqFibBox"><small>ACCOUNT EQUITY</small><input class="riskInput" id="riskEquity" type="number" min="0" step="0.01" placeholder="Enter equity"></div>
+          <div class="liqFibBox"><small>ACCOUNT EQUITY · USDT</small><input class="riskInput" id="riskEquity" type="number" min="0" step="0.01" placeholder="Enter equity"></div>
           <div class="liqFibBox"><small>RISK / TRADE %</small><input class="riskInput" id="riskPct" type="number" min="0" max="100" step="0.1" value="1"></div>
-          <div class="liqFibBox"><small>RISK AMOUNT</small><b id="riskAmount">—</b></div>
+          <div class="liqFibBox"><small>RISK AMOUNT · MAX LOSS</small><b id="riskAmount">—</b></div>
+          <div class="liqFibBox"><small>ENTRY REFERENCE</small><b id="riskEntry">—</b></div>
+          <div class="liqFibBox"><small>STOP PRICE</small><b id="riskStopPrice">—</b></div>
           <div class="liqFibBox"><small>STOP DISTANCE</small><b id="riskStopDistance">—</b></div>
-          <div class="liqFibBox"><small>POSITION SIZE</small><b id="riskPositionSize">—</b></div>
-          <div class="liqFibBox"><small>TP1 R</small><b id="riskTP1R">—</b></div>
-          <div class="liqFibBox"><small>TP2 R</small><b id="riskTP2R">—</b></div>
-          <div class="liqFibBox"><small>TP3 R</small><b id="riskTP3R">—</b></div>
+          <div class="liqFibBox"><small>POSITION SIZE · BASE</small><b id="riskPositionSize">—</b></div>
+          <div class="liqFibBox"><small>POSITION NOTIONAL · USDT</small><b id="riskNotional">—</b></div>
+          <div class="liqFibBox"><small>TP1 · 1.272 · R</small><b id="riskTP1R">—</b></div>
+          <div class="liqFibBox"><small>TP2 · 1.618 · R</small><b id="riskTP2R">—</b></div>
+          <div class="liqFibBox"><small>TP3 · 2.000 · R</small><b id="riskTP3R">—</b></div>
+          <div class="liqFibBox"><small>RISK STATUS</small><b id="riskStatusText">—</b></div>
         </div>
-        <div class="liqFibNote" id="riskNote">Risk sizing is inactive until an aligned Trade Plan provides a valid entry and invalidation. Position size is calculated from the equity and risk percentage you enter.</div>
+        <div class="liqFibNote" id="riskNote">Risk sizing is blocked until hierarchy is aligned and a valid Trade Plan provides entry + invalidation. Enter account equity to calculate the maximum loss and position size.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -1801,10 +1805,12 @@ function updateTradePlan(a,entryConf,scenario,ext,r75,trigger){
 function updateRiskManagement(a,entryConf,tradePlan,ext){
   const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
   const badge=$('riskBadge');
+  const statusEl=$('riskStatusText');
   const aligned=tradePlan && tradePlan.status!=='BLOCKED' && entryConf.hierarchy==='ALIGNED' && (entryConf.side==='LONG'||entryConf.side==='SHORT');
-  const inp={equity:Number($('riskEquity')?.value),pct:Number($('riskPct')?.value)};
-  const equity=Number.isFinite(inp.equity)&&inp.equity>0?inp.equity:null;
-  const pct=Number.isFinite(inp.pct)&&inp.pct>0?inp.pct:null;
+  const equityRaw=Number($('riskEquity')?.value);
+  const pctRaw=Number($('riskPct')?.value);
+  const equity=Number.isFinite(equityRaw)&&equityRaw>0?equityRaw:null;
+  const pct=Number.isFinite(pctRaw)&&pctRaw>0&&pctRaw<=100?pctRaw:null;
   let entry=null;
   if(aligned&&tradePlan.entry&&tradePlan.entry!=='—'){
     const nums=tradePlan.entry.replace(/,/g,'').match(/[0-9]+(?:\.[0-9]+)?/g);
@@ -1815,20 +1821,50 @@ function updateRiskManagement(a,entryConf,tradePlan,ext){
   const stopDist=entry&&stop?Math.abs(entry-stop):null;
   const riskAmount=equity&&pct?equity*pct/100:null;
   const positionSize=riskAmount&&stopDist>0?riskAmount/stopDist:null;
+  const notional=positionSize&&entry?positionSize*entry:null;
   const targets=(ext?.targets||[]);
   const tp=r=>targets.find(t=>t.r===r)?.p;
-  const rMultiple=r=>{const t=tp(r);if(!entry||!stop||!t||!stopDist)return null;const v=entryConf.side==='LONG'?(t-entry)/stopDist:(entry-t)/stopDist;return v>0?v:null};
+  const rMultiple=r=>{
+    const t=tp(r);
+    if(!entry||!stop||!t||!stopDist)return null;
+    const v=entryConf.side==='LONG'?(t-entry)/stopDist:(entry-t)/stopDist;
+    return v>0?v:null;
+  };
+
   set('riskAmount',riskAmount?fmt(riskAmount):'—');
+  set('riskEntry',entry?fmt(entry):'—');
+  set('riskStopPrice',stop?fmt(stop):'—');
   set('riskStopDistance',stopDist?`${fmt(stopDist)} (${(stopDist/entry*100).toFixed(2)}%)`:'—');
   set('riskPositionSize',positionSize?positionSize.toFixed(6):'—');
+  set('riskNotional',notional?fmt(notional):'—');
   [1.272,1.618,2].forEach((r,i)=>{const v=rMultiple(r);set(['riskTP1R','riskTP2R','riskTP3R'][i],v?v.toFixed(2)+'R':'—')});
+
   if(!aligned){
     if(badge){badge.textContent=entryConf.hierarchy==='COUNTER-TREND'?'BLOCKED':'WAIT';badge.className='liqFibBadge '+(entryConf.hierarchy==='COUNTER-TREND'?'blocked':'wait');}
-    set('riskNote',entryConf.hierarchy==='COUNTER-TREND'?'Risk sizing is BLOCKED because the current setup is counter-trend to the Major Authority.':'Risk sizing waits for an aligned Trade Plan with a valid entry and invalidation.');
+    set('riskStatusText',entryConf.hierarchy==='COUNTER-TREND'?'BLOCKED':'WAIT');
+    set('riskNote',entryConf.hierarchy==='COUNTER-TREND'
+      ?'Risk sizing is BLOCKED because the current setup is counter-trend to the Major Authority. No position size is calculated.'
+      :'Risk sizing waits for an aligned Trade Plan with a valid entry and invalidation.');
     return;
   }
-  if(badge){badge.textContent='READY';badge.className='liqFibBadge ready';}
-  set('riskNote',equity?`Aligned ${entryConf.side} plan. Position size = risk amount ÷ stop distance. This is a sizing calculation, not an execution signal.`:'Enter account equity to calculate position size. Risk percentage is applied to the equity you enter.');
+
+  if(!entry||!stop||!stopDist||stopDist<=0){
+    if(badge){badge.textContent='WAIT';badge.className='liqFibBadge wait';}
+    set('riskStatusText','WAIT — INVALID PLAN');
+    set('riskNote','Aligned hierarchy detected, but entry/stop data is not valid yet. Position sizing remains disabled.');
+    return;
+  }
+
+  if(!equity||!pct){
+    if(badge){badge.textContent='READY';badge.className='liqFibBadge ready';}
+    set('riskStatusText','READY — ENTER EQUITY');
+    set('riskNote',`Aligned ${entryConf.side} plan with valid entry and invalidation. Enter account equity to calculate maximum loss and position size. Risk percentage is currently ${Number.isFinite(pctRaw)&&pctRaw>0?Math.min(pctRaw,100):1}%.`);
+    return;
+  }
+
+  if(badge){badge.textContent='CALCULATED';badge.className='liqFibBadge confirmed';}
+  set('riskStatusText',`CALCULATED · ${pct.toFixed(1)}% RISK`);
+  set('riskNote',`Maximum loss ${fmt(riskAmount)} USDT · position size ${positionSize.toFixed(6)} base units · notional ${fmt(notional)} USDT. This is a sizing calculation, not an execution signal.`);
 }
 
 function updateFinalDecision(entryConf,consensus){
@@ -2521,7 +2557,14 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
   connectWS();await loadAll();
 });
 
-['riskEquity','riskPct'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{const d=mtfDecision();if(d)updateUI(d);});});
+const savedRisk=(()=>{try{return JSON.parse(localStorage.getItem('cspRisk_v839')||'{}')}catch(e){return {}}})();
+if($('riskEquity')&&savedRisk.equity) $('riskEquity').value=savedRisk.equity;
+if($('riskPct')&&savedRisk.pct) $('riskPct').value=savedRisk.pct;
+['riskEquity','riskPct'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{
+  if(id==='riskPct'){const n=Number(e.value);if(Number.isFinite(n)&&n>100)e.value='100';}
+  try{localStorage.setItem('cspRisk_v839',JSON.stringify({equity:$('riskEquity')?.value||'',pct:$('riskPct')?.value||'1'}));}catch(err){}
+  const d=mtfDecision();if(d)updateUI(d);
+});});
 
 window.addEventListener('resize',draw);
 renderAlerts();
