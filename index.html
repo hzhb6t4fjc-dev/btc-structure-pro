@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.31 Professional</title>
+<title>Crypto Structure Pro v8.32 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -21,7 +21,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .panel{background:rgba(16,23,38,.96);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)}
 .head{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
 .title{font-weight:750}.muted{color:var(--muted)}.controls{display:flex;gap:6px;flex-wrap:wrap}
-.chartbox{height:500px}.chartbox canvas{width:100%;height:100%;display:block}
+.chartbox{height:500px;position:relative}.chartbox canvas{width:100%;height:100%;display:block}.chartLegend{position:absolute;top:9px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none;font-size:9px;color:var(--muted)}.chartLegend .legendLeft{display:flex;gap:5px;flex-wrap:wrap}.chartLegend .tag{padding:4px 6px;border:1px solid rgba(38,51,78,.9);border-radius:999px;background:rgba(7,11,20,.78);backdrop-filter:blur(4px)}.chartLegend .priceTag{font-weight:800;color:var(--text);border-color:#31578d}
 .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:11px}
 .metric{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px}
 .metric .k{font-size:10px;color:var(--muted)}.metric .v{font-size:15px;font-weight:750;margin-top:4px}
@@ -164,7 +164,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.31 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.32 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -190,7 +190,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <button class="btn" data-tf="1d">1D</button>
         </div>
       </div>
-      <div class="chartbox"><canvas id="chart"></canvas></div>
+      <div class="chartbox"><canvas id="chart"></canvas><div class="chartLegend"><div class="legendLeft"><span class="tag">● Structure</span><span class="tag">● Liquidity</span><span class="tag">● Fibonacci</span></div><span class="tag priceTag" id="chartPriceTag">PRICE —</span></div></div>
       <div class="metrics">
         <div class="metric"><div class="k">Price</div><div class="v" id="price">—</div></div>
         <div class="metric"><div class="k">Structure</div><div class="v" id="structure">—</div></div>
@@ -2006,39 +2006,35 @@ function connectWS(){
   }
 }
 
-function drawFib(ctx,a,y,pad,w){
+function drawFib(ctx,a,y,pad,w,h,isMobile){
   const swing=getFibSwing(a);
   const levels=getFibLevelsFromSwing(swing);
   if(!levels.length)return;
   ctx.save();
-  ctx.font='10px Arial';
+  ctx.font=isMobile?'9px Arial':'10px Arial';
 
   const fib75=levels.find(v=>v.r===.75);
   if(fib75){
     const yy=y(fib75.p);
-    const bandPx=Math.max(7,Math.min(24,Math.abs(y(fib75.p*1.005)-y(fib75.p))));
+    const bandPx=Math.max(7,Math.min(isMobile?18:24,Math.abs(y(fib75.p*1.005)-y(fib75.p))));
     if(Number.isFinite(yy)){
-      ctx.fillStyle='rgba(255,207,82,.06)';
+      ctx.fillStyle='rgba(255,207,82,.08)';
       ctx.fillRect(pad,yy-bandPx,w-pad*2,bandPx*2);
-      ctx.strokeStyle='rgba(255,207,82,.65)';
-      ctx.lineWidth=1.5;
-      ctx.beginPath();
-      ctx.moveTo(pad,yy);
-      ctx.lineTo(w-pad,yy);
-      ctx.stroke();
+      ctx.strokeStyle='rgba(255,207,82,.78)';
+      ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();
     }
   }
 
+  const mobileKeep=new Set([0,.382,.5,.618,.75,1]);
   ctx.setLineDash([4,4]);
   for(const level of levels){
+    if(isMobile && !mobileKeep.has(level.r))continue;
     const yy=y(level.p);
-    if(yy<pad-12||yy>y(0)+12)continue;
-    ctx.strokeStyle=level.r===.75?'rgba(255,207,82,.85)':'rgba(114,169,255,.25)';
+    if(yy<pad-12||yy>h-pad+12)continue;
+    ctx.strokeStyle=level.r===.75?'rgba(255,207,82,.9)':'rgba(114,169,255,.24)';
     ctx.lineWidth=level.r===.75?1.5:1;
-    ctx.beginPath();
-    ctx.moveTo(pad,yy);
-    ctx.lineTo(w-pad,yy);
-    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();
     ctx.fillStyle=level.r===.75?'#ffcf52':'#72a9ff';
     ctx.fillText((level.r*100).toFixed(1)+'%',pad+4,yy-3);
   }
@@ -2046,11 +2042,12 @@ function drawFib(ctx,a,y,pad,w){
   const ext=getFibExtensionContext(a);
   if(ext.direction!=='WAIT'){
     ctx.setLineDash([6,5]);
-    ctx.font='bold 9px Arial';
-    for(const t of ext.targets){
+    ctx.font=isMobile?'bold 8px Arial':'bold 9px Arial';
+    const targets=isMobile?ext.targets.slice(0,2):ext.targets;
+    for(const t of targets){
       const yy=y(t.p);
-      if(yy<pad-12||yy>y(0)+12)continue;
-      ctx.strokeStyle=t.r===1.272?'rgba(194,156,255,.75)':'rgba(194,156,255,.42)';
+      if(yy<pad-12||yy>h-pad+12)continue;
+      ctx.strokeStyle=t.r===1.272?'rgba(194,156,255,.8)':'rgba(194,156,255,.38)';
       ctx.lineWidth=t.r===1.272?1.5:1;
       ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();
       ctx.fillStyle='#c29cff';
@@ -2059,22 +2056,102 @@ function drawFib(ctx,a,y,pad,w){
   }
   ctx.restore();
 }
-function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,3);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
-function drawStructureOverlay(ctx,a,y,x,pad,w,h){
-  const p=pivots(a,3);
-  const recentHi=p.hi.filter(v=>v.i>=Math.max(0,a.length-55)).slice(-4);
-  const recentLo=p.lo.filter(v=>v.i>=Math.max(0,a.length-55)).slice(-4);
-  ctx.save();ctx.font='bold 10px sans-serif';
-  for(const q of recentHi){const prev=recentHi.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HH':'LH'):'H';ctx.fillStyle=label==='HH'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.max(pad+10,y(q.p)-7));}
-  for(const q of recentLo){const prev=recentLo.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HL':'LL'):'L';ctx.fillStyle=label==='HL'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.min(h-pad-4,y(q.p)+14));}
-  const c=structureContext(a);
-  if(c.consolidation&&c.support){const y1=y(c.support.high),y2=y(c.support.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(57,217,154,.10)';ctx.strokeStyle='rgba(57,217,154,.45)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#39d99a';ctx.fillText('RANGE SUPPORT',pad+5,Math.max(pad+10,top-5));}
-  if(c.consolidation&&c.resistance){const y1=y(c.resistance.high),y2=y(c.resistance.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(255,207,82,.08)';ctx.strokeStyle='rgba(255,207,82,.35)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#ffcf52';ctx.fillText('RANGE RESISTANCE',pad+5,Math.max(pad+10,top-5));}
-  if(c.consolidation&&c.rangeMid){const ym=y(c.rangeMid);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(143,155,179,.35)';ctx.beginPath();ctx.moveTo(pad,ym);ctx.lineTo(w-pad,ym);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.fillText(c.rangeLocation||'MID-RANGE',w-pad-ctx.measureText(c.rangeLocation||'MID-RANGE').width-5,Math.max(pad+12,ym-5));ctx.restore();}
+
+function drawLiquidity(ctx,a,y,pad,w,h,isMobile){
+  const g=a.slice(-60),pts=[];
+  for(let i=2;i<g.length-2;i++){
+    const q=g[i];
+    if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);
+    if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l);
+  }
+  const zones=[];
+  for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1});}
+  const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,isMobile?2:3);
+  ctx.save();ctx.font=`bold ${isMobile?8:9}px Arial`;
+  const occupied=[];
+  for(const z of visible){
+    const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?(isMobile?14:18):(isMobile?11:13);
+    if(yy<pad-15||yy>h-pad+15)continue;
+    ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.16)':'rgba(255,180,0,.11)';
+    ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);
+    let label=`${kind} LIQ · ${fmt(z.p)}`;
+    const tw=ctx.measureText(label).width;
+    let ly=yy-5;
+    for(const o of occupied){if(Math.abs(ly-o)<12)ly=o-13;}
+    ly=Math.max(pad+10,Math.min(h-pad-3,ly));occupied.push(ly);
+    ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';
+    ctx.fillText(label,Math.max(pad+4,w-pad-tw-4),ly);
+  }
   ctx.restore();
 }
 
-function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,a,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}drawStructureOverlay(ctx,a,y,x,pad,w,h);const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
+function drawStructureOverlay(ctx,a,y,x,pad,w,h,isMobile){
+  const p=pivots(a,3);
+  const recentHi=p.hi.filter(v=>v.i>=Math.max(0,a.length-(isMobile?38:55))).slice(-(isMobile?3:4));
+  const recentLo=p.lo.filter(v=>v.i>=Math.max(0,a.length-(isMobile?38:55))).slice(-(isMobile?3:4));
+  ctx.save();ctx.font=`bold ${isMobile?9:10}px sans-serif`;
+  const occupied=[];
+  const place=(txt,xx,yy,color,below=false)=>{
+    let py=below?yy+11:yy-7;
+    for(const o of occupied){if(Math.abs(py-o)<12)py=below?o+13:o-13;}
+    py=Math.max(pad+9,Math.min(h-pad-3,py));occupied.push(py);
+    ctx.fillStyle=color;ctx.fillText(txt,Math.max(pad+2,Math.min(w-pad-18,xx+4)),py);
+  };
+  for(const q of recentHi){const prev=recentHi.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HH':'LH'):'H';place(label,x(q.i),y(q.p),label==='HH'?'#39d99a':'#ff6478',false);}
+  for(const q of recentLo){const prev=recentLo.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HL':'LL'):'L';place(label,x(q.i),y(q.p),label==='HL'?'#39d99a':'#ff6478',true);}
+  const c=structureContext(a);
+  if(c.consolidation&&c.support){const y1=y(c.support.high),y2=y(c.support.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(57,217,154,.08)';ctx.strokeStyle='rgba(57,217,154,.4)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#39d99a';ctx.fillText('RANGE SUPPORT',pad+5,Math.max(pad+10,top-5));}
+  if(c.consolidation&&c.resistance){const y1=y(c.resistance.high),y2=y(c.resistance.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(255,207,82,.07)';ctx.strokeStyle='rgba(255,207,82,.32)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#ffcf52';ctx.fillText('RANGE RESISTANCE',pad+5,Math.max(pad+10,top-5));}
+  if(c.consolidation&&c.rangeMid){const ym=y(c.rangeMid);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(143,155,179,.3)';ctx.beginPath();ctx.moveTo(pad,ym);ctx.lineTo(w-pad,ym);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';const txt=c.rangeLocation||'MID-RANGE';ctx.fillText(txt,w-pad-ctx.measureText(txt).width-5,Math.max(pad+12,ym-5));ctx.restore();}
+  ctx.restore();
+}
+
+function draw(){
+  const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;
+  c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+  const isMobile=w<560;
+  const visibleCount=isMobile?72:100;
+  const a=state.data.slice(-visibleCount);
+  if(!a.length)return;
+  const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1;
+  const pad=isMobile?28:32;
+  const plotRight=w-(isMobile?20:32);
+  const plotHeight=h-pad*1.55;
+  const x=i=>pad+i*(plotRight-pad)/Math.max(1,a.length-1);
+  const y=v=>h-pad-(v-lo)/range*plotHeight;
+
+  ctx.strokeStyle='#1e2940';ctx.lineWidth=1;
+  for(let k=0;k<6;k++){const yy=pad+k*plotHeight/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke();}
+
+  drawFib(ctx,a,y,pad,w,h,isMobile);
+  drawLiquidity(ctx,a,y,pad,w,h,isMobile);
+
+  for(let i=0;i<a.length;i++){
+    const q=a[i],xx=x(i);
+    ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';
+    ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();
+    ctx.lineWidth=Math.max(isMobile?1.5:2,Math.min(isMobile?4:6,w/250));
+    ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1;
+  }
+
+  drawStructureOverlay(ctx,a,y,x,pad,w,h,isMobile);
+
+  const last=a.at(-1),lastPrice=last.c,lx=x(a.length-1),py=y(lastPrice);
+  ctx.save();
+  ctx.strokeStyle='rgba(114,169,255,.7)';ctx.setLineDash([2,3]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();
+  ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(255,255,255,.55)';
+  ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(plotRight,py);ctx.stroke();
+  ctx.setLineDash([]);ctx.fillStyle='#eef3ff';ctx.font=`bold ${isMobile?9:10}px sans-serif`;
+  const priceText='$'+fmt(lastPrice),tw=ctx.measureText(priceText).width;
+  ctx.fillStyle='rgba(7,11,20,.9)';ctx.fillRect(Math.max(pad,plotRight-tw-10),Math.max(pad+2,Math.min(h-pad-14,py-11)),tw+8,15);
+  ctx.fillStyle='#eef3ff';ctx.fillText(priceText,Math.max(pad+3,plotRight-tw-6),Math.max(pad+12,Math.min(h-pad,py+1)));
+  ctx.restore();
+
+  ctx.fillStyle='#8f9bb3';ctx.font=`${isMobile?9:10}px sans-serif`;
+  for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),4,pad+k*plotHeight/4);}
+  const tag=$('chartPriceTag');if(tag)tag.textContent='PRICE $'+fmt(lastPrice);
+}
 
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
@@ -2149,6 +2226,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.31: Final Decision Engine is locked to the same active side as Setup State / Signal Quality. -->
+<!-- v8.32: Smart Chart Engine adds adaptive labels, current-price line, mobile simplification and collision-aware chart annotations. -->
 </body>
 </html>
