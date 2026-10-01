@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.35 Professional</title>
+<title>Crypto Structure Pro v8.36 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -117,6 +117,19 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .entryGateGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 @media(max-width:560px){.entryGateGrid{grid-template-columns:1fr}}
 
+
+.scenarioPanel{border-color:#5b4d24}
+.scenarioPanel .liqFibTitle{color:#ffcf52}
+.scenarioPrimary{border-color:#31578d}
+.scenarioPrimary .liqFibTitle{color:#72a9ff}
+.scenarioCounter{border-color:#5b4d24}
+.scenarioCounter .liqFibTitle{color:#ffcf52}
+.scenarioBadge.primary{color:#72a9ff;border-color:#31578d}
+.scenarioBadge.counter{color:#ffcf52;border-color:#5b4d24}
+.scenarioBadge.active{color:var(--green);border-color:#285a4b}
+.scenarioBadge.wait{color:var(--muted)}
+.scenarioAction{font-weight:800}
+
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -164,7 +177,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.35 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.36 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -287,6 +300,25 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="entryConfirmMajor">WAIT</b></div><div class="liqFibBox"><small>SETUP SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="entryConfirmHierarchy">WAIT</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → hierarchy alignment → volume.</div></div>
       <div class="liqFibPanel finalDecisionPanel"><div class="liqFibHead"><span class="liqFibTitle">Final Decision Engine</span><span class="liqFibBadge finalDecisionBadge wait" id="finalDecisionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>FINAL STATUS</small><b id="finalDecisionStatus">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="finalDecisionBias">WAIT</b></div><div class="liqFibBox"><small>SETUP</small><b id="finalDecisionSetup">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="finalDecisionHierarchy">WAIT</b></div><div class="liqFibBox"><small>CONFIRMATION</small><b id="finalDecisionGates">0/7</b></div><div class="liqFibBox"><small>NEXT ACTION</small><b id="finalDecisionNext">Wait</b></div></div><div class="liqFibNote finalDecisionAction" id="finalDecisionAction">WAIT — no confirmed entry.</div><div class="liqFibNote finalDecisionReason" id="finalDecisionReason">The Final Decision Engine summarizes the hierarchy and the seven confirmation gates. It does not create an entry by itself.</div></div>
       <div class="liqFibPanel triggerReadinessPanel"><div class="liqFibHead"><span class="liqFibTitle">Trigger Proximity Engine</span><span class="liqFibBadge" id="triggerReadinessBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TRIGGER READINESS</small><b id="triggerReadinessScore">0/100</b></div><div class="liqFibBox"><small>STATE</small><b id="triggerReadinessState">FAR</b></div><div class="liqFibBox"><small>LOCATION</small><b id="triggerReadinessLocation">WAIT</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="triggerReadinessStructure">WAIT</b></div><div class="liqFibBox"><small>TRIGGER GATES</small><b id="triggerReadinessGates">0/5</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="triggerReadinessHierarchy">WAIT</b></div></div><div class="entryGateGrid" id="triggerReadinessGrid"></div><div class="liqFibNote" id="triggerReadinessNote">Trigger readiness measures proximity and confirmation development. It never overrides 12H authority or the Final Decision Engine.</div></div>
+      <div class="liqFibPanel scenarioPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Scenario Engine</span><span class="liqFibBadge scenarioBadge wait" id="scenarioBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>PRIMARY SCENARIO</small><b id="scenarioPrimarySide">WAIT</b></div>
+          <div class="liqFibBox"><small>PRIMARY STATUS</small><b id="scenarioPrimaryStatus">WAIT</b></div>
+          <div class="liqFibBox"><small>ACTIVATION</small><b id="scenarioPrimaryActivation">—</b></div>
+          <div class="liqFibBox"><small>INVALIDATION</small><b id="scenarioPrimaryInvalidation">—</b></div>
+          <div class="liqFibBox"><small>COUNTER-TREND</small><b id="scenarioCounterSide">—</b></div>
+          <div class="liqFibBox"><small>COUNTER STATUS</small><b id="scenarioCounterStatus">WAIT</b></div>
+        </div>
+        <div class="entryGateGrid">
+          <div class="entryGate pending" id="scenarioPrimaryGate1"><span>75% reaction</span><b>WAIT</b></div>
+          <div class="entryGate pending" id="scenarioPrimaryGate2"><span>Liquidity</span><b>WAIT</b></div>
+          <div class="entryGate pending" id="scenarioPrimaryGate3"><span>Displacement + MSS</span><b>WAIT</b></div>
+          <div class="entryGate pending" id="scenarioPrimaryGate4"><span>Hierarchy alignment</span><b>WAIT</b></div>
+        </div>
+        <div class="liqFibNote scenarioAction" id="scenarioAction">WAIT — the engine is building the primary scenario from Major Authority and trigger state.</div>
+        <div class="liqFibNote" id="scenarioCounterNote">Counter-trend scenario is inactive until the required hierarchy change occurs.</div>
+      </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -1625,6 +1657,53 @@ function updateTriggerProximity(a,d,r75,entryConf){
   set('triggerReadinessNote',reason);
 }
 
+function getScenarioPlan(d,entryConf,trigger,ext,r75){
+  const major=(entryConf.major==='LONG'||entryConf.major==='SHORT')?entryConf.major:null;
+  const primary=major || (entryConf.side==='LONG'||entryConf.side==='SHORT'?entryConf.side:null) || (d.watchSide==='LONG'||d.watchSide==='SHORT'?d.watchSide:null);
+  const counter=primary==='LONG'?'SHORT':primary==='SHORT'?'LONG':null;
+  const reaction=r75 && ['REJECTION','RECLAIM','BREAK'].includes(r75.state);
+  const liquidity=trigger?.triggerChecks?.find(x=>x[0]==='Liquidity sweep')?.[1]||false;
+  const displacement=trigger?.triggerChecks?.find(x=>x[0]==='Displacement')?.[1]||false;
+  const mss=trigger?.triggerChecks?.find(x=>x[0]==='MSS')?.[1]||false;
+  const hierarchy=entryConf.hierarchy==='ALIGNED';
+  const volume=trigger?.triggerChecks?.find(x=>x[0]==='Volume')?.[1]||false;
+  const aligned=hierarchy && entryConf.side===primary;
+  const active=entryConf.status==='CONFIRMED' && aligned;
+  const primaryStatus=active?'ACTIVE':trigger?.state==='TRIGGER ACTIVE'?'TRIGGER ACTIVE':trigger?.state==='APPROACHING'||trigger?.state==='NEAR TRIGGER'?'DEVELOPING':'WAIT';
+  const activation=primary?`${primary}: 75% reaction + liquidity sweep + displacement/MSS + hierarchy alignment`:'Wait for directional Major Authority';
+  const invalidation=primary?`${primary}: invalidate if Major Authority flips or structure breaks against the scenario`:'—';
+  const counterActive=entryConf.side===counter && entryConf.hierarchy==='COUNTER-TREND';
+  const counterStatus=counterActive?'COUNTER-TREND':'STANDBY';
+  const counterNote=counterActive
+    ?`${counter} is currently counter-trend. It cannot become a normal confirmed entry until the 12H Major Authority/hierarchy aligns.`
+    :counter?`Counter-trend ${counter} scenario remains on standby. It requires a hierarchy change before activation.`:'No counter-trend scenario while Major Authority is neutral.';
+  return {primary,counter,primaryStatus,activation,invalidation,counterStatus,counterNote,reaction,liquidity,displacement,mss,hierarchy,volume,active};
+}
+
+function updateScenarioEngine(d,entryConf,trigger,ext,r75){
+  const s=getScenarioPlan(d,entryConf,trigger,ext,r75);
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  set('scenarioPrimarySide',s.primary||'WAIT');
+  set('scenarioPrimaryStatus',s.primaryStatus);
+  set('scenarioPrimaryActivation',s.activation);
+  set('scenarioPrimaryInvalidation',s.invalidation);
+  set('scenarioCounterSide',s.counter||'—');
+  set('scenarioCounterStatus',s.counterStatus);
+  set('scenarioAction',s.active
+    ?`ACTIVE — ${s.primary} scenario satisfies hierarchy and confirmation. Next: monitor targets/invalidation.`
+    :`WAIT — ${s.primary||'directional'} scenario is not activated. Build the required conditions before treating it as active.`);
+  set('scenarioCounterNote',s.counterNote);
+  const gates=[
+    ['scenarioPrimaryGate1',s.reaction],
+    ['scenarioPrimaryGate2',s.liquidity],
+    ['scenarioPrimaryGate3',s.displacement&&s.mss],
+    ['scenarioPrimaryGate4',s.hierarchy&&entryConf.side===s.primary]
+  ];
+  gates.forEach(([id,ok])=>{const e=$(id);if(e){e.className='entryGate '+(ok?'ok':'pending');const b=e.querySelector('b');if(b)b.textContent=ok?'PASS':'WAIT';}});
+  const b=$('scenarioBadge');
+  if(b){b.textContent=s.active?'ACTIVE':s.counterStatus==='COUNTER-TREND'?'COUNTER-TREND':s.primaryStatus;b.className='liqFibBadge scenarioBadge '+(s.active?'active':s.counterStatus==='COUNTER-TREND'?'counter':s.primaryStatus==='DEVELOPING'?'primary':'wait');}
+}
+
 function updateFinalDecision(entryConf,consensus){
   const side=entryConf.side||'WAIT';
   let status='WAIT', badge='wait', action='WAIT — no confirmed entry.', reason='The Final Decision Engine summarizes hierarchy and confirmation gates.';
@@ -1734,7 +1813,9 @@ function updateUI(d){
   if($('entryConfirmNote'))$('entryConfirmNote').textContent=entryConf.note;
   const consensusNow=getConsensus(d,macro,r75,conf);
   updateFinalDecision(entryConf,consensusNow);
+  const triggerState=getTriggerProximity(a,d,r75,entryConf);
   updateTriggerProximity(a,d,r75,entryConf);
+  updateScenarioEngine(d,entryConf,triggerState,ext,r75);
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
@@ -2344,6 +2425,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.35: Trigger Proximity Engine adds location/structure/trigger readiness with hierarchy protection. -->
+<!-- v8.36: Scenario Engine follows Trigger Proximity and keeps hierarchy protection. adds location/structure/trigger readiness with hierarchy protection. -->
 </body>
 </html>
