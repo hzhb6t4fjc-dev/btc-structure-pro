@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.15 Professional</title>
+<title>Crypto Structure Pro v8.16 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -78,6 +78,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .mtfNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.4}
 @media(max-width:560px){.mtfGrid{grid-template-columns:1fr 1fr}.mtfBox:last-child{grid-column:1/-1}}
 
+
+.liqFibPanel{margin:11px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#090f1a}
+.liqFibHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.liqFibTitle{font-size:11px;font-weight:800}
+.liqFibBadge{font-size:10px;font-weight:850;padding:5px 8px;border-radius:999px;border:1px solid var(--line)}
+.liqFibBadge.confluence{color:var(--green);border-color:#285a4b}
+.liqFibBadge.near{color:var(--yellow);border-color:#5b4d24}
+.liqFibBadge.separate{color:var(--muted)}
+.liqFibGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.liqFibBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}
+.liqFibBox small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}
+.liqFibBox b{font-size:12px}
+.liqFibNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.45}
+@media(max-width:560px){.liqFibGrid{grid-template-columns:1fr}}
+
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -94,7 +109,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.15 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.16 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -162,6 +177,20 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="mtfBox"><small>ALIGNMENT SCORE</small><b id="mtfScore">—</b></div>
         </div>
         <div class="mtfNote" id="mtfNote">1H and 4H are checked independently. The 15m timeframe remains the trigger timeframe.</div>
+      </div>
+
+      <div class="liqFibPanel">
+        <div class="liqFibHead">
+          <span class="liqFibTitle">Liquidity × Fibonacci Map</span>
+          <span class="liqFibBadge separate" id="liqFibBadge">SEPARATE</span>
+        </div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>NEAREST LIQUIDITY</small><b id="nearestLiquidity">—</b></div>
+          <div class="liqFibBox"><small>NEAREST FIBONACCI</small><b id="nearestFib">—</b></div>
+          <div class="liqFibBox"><small>PRICE DISTANCE</small><b id="liqFibDistance">—</b></div>
+          <div class="liqFibBox"><small>ZONE RELATION</small><b id="liqFibRelation">—</b></div>
+        </div>
+        <div class="liqFibNote" id="liqFibNote">Liquidity zones are derived from repeated swing highs/lows. Fibonacci levels use the current chart range.</div>
       </div>
 
       <div class="setup">
@@ -687,6 +716,43 @@ function buildLevels(d){
 function s4SafeLow(s){return s.p.lo[s.p.lo.length-1]?.p??null}
 function s4SafeHigh(s){return s.p.hi[s.p.hi.length-1]?.p??null}
 
+
+function getLiquidityFibContext(a,hi,lo){
+  if(!a||a.length<20||!Number.isFinite(hi)||!Number.isFinite(lo)||hi<=lo){
+    return {liq:null,fib:null,distance:null,relation:'SEPARATE',fibPct:null};
+  }
+  const g=a.slice(-60),pts=[];
+  for(let i=2;i<g.length-2;i++){
+    const q=g[i];
+    if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push({p:q.h,side:'HIGH'});
+    if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push({p:q.l,side:'LOW'});
+  }
+  const zones=[];
+  for(const p of pts){
+    const z=zones.find(v=>Math.abs(v.p-p.p)/Math.max(v.p,1)<.004);
+    if(z){z.touches++; z.side=p.side;}
+    else zones.push({p:p.p,touches:1,side:p.side});
+  }
+  const visible=zones.filter(z=>z.touches>=2)
+    .sort((a,b)=>b.touches-a.touches)
+    .slice(0,3);
+  const price=g[g.length-1].c;
+  const liq=visible.length
+    ? visible.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0]
+    : null;
+  const fibLevels=[0,.236,.382,.5,.618,.786,1].map(r=>({r,p:lo+(hi-lo)*r}));
+  const fib=fibLevels.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0];
+  const distance=liq&&fib?Math.abs(liq.p-fib.p)/Math.max(price,1)*100:null;
+  const relation=distance===null?'SEPARATE':distance<=0.5?'CONFLUENCE':distance<=1?'NEAR':'SEPARATE';
+  return {
+    liq,
+    fib,
+    distance,
+    relation,
+    fibPct:fib?fib.r*100:null
+  };
+}
+
 function getConfluenceScore(a,hi,lo){
   if(!a||a.length<20)return {score:0,direction:'WAIT',breakdown:{}};
   const g=a.slice(-20),last=g[g.length-1],range=hi-lo||1;
@@ -1014,6 +1080,23 @@ function updateUI(d){
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
+  const lf=getLiquidityFibContext(a,hi,lo);
+  const lfBadge=$('liqFibBadge');
+  if(lfBadge){
+    lfBadge.textContent=lf.relation;
+    lfBadge.className='liqFibBadge '+(lf.relation==='CONFLUENCE'?'confluence':lf.relation==='NEAR'?'near':'separate');
+  }
+  if($('nearestLiquidity')) $('nearestLiquidity').textContent=lf.liq?`${lf.liq.side} · ${fmt(lf.liq.p)} · ${lf.liq.touches} touches`:'No repeated zone';
+  if($('nearestFib')) $('nearestFib').textContent=lf.fib?`${lf.fibPct.toFixed(1)}% · ${fmt(lf.fib.p)}`:'—';
+  if($('liqFibDistance')) $('liqFibDistance').textContent=lf.distance===null?'—':`${lf.distance.toFixed(2)}%`;
+  if($('liqFibRelation')) $('liqFibRelation').textContent=lf.relation;
+  if($('liqFibNote')){
+    $('liqFibNote').textContent=lf.relation==='CONFLUENCE'
+      ? `Nearest repeated liquidity and Fibonacci level are tightly clustered. This is a location confluence, not an entry signal.`
+      : lf.relation==='NEAR'
+        ? `Liquidity and Fibonacci are relatively close. Monitor price reaction before treating the area as a confluence zone.`
+        : `Nearest repeated liquidity and Fibonacci level are separated. No location confluence is identified at the current price.`;
+  }
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
