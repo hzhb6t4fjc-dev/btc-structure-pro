@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.22 Professional</title>
+<title>Crypto Structure Pro v8.23 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -113,6 +113,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 @media(max-width:520px){.snapshotGrid{grid-template-columns:1fr 1fr}}
 
 .reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
+.extensionPanel{border-color:#6b4a91}.extensionPanel .liqFibTitle{color:#c29cff}.extTarget{color:#c29cff}.extTarget.active{color:#39d99a}.extTarget.passed{color:#8f9bb3}.extBadge.long{color:var(--green);border-color:#285a4b}.extBadge.short{color:var(--red);border-color:#6b3340}.extBadge.wait{color:var(--muted)}
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
 </style>
 </head>
@@ -120,7 +121,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.22 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.23 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -205,6 +206,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel reaction75Panel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Retracement 75% · Reaction Engine</span><span class="liqFibBadge separate" id="fib75ReactionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>REACTION</small><b id="fib75Reaction">—</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="fib75ReactionStructure">—</b></div><div class="liqFibBox"><small>DISPLACEMENT</small><b id="fib75ReactionDisp">—</b></div><div class="liqFibBox"><small>VOLUME</small><b id="fib75ReactionVolume">—</b></div></div><div class="liqFibNote" id="fib75ReactionNote">Waiting for price behavior at the 75% retracement. Touching 75% alone is not a signal.</div></div>
+      <div class="liqFibPanel extensionPanel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Extension · Target Engine</span><span class="liqFibBadge extBadge wait" id="fibExtBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TP1 · 1.272</small><b class="extTarget" id="fibExt1272">—</b></div><div class="liqFibBox"><small>TP2 · 1.618</small><b class="extTarget" id="fibExt1618">—</b></div><div class="liqFibBox"><small>TP3 · 2.000</small><b class="extTarget" id="fibExt2000">—</b></div><div class="liqFibBox"><small>TP4 · 2.618</small><b class="extTarget" id="fibExt2618">—</b></div><div class="liqFibBox"><small>NEXT TARGET</small><b id="fibExtNext">—</b></div><div class="liqFibBox"><small>DIRECTION</small><b id="fibExtDirection">—</b></div></div><div class="liqFibNote" id="fibExtNote">Fibonacci Extension projects target levels beyond the confirmed swing. Targets are reference zones, not guaranteed take-profit signals.</div></div>
 
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -887,6 +889,27 @@ function getFib75Reaction(a){
   };
 }
 
+function getFibExtensionContext(a){
+  const swing=getFibSwing(a);
+  if(!swing)return {direction:'WAIT',targets:[],next:null,note:'Waiting for confirmed Fibonacci swing anchors.'};
+  const ratios=[1.272,1.618,2,2.618];
+  const base=swing.direction==='UP'?swing.low.p:swing.high.p;
+  const sign=swing.direction==='UP'?1:-1;
+  const price=a[a.length-1]?.c;
+  const targets=ratios.map(r=>({r,p:base+sign*swing.range*r,status:'PENDING'}));
+  for(const t of targets){
+    if(!Number.isFinite(price))continue;
+    t.status=swing.direction==='UP'?(price>=t.p?'PASSED':'PENDING'):(price<=t.p?'PASSED':'PENDING');
+  }
+  const next=targets.find(t=>t.status==='PENDING')||null;
+  const passed=targets.filter(t=>t.status==='PASSED').length;
+  const direction=swing.direction==='UP'?'LONG':'SHORT';
+  const note=next
+    ? `${direction} extension from confirmed ${swing.direction==='UP'?'Swing Low → Swing High':'Swing High → Swing Low'}. Next projected target is ${next.r.toFixed(3)} at ${fmt(next.p)}.`
+    : `All projected extension levels are already beyond current price. A new confirmed swing is needed for a fresh target map.`;
+  return {direction,targets,next,passed,swing,note};
+}
+
 function getFib75SRContext(a){
   const swing=getFibSwing(a);
   if(!swing)return {swing:null,fib75:null,resistance:null,support:null,relation:'NEUTRAL',priceRelation:'UNKNOWN'};
@@ -1306,6 +1329,21 @@ function updateUI(d){
   if($('fib75ReactionVolume'))$('fib75ReactionVolume').textContent=r75.volume;
   if($('fib75ReactionNote'))$('fib75ReactionNote').textContent=r75.note;
 
+  const ext=getFibExtensionContext(a);
+  const extBadge=$('fibExtBadge');
+  if(extBadge){
+    extBadge.textContent=ext.direction==='WAIT'?'WAIT':`${ext.direction} · ${ext.passed||0}/4`;
+    extBadge.className='liqFibBadge extBadge '+(ext.direction==='LONG'?'long':ext.direction==='SHORT'?'short':'wait');
+  }
+  const extMap=[['fibExt1272',1.272],['fibExt1618',1.618],['fibExt2000',2],['fibExt2618',2.618]];
+  extMap.forEach(([id,r])=>{
+    const el=$(id),t=ext.targets?.find(x=>x.r===r);
+    if(el){el.textContent=t?`${fmt(t.p)} · ${t.status}`:'—';el.className='extTarget '+(t?.status==='PASSED'?'passed':t?.status==='PENDING'?'active':'');}
+  });
+  if($('fibExtNext')) $('fibExtNext').textContent=ext.next?`${ext.next.r.toFixed(3)} · ${fmt(ext.next.p)}`:'—';
+  if($('fibExtDirection')) $('fibExtDirection').textContent=ext.direction;
+  if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
+
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
   if(fib75Badge){
@@ -1665,6 +1703,21 @@ function drawFib(ctx,a,y,pad,w){
     ctx.stroke();
     ctx.fillStyle=level.r===.75?'#ffcf52':'#72a9ff';
     ctx.fillText((level.r*100).toFixed(1)+'%',pad+4,yy-3);
+  }
+
+  const ext=getFibExtensionContext(a);
+  if(ext.direction!=='WAIT'){
+    ctx.setLineDash([6,5]);
+    ctx.font='bold 9px Arial';
+    for(const t of ext.targets){
+      const yy=y(t.p);
+      if(yy<pad-12||yy>y(0)+12)continue;
+      ctx.strokeStyle=t.r===1.272?'rgba(194,156,255,.75)':'rgba(194,156,255,.42)';
+      ctx.lineWidth=t.r===1.272?1.5:1;
+      ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();
+      ctx.fillStyle='#c29cff';
+      ctx.fillText(`EXT ${t.r.toFixed(3)} · ${fmt(t.p)}`,pad+4,yy-3);
+    }
   }
   ctx.restore();
 }
