@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.14 Professional</title>
+<title>Crypto Structure Pro v8.15 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -63,6 +63,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .snapshotItem small{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.snapshotItem b{font-size:15px}
 .snapshotHistory{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
 .snapshotGateList{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.snapshotGate{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid rgba(57,217,154,.35);color:var(--green);background:rgba(57,217,154,.06)}
+
+.mtfMonitor{margin:0 11px 11px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#090f1a}
+.mtfMonitorHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mtfMonitorTitle{font-size:11px;font-weight:800}
+.mtfStatus{font-size:10px;font-weight:850;padding:5px 8px;border-radius:999px;border:1px solid var(--line)}
+.mtfStatus.aligned{color:var(--green);border-color:#285a4b}
+.mtfStatus.partial{color:var(--yellow);border-color:#5b4d24}
+.mtfStatus.conflict{color:var(--red);border-color:#6b3340}
+.mtfGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.mtfBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}
+.mtfBox small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}
+.mtfBox b{font-size:12px}
+.mtfNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.4}
+@media(max-width:560px){.mtfGrid{grid-template-columns:1fr 1fr}.mtfBox:last-child{grid-column:1/-1}}
+
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -79,7 +94,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.14 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.15 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -134,6 +149,19 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="box"><b>1H bias</b><div class="small" id="s1">—</div></div>
         <div class="box"><b>4H bias</b><div class="small" id="s4">—</div></div>
         <div class="box"><b>1D context</b><div class="small" id="sD">—</div></div>
+      </div>
+
+      <div class="mtfMonitor">
+        <div class="mtfMonitorHead">
+          <span class="mtfMonitorTitle">MTF Alignment Monitor</span>
+          <span class="mtfStatus conflict" id="mtfMonitorStatus">CONFLICT</span>
+        </div>
+        <div class="mtfGrid">
+          <div class="mtfBox"><small>1H DIRECTION</small><b id="mtf1h">—</b></div>
+          <div class="mtfBox"><small>4H DIRECTION</small><b id="mtf4h">—</b></div>
+          <div class="mtfBox"><small>ALIGNMENT SCORE</small><b id="mtfScore">—</b></div>
+        </div>
+        <div class="mtfNote" id="mtfNote">1H and 4H are checked independently. The 15m timeframe remains the trigger timeframe.</div>
       </div>
 
       <div class="setup">
@@ -990,6 +1018,24 @@ function updateUI(d){
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
   const mtfStatus=mtfScore===15?'ALIGNED':mtfScore===10?'PARTIAL': 'CONFLICT';
+
+  const oneHourDir=d.s1.bull>d.s1.bear?'LONG':d.s1.bear>d.s1.bull?'SHORT':'NEUTRAL';
+  const fourHourDir=d.s4.bull>d.s4.bear?'LONG':d.s4.bear>d.s4.bull?'SHORT':'NEUTRAL';
+  const mtfStatusEl=$('mtfMonitorStatus');
+  if(mtfStatusEl){
+    mtfStatusEl.textContent=mtfStatus;
+    mtfStatusEl.className='mtfStatus '+(mtfStatus==='ALIGNED'?'aligned':mtfStatus==='PARTIAL'?'partial':'conflict');
+  }
+  if($('mtf1h')) $('mtf1h').textContent=`${oneHourDir} · L${d.s1.bull} / S${d.s1.bear}`;
+  if($('mtf4h')) $('mtf4h').textContent=`${fourHourDir} · L${d.s4.bull} / S${d.s4.bear}`;
+  if($('mtfScore')) $('mtfScore').textContent=`${mtfScore}/15`;
+  if($('mtfNote')){
+    $('mtfNote').textContent=mtfStatus==='CONFLICT'
+      ? `1H ${oneHourDir} vs 4H ${fourHourDir}: higher-timeframe conflict. No MTF alignment credit is awarded.`
+      : mtfStatus==='PARTIAL'
+        ? `One higher timeframe is directional while the other is neutral. Partial alignment credit is awarded.`
+        : `1H and 4H are aligned in the same direction. Full MTF alignment credit is awarded.`;
+  }
   $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${mtfScore}/15 · ${mtfStatus} · TRIGGER ${trigger}.`;
   $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
 
