@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.3 Professional</title>
+<title>Crypto Structure Pro v8.4 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.3 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.4 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -464,7 +464,15 @@ function structureContext(a){
   const support=lows.length>=3?{low:Math.min(...lows.map(q=>q.l)),high:Math.min(...lows.map(q=>q.l))+tol*.9,touches:lows.length}:null;
   const resistance=highs.length>=3?{low:Math.max(...highs.map(q=>q.h))-tol*.9,high:Math.max(...highs.map(q=>q.h)),touches:highs.length}:null;
   const consolidation=!!(support&&compressed&&(stableRange||resistance));
-  return {consolidation,support,resistance,rangeHigh:hi,rangeLow:lo,rangePct:(hi-lo)/mid};
+  const supportMid=support?(support.low+support.high)/2:null;
+  const resistanceMid=resistance?(resistance.low+resistance.high)/2:null;
+  const bandTol=Math.max(tol*1.35,avgTR*1.15);
+  let rangeLocation='MID-RANGE';
+  if(resistance && Math.abs(x.at(-1).c-resistanceMid)<=bandTol) rangeLocation='NEAR RESISTANCE';
+  else if(support && Math.abs(x.at(-1).c-supportMid)<=bandTol) rangeLocation='NEAR SUPPORT';
+  else if(resistance && x.at(-1).c>resistance.high) rangeLocation='ABOVE RESISTANCE';
+  else if(support && x.at(-1).c<support.low) rangeLocation='BELOW SUPPORT';
+  return {consolidation,support,resistance,rangeHigh:hi,rangeLow:lo,rangePct:(hi-lo)/mid,rangeLocation,rangeMid:(hi+lo)/2};
 }
 
 function structureState(s){
@@ -474,7 +482,8 @@ function structureState(s){
   const parts=[];
   if(hasHH)parts.push('HH'); if(hasHL)parts.push('HL'); if(hasLH)parts.push('LH'); if(hasLL)parts.push('LL');
   const state=ctx.consolidation?'CONSOLIDATION':bullish?'BULLISH':bearish?'BEARISH':parts.length?'TRANSITION':'MIXED';
-  return {state,bullish,bearish,parts,context:ctx};
+  const detail=state==='CONSOLIDATION' ? `CONSOLIDATION · ${ctx.rangeLocation||'MID-RANGE'}` : state;
+  return {state,bullish,bearish,parts,context:ctx,detail};
 }
 
 function mtfDecision(){
@@ -992,7 +1001,7 @@ function updateUI(d){
     const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
     const firstMissing=(conf.direction==='LONG'?buildRoadmap(d,'LONG'):conf.direction==='SHORT'?buildRoadmap(d,'SHORT'):[]).find(x=>!x[1]);
     const st=d.st15||structureState(d.s15);
-    const currentStructure=st.parts.length?st.parts.join(' + ')+' → '+st.state:'No clear swing sequence';
+    const currentStructure=st.parts.length?st.parts.join(' + ')+' → '+(st.detail||st.state):'No clear swing sequence';
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
       : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}${st.state==='CONSOLIDATION'?' · support/consolidation zone detected':''}.`;
@@ -1199,8 +1208,9 @@ function drawStructureOverlay(ctx,a,y,x,pad,w,h){
   for(const q of recentHi){const prev=recentHi.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HH':'LH'):'H';ctx.fillStyle=label==='HH'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.max(pad+10,y(q.p)-7));}
   for(const q of recentLo){const prev=recentLo.filter(v=>v.i<q.i).at(-1);const label=prev?(q.p>prev.p?'HL':'LL'):'L';ctx.fillStyle=label==='HL'?'#39d99a':'#ff6478';ctx.fillText(label,x(q.i)+4,Math.min(h-pad-4,y(q.p)+14));}
   const c=structureContext(a);
-  if(c.consolidation&&c.support){const y1=y(c.support.high),y2=y(c.support.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(57,217,154,.10)';ctx.strokeStyle='rgba(57,217,154,.45)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#39d99a';ctx.fillText('SUPPORT / CONSOLIDATION',pad+5,Math.max(pad+10,top-5));}
+  if(c.consolidation&&c.support){const y1=y(c.support.high),y2=y(c.support.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(57,217,154,.10)';ctx.strokeStyle='rgba(57,217,154,.45)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#39d99a';ctx.fillText('RANGE SUPPORT',pad+5,Math.max(pad+10,top-5));}
   if(c.consolidation&&c.resistance){const y1=y(c.resistance.high),y2=y(c.resistance.low),top=Math.min(y1,y2),hh=Math.max(8,Math.abs(y2-y1));ctx.fillStyle='rgba(255,207,82,.08)';ctx.strokeStyle='rgba(255,207,82,.35)';ctx.fillRect(pad,top,w-pad*2,hh);ctx.strokeRect(pad,top,w-pad*2,hh);ctx.fillStyle='#ffcf52';ctx.fillText('RANGE RESISTANCE',pad+5,Math.max(pad+10,top-5));}
+  if(c.consolidation&&c.rangeMid){const ym=y(c.rangeMid);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(143,155,179,.35)';ctx.beginPath();ctx.moveTo(pad,ym);ctx.lineTo(w-pad,ym);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.fillText(c.rangeLocation||'MID-RANGE',w-pad-ctx.measureText(c.rangeLocation||'MID-RANGE').width-5,Math.max(pad+12,ym-5));ctx.restore();}
   ctx.restore();
 }
 
@@ -1273,7 +1283,7 @@ renderScanner();
     showError('Startup failed. Reload the page once.');
   }
 })();
-/* v8.3: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
+/* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
 </body>
 </html>
