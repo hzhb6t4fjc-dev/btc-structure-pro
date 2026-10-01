@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.1 Professional</title>
+<title>Crypto Structure Pro v8.2 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -62,6 +62,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .snapshotItem{border:1px solid var(--border);border-radius:14px;padding:10px;background:rgba(7,14,28,.5)}
 .snapshotItem small{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.snapshotItem b{font-size:15px}
 .snapshotHistory{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
+.snapshotGateList{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.snapshotGate{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid rgba(57,217,154,.35);color:var(--green);background:rgba(57,217,154,.06)}
 .scannerPanel{margin-top:12px}
 .scanToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scanToolbar .btn.active{border-color:#72a9ff;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}
 .scanSearch{flex:1 1 150px;min-width:140px;background:#0b1424;border:1px solid var(--line);border-radius:10px;color:#eef3ff;padding:9px 10px;font:inherit;outline:none}.scanSearch:focus{border-color:#72a9ff}.scanSummary{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scanSummary .pill b{color:#eef3ff}.scanDetails{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px}.scanGate{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.scanGate.done{color:var(--green);border-color:rgba(57,217,154,.35)}.scanGate.next{color:var(--yellow);border-color:rgba(255,207,82,.4)}.scanRow.highlight{border-color:rgba(114,169,255,.55);box-shadow:0 0 0 1px rgba(114,169,255,.12) inset}
@@ -78,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.1 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.2 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -175,7 +176,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="statePanel" id="snapshotPanel">
           <div class="roadmapHead"><span class="roadmapTitle">Signal snapshot &amp; trade plan</span><span class="roadmapNext" id="snapshotBadge">WAITING</span></div>
-          <div class="stateDescription" id="snapshotText">No confirmed setup snapshot yet.</div>
+          <div class="stateDescription" id="snapshotText">No confirmed setup snapshot yet. The trade plan appears only after all 7 confirmation gates are completed in order.</div>
           <div class="snapshotGrid" id="snapshotGrid"></div>
           <div class="stateMeta" id="snapshotMeta"></div>
         </div>
@@ -665,7 +666,7 @@ function renderSnapshot(){
   const current=state.snapshots[0];
   if(!current){
     badge.textContent='WAITING'; badge.className='roadmapNext yellow';
-    text.textContent='No confirmed setup snapshot yet.'; grid.innerHTML=''; meta.innerHTML='<span class="pill">CONFIRMATION REQUIRED</span>'; return;
+    text.textContent='No confirmed setup snapshot yet. The trade plan appears only after all 7 confirmation gates are completed in order.'; grid.innerHTML=''; meta.innerHTML='<span class="pill">CONFIRMATION REQUIRED</span>'; return;
   }
   badge.textContent='CONFIRMED'; badge.className='roadmapNext green';
   text.innerHTML=`<b>${current.side} CONFIRMED</b> · ${current.symbol.replace('USDT','/USDT')} · ${current.time}`;
@@ -676,12 +677,17 @@ function renderSnapshot(){
     ['Timeframe',current.timeframe||'15m trigger'],['Sequence',`${current.sequence||7}/7`]
   ];
   grid.innerHTML=items.map(([a,b])=>`<div class="snapshotItem"><small>${a}</small><b>${b}</b></div>`).join('');
+  const gates=(current.gates||[]).map(g=>`<span class="snapshotGate">✓ ${g}</span>`).join('');
   const recent=state.snapshots.slice(0,5);
-  meta.innerHTML=`<span class="pill">SNAPSHOT SAVED</span><span class="pill">${recent.length} STORED</span>`+
+  meta.innerHTML=`<span class="pill">7/7 CONFIRMED</span><span class="pill">SNAPSHOT SAVED</span><span class="pill">${current.time}</span>`+
+    `<div class="snapshotGateList">${gates}</div>`+
     `<div class="snapshotHistory">${recent.map(x=>`${x.time} · <b>${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.score}/100`).join('<br>')}</div>`;
 }
 function maybeCreateSnapshot(d,conf){
   if(!d||!d.side)return false;
+  // A trade-plan snapshot is created only after the ordered 7/7 confirmation sequence is complete.
+  const sequenceComplete=state.confirmation.side===d.side && state.confirmation.index>=7;
+  if(!sequenceComplete)return false;
   const lv=buildLevels(d);
   if(!lv)return false;
   const candle=d.s15&&d.s15.last?d.s15.last.t:state.lastCandleTs;
@@ -692,7 +698,9 @@ function maybeCreateSnapshot(d,conf){
   const score=d.side==='LONG'?d.longScore:d.shortScore;
   state.snapshots.unshift({
     key,symbol:state.symbol,side:d.side,score,entry:lv.entry,invalid:lv.invalid,tp1:lv.tp1,tp2:lv.tp2,rr:lv.rr,
-    timeframe:'15m trigger',sequence:7,time:new Date().toLocaleTimeString(),ts:Date.now()
+    timeframe:'15m trigger',sequence:7,
+    gates:buildRoadmap(d,d.side).map(x=>x[0]),
+    time:new Date().toLocaleTimeString(),ts:Date.now()
   });
   state.lastSnapshotKey=key;
   saveSnapshots(); renderSnapshot();
@@ -1230,6 +1238,7 @@ renderScanner();
     showError('Startup failed. Reload the page once.');
   }
 })();
+/* v8.2: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
 </body>
 </html>
