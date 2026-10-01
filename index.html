@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.20 Professional</title>
+<title>Crypto Structure Pro v8.22 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -111,13 +111,16 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 @media(max-width:650px){.scanRow{grid-template-columns:1.1fr .55fr .65fr 1fr}.scanRow .scanNext{display:none}}
 
 @media(max-width:520px){.snapshotGrid{grid-template-columns:1fr 1fr}}
+
+.reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
+#fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.20 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.22 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -200,6 +203,8 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="liqFibNote">Liquidity zones are derived from repeated swing highs/lows. Fibonacci uses the confirmed Swing Low → Swing High structure.</div>
       </div>
+
+      <div class="liqFibPanel reaction75Panel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Retracement 75% · Reaction Engine</span><span class="liqFibBadge separate" id="fib75ReactionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>REACTION</small><b id="fib75Reaction">—</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="fib75ReactionStructure">—</b></div><div class="liqFibBox"><small>DISPLACEMENT</small><b id="fib75ReactionDisp">—</b></div><div class="liqFibBox"><small>VOLUME</small><b id="fib75ReactionVolume">—</b></div></div><div class="liqFibNote" id="fib75ReactionNote">Waiting for price behavior at the 75% retracement. Touching 75% alone is not a signal.</div></div>
 
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -821,6 +826,67 @@ function getLiquidityFibContext(a,hi,lo){
 }
 
 
+function getFib75Reaction(a){
+  const swing=getFibSwing(a);
+  if(!swing)return {state:'WAIT',structure:'WAIT',displacement:'WAIT',volume:'WAIT',note:'Waiting for confirmed Fibonacci retracement anchors.'};
+
+  const fib75=swing.low.p+swing.range*.75;
+  const g=a.slice(-12);
+  if(g.length<6)return {state:'WAIT',structure:'WAIT',displacement:'WAIT',volume:'WAIT',note:'Waiting for more candles.'};
+
+  const last=g[g.length-1],prev=g[g.length-2];
+  const tol=fib75*.0015;
+  const range=last.h-last.l||1;
+  const inZone=last.l<=fib75+tol&&last.h>=fib75-tol;
+  const closePos=(last.c-last.l)/range;
+  const avgBody=g.slice(0,-1).reduce((sum,x)=>sum+Math.abs(x.c-x.o),0)/(g.length-1);
+  const displacement=Math.abs(last.c-last.o)>avgBody*1.5;
+  const avgVol=g.slice(0,-1).reduce((sum,x)=>sum+(x.v||0),0)/(g.length-1);
+  const volume=(last.v||0)>avgVol*1.3;
+
+  const bullishRejection=inZone&&last.c>last.o&&closePos>.65;
+  const bearishRejection=inZone&&last.c<last.o&&closePos<.35;
+  const rejection=bullishRejection||bearishRejection;
+  const breakUp=prev.c<=fib75+tol&&last.c>fib75+tol;
+  const breakDown=prev.c>=fib75-tol&&last.c<fib75-tol;
+
+  let reactionState='WAIT';
+  if(breakUp||breakDown)reactionState='BREAK';
+  else if(rejection)reactionState='REJECTION';
+  else if(inZone)reactionState='WAIT';
+
+  const p15=state.mtf['15m'];
+  let structure='WAIT';
+  if(p15){
+    const ss=structureState(p15);
+    structure=ss.bullish?'BULLISH':ss.bearish?'BEARISH':ss.state||'MIXED';
+  }
+
+  if(reactionState==='BREAK'){
+    if((breakUp&&structure==='BULLISH')||(breakDown&&structure==='BEARISH')){
+      reactionState='RECLAIM';
+    }
+  }
+
+  const note=reactionState==='REJECTION'
+    ? 'Price reacted at the 75% Fibonacci retracement. Wait for MSS + displacement before confirmation.'
+    : reactionState==='BREAK'
+      ? '75% retracement was broken. Wait for displacement and follow-through.'
+      : reactionState==='RECLAIM'
+        ? '75% retracement was reclaimed with directional structure. Still require MSS/confirmation.'
+        : inZone
+          ? 'Price is inside the 75% Fibonacci retracement zone. Waiting for a clear reaction.'
+          : 'Price is away from the 75% Fibonacci retracement zone.';
+
+  return {
+    state:reactionState,
+    structure,
+    displacement:displacement?'YES':'NO',
+    volume:volume?'EXPANSION':'NORMAL',
+    note
+  };
+}
+
 function getFib75SRContext(a){
   const swing=getFibSwing(a);
   if(!swing)return {swing:null,fib75:null,resistance:null,support:null,relation:'NEUTRAL',priceRelation:'UNKNOWN'};
@@ -1231,6 +1297,14 @@ function updateUI(d){
         ? `${swingText}. Liquidity and Fibonacci are relatively close. Monitor price reaction before treating the area as a confluence zone.`
         : `${swingText}. Nearest repeated liquidity and Fibonacci are separated. No location confluence is identified at the current price.`;
   }
+
+  const r75=getFib75Reaction(a);
+  if($('fib75ReactionBadge')){$('fib75ReactionBadge').textContent=r75.state;$('fib75ReactionBadge').className='liqFibBadge '+(r75.state==='REJECTION'?'rejection':r75.state==='BREAK'?'break':r75.state==='RECLAIM'?'reclaim':'wait');}
+  if($('fib75Reaction'))$('fib75Reaction').textContent=r75.state;
+  if($('fib75ReactionStructure'))$('fib75ReactionStructure').textContent=r75.structure;
+  if($('fib75ReactionDisp'))$('fib75ReactionDisp').textContent=r75.displacement;
+  if($('fib75ReactionVolume'))$('fib75ReactionVolume').textContent=r75.volume;
+  if($('fib75ReactionNote'))$('fib75ReactionNote').textContent=r75.note;
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
