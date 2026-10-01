@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.29 Professional</title>
+<title>Crypto Structure Pro v8.30 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -153,7 +153,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.29 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.30 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -273,7 +273,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="liqFibPanel extensionPanel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Extension · Target Engine</span><span class="liqFibBadge extBadge wait" id="fibExtBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TP1 · 1.272</small><b class="extTarget" id="fibExt1272">—</b></div><div class="liqFibBox"><small>TP2 · 1.618</small><b class="extTarget" id="fibExt1618">—</b></div><div class="liqFibBox"><small>TP3 · 2.000</small><b class="extTarget" id="fibExt2000">—</b></div><div class="liqFibBox"><small>TP4 · 2.618</small><b class="extTarget" id="fibExt2618">—</b></div><div class="liqFibBox"><small>NEXT TARGET</small><b id="fibExtNext">—</b></div><div class="liqFibBox"><small>DIRECTION</small><b id="fibExtDirection">—</b></div></div><div class="liqFibNote" id="fibExtNote">Fibonacci Extension projects target levels beyond the confirmed swing. Targets are reference zones, not guaranteed take-profit signals.</div></div>
 
 
-      <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → 12H/4H/1H alignment → volume.</div></div>
+      <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="entryConfirmMajor">WAIT</b></div><div class="liqFibBox"><small>SETUP SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="entryConfirmHierarchy">WAIT</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → hierarchy alignment → volume.</div></div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -1025,6 +1025,7 @@ function getFibExtensionContext(a){
 
 
 function getEntryConfirmation(d,r75,ext,conf){
+  const major=d.major12?.bullish?'LONG':d.major12?.bearish?'SHORT':'WAIT';
   const side=d.side || (d.watchSide==='LONG'||d.watchSide==='SHORT'?d.watchSide:null);
   const direction=side;
   const m15=state.mtf['15m'];
@@ -1036,7 +1037,17 @@ function getEntryConfirmation(d,r75,ext,conf){
   const displacement=!!m15 && (direction==='LONG' ? m15.L.includes('displacement') : direction==='SHORT' ? m15.S.includes('displacement') : false);
   const mss=!!m15 && (direction==='LONG' ? m15.L.includes('MSS up') : direction==='SHORT' ? m15.S.includes('MSS down') : false);
   const fvg=!!m15 && (direction==='LONG' ? m15.L.includes('bullish FVG') : direction==='SHORT' ? m15.S.includes('bearish FVG') : false);
-  const mtf=!!m1&&!!m4&&!!m12 && (direction==='LONG' ? m12.bull>=30&&m4.bull>=30&&m1.bull>=35 : direction==='SHORT' ? m12.bear>=30&&m4.bear>=30&&m1.bear>=35 : false);
+
+  // Hierarchical alignment: 12H is the authority. 4H/1H may be neutral,
+  // but they cannot contradict the major direction for a normal trend-aligned entry.
+  const hierarchy = !!direction && major===direction &&
+    (d.main4?.bullish ? direction==='LONG' : d.main4?.bearish ? direction==='SHORT' : true) &&
+    (m1 ? (direction==='LONG' ? m1.bull>=35 || !m1.bear : direction==='SHORT' ? m1.bear>=35 || !m1.bull : false) : false);
+  const mainState=d.main4?.state||'NEUTRAL';
+  const setupState=structureState(m1||m15);
+  const mainOk=mainState==='BULLISH'?direction==='LONG':mainState==='BEARISH'?direction==='SHORT':true;
+  const setupOk=setupState.state==='BULLISH'?direction==='LONG':setupState.state==='BEARISH'?direction==='SHORT':true;
+  const hierarchyAligned=!!direction&&major===direction&&mainOk&&setupOk;
   const volume=r75.volume==='EXPANSION';
   const gates=[
     ['75% reaction',reaction],
@@ -1044,27 +1055,29 @@ function getEntryConfirmation(d,r75,ext,conf){
     ['Displacement',displacement],
     ['MSS',mss],
     ['FVG',fvg],
-    ['MTF alignment',mtf],
+    ['Hierarchy alignment',hierarchyAligned],
     ['Volume expansion',volume]
   ];
   const done=gates.filter(x=>x[1]).length;
   let status='WAIT';
   if(direction){
     if(d.side && done===7)status='CONFIRMED';
-    else if(done>=5)status='READY';
+    else if(hierarchyAligned && done>=5)status='READY';
     else if(done>0)status='DEVELOPING';
   }
   const next=gates.find(x=>!x[1]);
+  const hierarchyLabel=!direction||major==='WAIT'?'WAIT':hierarchyAligned?'ALIGNED':major===direction?'PARTIAL':'COUNTER-TREND';
   const note=status==='CONFIRMED'
-    ? `All seven confirmation gates are satisfied for ${direction}. Fibonacci Extension remains a target map, not an independent entry signal.`
-    : status==='READY'
-      ? `${direction} has a strong confirmation sequence (${done}/7). Wait for the remaining gate${next?' · '+next[0]:''} before treating the setup as fully confirmed.`
-      : status==='DEVELOPING'
-        ? `${direction} confirmation is developing (${done}/7). The next required gate is ${next?next[0]:'final confirmation'}.`
-        : 'Waiting for a directional side and the first confirmation gate.';
-  return {side:direction,status,done,gates,next:next?next[0]:null,note,extension:ext};
+    ? `All seven confirmation gates are satisfied for ${direction}. Major bias and setup hierarchy are aligned. Fibonacci Extension remains a target map, not an independent entry signal.`
+    : hierarchyLabel==='COUNTER-TREND'
+      ? `${direction} setup is counter-trend to the 12H Major Authority (${major}). It may be observed, but it cannot become a confirmed entry until the hierarchy aligns.`
+      : status==='READY'
+        ? `${direction} has a strong confirmation sequence (${done}/7) with the hierarchy aligned. Wait for the remaining gate${next?' · '+next[0]:''} before treating the setup as fully confirmed.`
+        : status==='DEVELOPING'
+          ? `${direction} confirmation is developing (${done}/7). The next required gate is ${next?next[0]:'final confirmation'}.`
+          : 'Waiting for a directional side and the first confirmation gate.';
+  return {side:direction,status,done,gates,next:next?next[0]:null,note,extension:ext,major,hierarchy:hierarchyLabel,hierarchyAligned};
 }
-
 function getFib75SRContext(a){
   const swing=getFibSwing(a);
   if(!swing)return {swing:null,fib75:null,resistance:null,support:null,relation:'NEUTRAL',priceRelation:'UNKNOWN'};
@@ -1623,7 +1636,9 @@ function updateUI(d){
     ecBadge.className='liqFibBadge '+(entryConf.status==='CONFIRMED'?'confirmed':entryConf.status==='READY'?'ready':entryConf.status==='DEVELOPING'?'developing':'wait');
   }
   if($('entryConfirmState'))$('entryConfirmState').textContent=entryConf.status;
+  if($('entryConfirmMajor'))$('entryConfirmMajor').textContent=entryConf.major||'WAIT';
   if($('entryConfirmSide'))$('entryConfirmSide').textContent=entryConf.side||'—';
+  if($('entryConfirmHierarchy'))$('entryConfirmHierarchy').textContent=entryConf.hierarchy||'WAIT';
   if($('entryConfirmGates'))$('entryConfirmGates').textContent=`${entryConf.done}/7`;
   if($('entryConfirmNext'))$('entryConfirmNext').textContent=entryConf.next||'—';
   if($('entryConfirmGateGrid'))$('entryConfirmGateGrid').innerHTML=entryConf.gates.map(([label,ok])=>`<div class="entryGate ${ok?'ok':'pending'}"><span>${label}</span><b>${ok?'PASS':'WAIT'}</b></div>`).join('');
