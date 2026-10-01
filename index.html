@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.28 Professional</title>
+<title>Crypto Structure Pro v8.29 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -153,7 +153,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.28 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.29 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -246,6 +246,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>CONSENSUS SCORE</small><b class="consensusScore" id="consensusScore">—</b></div>
           <div class="liqFibBox"><small>DOMINANT SIDE</small><b id="consensusSide">WAIT</b></div>
+          <div class="liqFibBox"><small>BIAS LEVEL</small><b id="consensusBiasLevel">WAIT</b></div>
           <div class="liqFibBox"><small>LONG AGREEMENT</small><b id="consensusLong">—</b></div>
           <div class="liqFibBox"><small>SHORT AGREEMENT</small><b id="consensusShort">—</b></div>
         </div>
@@ -1446,23 +1447,29 @@ function renderRoadmap(d,side){
 
 function getConsensus(d,macro,r75,conf){
   const votes=[];
-  const add=(name,dir,weight)=>votes.push({name,dir,weight});
+  const add=(name,dir,weight,layer)=>votes.push({name,dir,weight,layer});
   const dirFrom=(x)=>x==='BULLISH'?'LONG':x==='BEARISH'?'SHORT':'NEUTRAL';
-  add('1M macro',dirFrom(macro.m1m.regime),10);
-  add('1W macro',dirFrom(macro.m1w.regime),10);
-  add('12H major',d.major12.bullish?'LONG':d.major12.bearish?'SHORT':'NEUTRAL',20);
-  add('4H main',d.main4.bullish?'LONG':d.main4.bearish?'SHORT':'NEUTRAL',15);
-  const s1=structureState(d.s1),s15=d.st15||structureState(d.s15);
-  add('1H setup',s1.bullish?'LONG':s1.bearish?'SHORT':'NEUTRAL',10);
-  add('15m structure',s15.bullish?'LONG':s15.bearish?'SHORT':'NEUTRAL',10);
+  const major=d.major12.bullish?'LONG':d.major12.bearish?'SHORT':'NEUTRAL';
+  const main=d.main4.bullish?'LONG':d.main4.bearish?'SHORT':'NEUTRAL';
+  const setup=structureState(d.s1), s1=setup.bullish?'LONG':setup.bearish?'SHORT':'NEUTRAL';
+  const s15State=d.st15||structureState(d.s15), s15=s15State.bullish?'LONG':s15State.bearish?'SHORT':'NEUTRAL';
+
+  // Hierarchy: macro context -> 12H authority -> 4H main -> 1H setup -> 15m trigger.
+  // Lower timeframes can confirm or weaken the bias, but cannot override a 12H/4H conflict.
+  add('1M macro',dirFrom(macro.m1m.regime),10,'MACRO');
+  add('1W macro',dirFrom(macro.m1w.regime),10,'MACRO');
+  add('12H major',major,20,'MAJOR');
+  add('4H main',main,15,'MAIN');
+  add('1H setup',s1,10,'SETUP');
+  add('15m structure',s15,10,'TRIGGER');
 
   const price=d.s1.last?.c||d.s15.last?.c||0;
   let liqDir='NEUTRAL';
   const refs=[['PDH',macro.prevDay?.h],['PDL',macro.prevDay?.l],['PWH',macro.prevWeek?.h],['PWL',macro.prevWeek?.l]];
   let best=null;
   refs.forEach(([n,v])=>{if(!v||!price)return;const dist=Math.abs(price-v)/price;if(best===null||dist<best.dist)best={n,v,dist}});
-  if(best&&best.dist<=.006){liqDir=best.v<price?'SHORT':'LONG';}
-  add('HTF liquidity',liqDir,5);
+  if(best&&best.dist<=.006)liqDir=best.v<price?'SHORT':'LONG';
+  add('HTF liquidity',liqDir,5,'CONFIRMATION');
 
   let fibDir='NEUTRAL';
   if(r75.state==='REJECTION'){
@@ -1472,51 +1479,69 @@ function getConsensus(d,macro,r75,conf){
     const c=d.s15.last?.c||0,f=r75.swing?.low?.p&&r75.swing?.range?r75.swing.low.p+r75.swing.range*.75:null;
     fibDir=f&&c>f?'LONG':f&&c<f?'SHORT':'NEUTRAL';
   }
-  add('75% reaction',fibDir,5);
+  add('75% reaction',fibDir,5,'CONFIRMATION');
 
   let triggerDir='NEUTRAL';
   const longTrig=d.longStructure&&d.longSweep&&d.longDisp&&d.longMSS&&d.longFVG;
   const shortTrig=d.shortStructure&&d.shortSweep&&d.shortDisp&&d.shortMSS&&d.shortFVG;
   if(longTrig&&!shortTrig)triggerDir='LONG';
   else if(shortTrig&&!longTrig)triggerDir='SHORT';
-  add('15m trigger',triggerDir,5);
+  add('15m trigger',triggerDir,5,'TRIGGER');
 
   let volDir='NEUTRAL';
-  const last=d.s15.last;
-  if(last){
-    if(d.s15.L.includes('volume expansion')) volDir='LONG';
-    else if(d.s15.S.includes('volume expansion')) volDir='SHORT';
-  }
-  add('Volume',volDir,5);
+  if(d.s15.L.includes('volume expansion'))volDir='LONG';
+  else if(d.s15.S.includes('volume expansion'))volDir='SHORT';
+  add('Volume',volDir,5,'CONFIRMATION');
 
   let long=0,short=0,total=0;
   votes.forEach(v=>{total+=v.weight;if(v.dir==='LONG')long+=v.weight;if(v.dir==='SHORT')short+=v.weight});
   const longPct=Math.round(long/total*100),shortPct=Math.round(short/total*100);
-  const structureConflict=d.major12.bullish&&d.main4.bearish||d.major12.bearish&&d.main4.bullish;
-  const blockers=[];
-  if(structureConflict)blockers.push('12H / 4H conflict');
-  if(!d.major12.bullish&&!d.major12.bearish)blockers.push('12H major structure unclear');
-  if(Math.abs(long-short)<15)blockers.push('No 15-point directional separation');
-  if(!d.side)blockers.push('Entry confirmation not complete');
-  const dominant=structureConflict?'WAIT':longPct>=60&&long>short+15?'LONG':shortPct>=60&&short>long+15?'SHORT':'WAIT';
-  const score=dominant==='LONG'?longPct:dominant==='SHORT'?shortPct:Math.max(longPct,shortPct);
   const confidence=Math.round(Math.abs(long-short)/total*100);
-  return {dominant,score,longPct,shortPct,confidence,votes,blockers,structureConflict};
-}
 
+  const majorMainConflict=(major==='LONG'&&main==='SHORT')||(major==='SHORT'&&main==='LONG');
+  const mainSetupConflict=(main!=='NEUTRAL'&&s1!=='NEUTRAL'&&main!==s1);
+  const macroConflict=dirFrom(macro.m1m.regime)!=='NEUTRAL'&&dirFrom(macro.m1w.regime)!=='NEUTRAL'&&dirFrom(macro.m1m.regime)!==dirFrom(macro.m1w.regime);
+
+  const blockers=[];
+  if(majorMainConflict)blockers.push('12H / 4H conflict — hierarchy veto');
+  if(mainSetupConflict)blockers.push('4H / 1H conflict — setup not aligned');
+  if(macroConflict)blockers.push('1M / 1W macro conflict');
+  if(major==='NEUTRAL')blockers.push('12H major structure unclear');
+  if(Math.abs(long-short)<15)blockers.push('Low directional separation');
+  if(!d.side)blockers.push('Entry confirmation not complete');
+
+  // Dominant side is a hierarchical BIAS, not an entry signal.
+  // 12H is the authority. A 4H conflict forces WAIT; 4H neutral does not erase a 12H bias.
+  let dominant='WAIT',biasLevel='WAIT';
+  if(!majorMainConflict&&major!=='NEUTRAL'){
+    dominant=major;
+    if(main===major)biasLevel='MAJOR + MAIN ALIGNED';
+    else if(main==='NEUTRAL')biasLevel='MAJOR AUTHORITY';
+    else biasLevel='MAJOR BIAS / SETUP CONFLICT';
+  }
+
+  const score=Math.max(longPct,shortPct);
+  const directionalSide=long>short?'LONG':short>long?'SHORT':'WAIT';
+  const support=(side)=>votes.filter(v=>v.dir===side).reduce((n,v)=>n+v.weight,0);
+  const alignedSupport=support(dominant);
+  const alignedPct=Math.round(alignedSupport/total*100);
+
+  return {dominant,score,longPct,shortPct,confidence,votes,blockers,structureConflict:majorMainConflict,biasLevel,alignedPct,directionalSide,macroConflict,mainSetupConflict};
+}
 function updateConsensus(d,macro,r75,conf){
   const c=getConsensus(d,macro,r75,conf);
   const badge=$('consensusBadge');
   if(badge){badge.textContent=c.dominant==='WAIT'?'WAIT':c.dominant+' BIAS';badge.className='liqFibBadge '+(c.dominant==='LONG'?'long':c.dominant==='SHORT'?'short':'wait');}
   if($('consensusScore'))$('consensusScore').textContent=`${c.score}/100`;
   if($('consensusSide'))$('consensusSide').textContent=c.dominant;
+  if($('consensusBiasLevel'))$('consensusBiasLevel').textContent=c.biasLevel;
   if($('consensusLong'))$('consensusLong').textContent=`${c.longPct}%`;
   if($('consensusShort'))$('consensusShort').textContent=`${c.shortPct}%`;
   if($('consensusVotes'))$('consensusVotes').innerHTML=c.votes.map(v=>`<div class="consensusVote ${v.dir.toLowerCase()}"><span>${v.name} · ${v.weight}</span><b>${v.dir}</b></div>`).join('');
   if($('consensusBlockers'))$('consensusBlockers').innerHTML=c.blockers.length?c.blockers.map(x=>`<span class="consensusBlocker">${x}</span>`).join(''):'<span class="check green">No major consensus blocker</span>';
   if($('consensusNote'))$('consensusNote').textContent=c.dominant==='WAIT'
-    ?`Consensus is WAIT. Long ${c.longPct}% · Short ${c.shortPct}%. Directional separation ${c.confidence}%. The Entry Confirmation Engine remains the final gate.`
-    :`Consensus ${c.dominant} ${c.score}/100. Long ${c.longPct}% · Short ${c.shortPct}%. Consensus is directional bias only; the Entry Confirmation Engine must still complete the confirmation sequence.`;
+    ?`Consensus is WAIT. The 12H/4H hierarchy is not directional. Long ${c.longPct}% · Short ${c.shortPct}%. The Entry Confirmation Engine remains the final gate.`
+    :`Consensus ${c.dominant} BIAS · ${c.biasLevel}. Long ${c.longPct}% · Short ${c.shortPct}%. Lower timeframes can confirm the bias but cannot override the 12H authority or a 12H/4H conflict.`;
 }
 
 function updateUI(d){
