@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.13 Professional</title>
+<title>Crypto Structure Pro v8.14 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 .wrap{max-width:1500px;margin:auto;padding:12px}
 .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
-.brand{font-size:24px;font-weight:850}.sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+.brand{font-size:24px;font-weight:850;display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}.brand .pill{flex:0 0 auto}.sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
 .status{border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:#0c1321;font-size:12px;white-space:nowrap}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--yellow)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -53,7 +53,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
  .roadmapStatus{font-size:10px;color:#aebbd1;margin-top:7px;line-height:1.45}.roadmapStatus b{color:#e7edf8}.roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}.confirmation{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.confirmationSteps{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.cstep{font-size:9px;padding:6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.cstep.done{color:var(--green);border-color:#285a4b}.cstep.current{color:var(--yellow);border-color:#5b4d24}.cstep.locked{opacity:.62}.cstep small{display:block;font-size:8px;margin-top:2px;color:inherit}@media(max-width:560px){.confirmationSteps{grid-template-columns:1fr 1fr}}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
-@media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.brand{font-size:21px}}
+@media(max-width:560px){.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.top>div:first-child{min-width:0;flex:1}.brand{font-size:19px;gap:6px}.brand .pill{font-size:9px;padding:3px 6px}.status{padding:7px 9px}}
 
 .statePanel{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.stateBadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;padding:5px 9px;border-radius:999px;border:1px solid var(--line)}.stateBadge.watch{color:var(--yellow);border-color:#5b4d24}.stateBadge.developing{color:var(--blue);border-color:#31578d}.stateBadge.triggered{color:#d9b6ff;border-color:#654a82}.stateBadge.confirmed{color:var(--green);border-color:#285a4b}.stateBadge.invalidated{color:var(--red);border-color:#6b3340}.stateBadge.wait{color:var(--muted)}.stateDescription{font-size:10px;color:#aebbd1;line-height:1.45;margin-top:7px}.stateMeta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.stateMeta .pill{font-size:9px}.eventPanel{margin-top:12px}.eventLog{display:grid;gap:8px;max-height:260px;overflow:auto}.eventItem{border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:rgba(5,12,25,.45);font-size:13px}.eventItem b{font-weight:800}.eventItem .eventTime{opacity:.65;font-size:11px;margin-right:7px}.eventItem.confirmed b{color:var(--green)}.eventItem.invalidated b{color:var(--red)}.eventItem.reconfirmed b{color:var(--green)}.eventItem.info b{color:var(--yellow)}
 
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.13 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.14 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
