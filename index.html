@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.26 Professional</title>
+<title>Crypto Structure Pro v8.28 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -75,6 +75,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .mtfBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}
 .mtfBox small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}
 .mtfBox b{font-size:12px}
+.mtfBox b{display:block;margin-top:3px;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
 .mtfNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.4}
 @media(max-width:560px){.mtfGrid{grid-template-columns:1fr}.mtfBox:last-child{grid-column:auto}}
 
@@ -132,13 +133,27 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
 .extensionPanel{border-color:#6b4a91}.extensionPanel .liqFibTitle{color:#c29cff}.extTarget{color:#c29cff}.extTarget.active{color:#39d99a}.extTarget.passed{color:#8f9bb3}.extBadge.long{color:var(--green);border-color:#285a4b}.extBadge.short{color:var(--red);border-color:#6b3340}.extBadge.wait{color:var(--muted)}
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
+
+.consensusPanel{border-color:#31578d;background:linear-gradient(180deg,#0b1525,#090f1a)}
+.consensusPanel .liqFibTitle{color:#72a9ff}
+#consensusBadge.long{color:var(--green);border-color:#285a4b}
+#consensusBadge.short{color:var(--red);border-color:#6b3340}
+#consensusBadge.wait{color:var(--yellow);border-color:#5b4d24}
+.consensusScore{font-size:25px;font-weight:850;color:#eef3ff}
+.consensusMini{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.consensusVote{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:#0c1321;font-size:10px}
+.consensusVote span{color:var(--muted)}.consensusVote b{font-size:10px}
+.consensusVote.long b{color:var(--green)}.consensusVote.short b{color:var(--red)}.consensusVote.neutral b{color:var(--yellow)}
+.consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
+@media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.26 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.28 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -224,6 +239,19 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>12H MAJOR SWING</small><b class="macroTarget" id="macro12Swing">—</b></div>
         </div>
         <div class="liqFibNote" id="macroNote">1M and 1W provide macro context. 12H remains the major structure authority; previous-period highs/lows are tracked as HTF liquidity references.</div>
+      </div>
+
+      <div class="liqFibPanel consensusPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Consensus Engine</span><span class="liqFibBadge wait" id="consensusBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>CONSENSUS SCORE</small><b class="consensusScore" id="consensusScore">—</b></div>
+          <div class="liqFibBox"><small>DOMINANT SIDE</small><b id="consensusSide">WAIT</b></div>
+          <div class="liqFibBox"><small>LONG AGREEMENT</small><b id="consensusLong">—</b></div>
+          <div class="liqFibBox"><small>SHORT AGREEMENT</small><b id="consensusShort">—</b></div>
+        </div>
+        <div class="consensusMini" id="consensusVotes"></div>
+        <div class="consensusBlockers" id="consensusBlockers"></div>
+        <div class="liqFibNote" id="consensusNote">Consensus combines macro, major/main/setup structure, trigger structure, HTF liquidity, Fibonacci reaction, volume and confirmation signals. It does not override the Entry Confirmation Engine.</div>
       </div>
 
       <div class="liqFibPanel">
@@ -1415,6 +1443,82 @@ function renderRoadmap(d,side){
   }).join('');
 }
 
+
+function getConsensus(d,macro,r75,conf){
+  const votes=[];
+  const add=(name,dir,weight)=>votes.push({name,dir,weight});
+  const dirFrom=(x)=>x==='BULLISH'?'LONG':x==='BEARISH'?'SHORT':'NEUTRAL';
+  add('1M macro',dirFrom(macro.m1m.regime),10);
+  add('1W macro',dirFrom(macro.m1w.regime),10);
+  add('12H major',d.major12.bullish?'LONG':d.major12.bearish?'SHORT':'NEUTRAL',20);
+  add('4H main',d.main4.bullish?'LONG':d.main4.bearish?'SHORT':'NEUTRAL',15);
+  const s1=structureState(d.s1),s15=d.st15||structureState(d.s15);
+  add('1H setup',s1.bullish?'LONG':s1.bearish?'SHORT':'NEUTRAL',10);
+  add('15m structure',s15.bullish?'LONG':s15.bearish?'SHORT':'NEUTRAL',10);
+
+  const price=d.s1.last?.c||d.s15.last?.c||0;
+  let liqDir='NEUTRAL';
+  const refs=[['PDH',macro.prevDay?.h],['PDL',macro.prevDay?.l],['PWH',macro.prevWeek?.h],['PWL',macro.prevWeek?.l]];
+  let best=null;
+  refs.forEach(([n,v])=>{if(!v||!price)return;const dist=Math.abs(price-v)/price;if(best===null||dist<best.dist)best={n,v,dist}});
+  if(best&&best.dist<=.006){liqDir=best.v<price?'SHORT':'LONG';}
+  add('HTF liquidity',liqDir,5);
+
+  let fibDir='NEUTRAL';
+  if(r75.state==='REJECTION'){
+    const c=d.s15.last?.c||0,o=d.s15.last?.o||0;
+    fibDir=c>o?'LONG':c<o?'SHORT':'NEUTRAL';
+  }else if(r75.state==='RECLAIM'){
+    const c=d.s15.last?.c||0,f=r75.swing?.low?.p&&r75.swing?.range?r75.swing.low.p+r75.swing.range*.75:null;
+    fibDir=f&&c>f?'LONG':f&&c<f?'SHORT':'NEUTRAL';
+  }
+  add('75% reaction',fibDir,5);
+
+  let triggerDir='NEUTRAL';
+  const longTrig=d.longStructure&&d.longSweep&&d.longDisp&&d.longMSS&&d.longFVG;
+  const shortTrig=d.shortStructure&&d.shortSweep&&d.shortDisp&&d.shortMSS&&d.shortFVG;
+  if(longTrig&&!shortTrig)triggerDir='LONG';
+  else if(shortTrig&&!longTrig)triggerDir='SHORT';
+  add('15m trigger',triggerDir,5);
+
+  let volDir='NEUTRAL';
+  const last=d.s15.last;
+  if(last){
+    if(d.s15.L.includes('volume expansion')) volDir='LONG';
+    else if(d.s15.S.includes('volume expansion')) volDir='SHORT';
+  }
+  add('Volume',volDir,5);
+
+  let long=0,short=0,total=0;
+  votes.forEach(v=>{total+=v.weight;if(v.dir==='LONG')long+=v.weight;if(v.dir==='SHORT')short+=v.weight});
+  const longPct=Math.round(long/total*100),shortPct=Math.round(short/total*100);
+  const structureConflict=d.major12.bullish&&d.main4.bearish||d.major12.bearish&&d.main4.bullish;
+  const blockers=[];
+  if(structureConflict)blockers.push('12H / 4H conflict');
+  if(!d.major12.bullish&&!d.major12.bearish)blockers.push('12H major structure unclear');
+  if(Math.abs(long-short)<15)blockers.push('No 15-point directional separation');
+  if(!d.side)blockers.push('Entry confirmation not complete');
+  const dominant=structureConflict?'WAIT':longPct>=60&&long>short+15?'LONG':shortPct>=60&&short>long+15?'SHORT':'WAIT';
+  const score=dominant==='LONG'?longPct:dominant==='SHORT'?shortPct:Math.max(longPct,shortPct);
+  const confidence=Math.round(Math.abs(long-short)/total*100);
+  return {dominant,score,longPct,shortPct,confidence,votes,blockers,structureConflict};
+}
+
+function updateConsensus(d,macro,r75,conf){
+  const c=getConsensus(d,macro,r75,conf);
+  const badge=$('consensusBadge');
+  if(badge){badge.textContent=c.dominant==='WAIT'?'WAIT':c.dominant+' BIAS';badge.className='liqFibBadge '+(c.dominant==='LONG'?'long':c.dominant==='SHORT'?'short':'wait');}
+  if($('consensusScore'))$('consensusScore').textContent=`${c.score}/100`;
+  if($('consensusSide'))$('consensusSide').textContent=c.dominant;
+  if($('consensusLong'))$('consensusLong').textContent=`${c.longPct}%`;
+  if($('consensusShort'))$('consensusShort').textContent=`${c.shortPct}%`;
+  if($('consensusVotes'))$('consensusVotes').innerHTML=c.votes.map(v=>`<div class="consensusVote ${v.dir.toLowerCase()}"><span>${v.name} · ${v.weight}</span><b>${v.dir}</b></div>`).join('');
+  if($('consensusBlockers'))$('consensusBlockers').innerHTML=c.blockers.length?c.blockers.map(x=>`<span class="consensusBlocker">${x}</span>`).join(''):'<span class="check green">No major consensus blocker</span>';
+  if($('consensusNote'))$('consensusNote').textContent=c.dominant==='WAIT'
+    ?`Consensus is WAIT. Long ${c.longPct}% · Short ${c.shortPct}%. Directional separation ${c.confidence}%. The Entry Confirmation Engine remains the final gate.`
+    :`Consensus ${c.dominant} ${c.score}/100. Long ${c.longPct}% · Short ${c.shortPct}%. Consensus is directional bias only; the Entry Confirmation Engine must still complete the confirmation sequence.`;
+}
+
 function updateUI(d){
   const s=state.mtf[state.tf]||d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
@@ -1468,6 +1572,8 @@ function updateUI(d){
   if($('fib75ReactionDisp'))$('fib75ReactionDisp').textContent=r75.displacement;
   if($('fib75ReactionVolume'))$('fib75ReactionVolume').textContent=r75.volume;
   if($('fib75ReactionNote'))$('fib75ReactionNote').textContent=r75.note;
+
+  updateConsensus(d,macro,r75,conf);
 
   const ext=getFibExtensionContext(a);
   const extBadge=$('fibExtBadge');
