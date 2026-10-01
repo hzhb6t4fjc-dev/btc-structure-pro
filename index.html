@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.39 Professional</title>
+<title>Crypto Structure Pro v8.40 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -189,13 +189,14 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
+.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.39 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.40 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -369,6 +370,30 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>RISK STATUS</small><b id="riskStatusText">—</b></div>
         </div>
         <div class="liqFibNote" id="riskNote">Risk sizing is blocked until hierarchy is aligned and a valid Trade Plan provides entry + invalidation. Enter account equity to calculate the maximum loss and position size.</div>
+      </div>
+      <div class="liqFibPanel riskScenarioPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Risk Scenario Simulator</span><span class="liqFibBadge separate" id="scenarioBadge">SIMULATION</span></div>
+        <div class="scenarioNote">Independent what-if calculator. It does not unlock or override the live Risk Management Engine.</div>
+        <div class="liqFibGrid scenarioGrid">
+          <div class="liqFibBox"><small>DIRECTION</small><select class="riskInput" id="scenarioSide"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select></div>
+          <div class="liqFibBox"><small>ENTRY</small><input class="riskInput" id="scenarioEntry" type="number" min="0" step="0.01" placeholder="Entry price"></div>
+          <div class="liqFibBox"><small>STOP</small><input class="riskInput" id="scenarioStop" type="number" min="0" step="0.01" placeholder="Stop price"></div>
+          <div class="liqFibBox"><small>TP1 · 1.272</small><input class="riskInput" id="scenarioTP1" type="number" min="0" step="0.01" placeholder="TP1"></div>
+          <div class="liqFibBox"><small>TP2 · 1.618</small><input class="riskInput" id="scenarioTP2" type="number" min="0" step="0.01" placeholder="TP2"></div>
+          <div class="liqFibBox"><small>TP3 · 2.000</small><input class="riskInput" id="scenarioTP3" type="number" min="0" step="0.01" placeholder="TP3"></div>
+        </div>
+        <div class="scenarioActions"><button class="btn" id="scenarioUsePrice">Use current price</button><button class="btn" id="scenarioUseSwing">Use swing stop</button><button class="btn" id="scenarioClear">Clear</button></div>
+        <div class="liqFibGrid scenarioResults">
+          <div class="liqFibBox"><small>RISK AMOUNT</small><b id="scenarioRiskAmount">—</b></div>
+          <div class="liqFibBox"><small>STOP DISTANCE</small><b id="scenarioStopDistance">—</b></div>
+          <div class="liqFibBox"><small>POSITION SIZE · BASE</small><b id="scenarioPositionSize">—</b></div>
+          <div class="liqFibBox"><small>POSITION NOTIONAL · USDT</small><b id="scenarioNotional">—</b></div>
+          <div class="liqFibBox"><small>TP1 · R</small><b id="scenarioTP1R">—</b></div>
+          <div class="liqFibBox"><small>TP2 · R</small><b id="scenarioTP2R">—</b></div>
+          <div class="liqFibBox"><small>TP3 · R</small><b id="scenarioTP3R">—</b></div>
+          <div class="liqFibBox"><small>SCENARIO STATUS</small><b id="scenarioStatus">ENTER LEVELS</b></div>
+        </div>
+        <div class="liqFibNote" id="scenarioResultNote">Enter Entry, Stop and targets to calculate a hypothetical position size and R multiples. The simulator is separate from live setup confirmation.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -1867,6 +1892,39 @@ function updateRiskManagement(a,entryConf,tradePlan,ext){
   set('riskNote',`Maximum loss ${fmt(riskAmount)} USDT · position size ${positionSize.toFixed(6)} base units · notional ${fmt(notional)} USDT. This is a sizing calculation, not an execution signal.`);
 }
 
+function updateRiskScenario(){
+  const num=id=>{const v=Number($(id)?.value);return Number.isFinite(v)&&v>0?v:null};
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
+  const entry=num('scenarioEntry'), stop=num('scenarioStop'), tp1=num('scenarioTP1'), tp2=num('scenarioTP2'), tp3=num('scenarioTP3');
+  const equity=num('riskEquity'), pctRaw=Number($('riskPct')?.value), pct=Number.isFinite(pctRaw)&&pctRaw>0&&pctRaw<=100?pctRaw:null;
+  const riskAmount=equity&&pct?equity*pct/100:null;
+  const stopDist=entry&&stop?Math.abs(entry-stop):null;
+  const validDirection=entry&&stop&&(side==='LONG'?stop<entry:stop>entry);
+  const positionSize=riskAmount&&stopDist>0&&validDirection?riskAmount/stopDist:null;
+  const notional=positionSize&&entry?positionSize*entry:null;
+  const rVal=tp=>{if(!entry||!stop||!tp||!stopDist||!validDirection)return null;const move=side==='LONG'?tp-entry:entry-tp;return move>0?move/stopDist:null};
+  set('scenarioRiskAmount',riskAmount?fmt(riskAmount):'—');
+  set('scenarioStopDistance',stopDist?`${fmt(stopDist)} (${(stopDist/entry*100).toFixed(2)}%)`:'—');
+  set('scenarioPositionSize',positionSize?positionSize.toFixed(6):'—');
+  set('scenarioNotional',notional?fmt(notional):'—');
+  [tp1,tp2,tp3].forEach((tp,i)=>{const r=rVal(tp);set(['scenarioTP1R','scenarioTP2R','scenarioTP3R'][i],r?r.toFixed(2)+'R':'—')});
+  const badge=$('scenarioBadge');
+  if(!entry||!stop){set('scenarioStatus','ENTER LEVELS');set('scenarioResultNote','Enter Entry and Stop first. Targets are optional, but required for TP R-multiples.');if(badge){badge.textContent='SIMULATION';badge.className='liqFibBadge separate'};return;}
+  if(!validDirection){set('scenarioStatus','INVALID STOP');set('scenarioResultNote',`For ${side}, Stop must be ${side==='LONG'?'below':'above'} Entry.`);if(badge){badge.textContent='CHECK LEVELS';badge.className='liqFibBadge blocked'};return;}
+  if(!riskAmount){set('scenarioStatus','ENTER EQUITY');set('scenarioResultNote','Valid Entry/Stop detected. Enter Account Equity and Risk / Trade % above to calculate position size.');if(badge){badge.textContent='READY';badge.className='liqFibBadge ready'};return;}
+  set('scenarioStatus',`CALCULATED · ${side}`);set('scenarioResultNote',`Hypothetical ${side} sizing only · max loss ${fmt(riskAmount)} USDT · position size ${positionSize.toFixed(6)} base units. This does not create or confirm a live trade.`);if(badge){badge.textContent='CALCULATED';badge.className='liqFibBadge confirmed'};
+}
+function initRiskScenario(){
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v840')||'null')}catch(e){return null}})();
+  if(saved){['scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if(saved[id]!=null&&$(id))$(id).value=saved[id]})}
+  ['scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3','riskEquity','riskPct'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{try{localStorage.setItem('cspScenario_v840',JSON.stringify({scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){} updateRiskScenario()})});
+  const usePrice=$('scenarioUsePrice');if(usePrice)usePrice.addEventListener('click',()=>{const p=Number(state.livePrice)||Number(state.mtf?.[state.tf]?.last?.c);if(p){$('scenarioEntry').value=p.toFixed(2);updateRiskScenario()}});
+  const useSwing=$('scenarioUseSwing');if(useSwing)useSwing.addEventListener('click',()=>{const a=state.mtf?.[state.tf];const sw=a?getFibSwing(a):null;const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';if(sw)$('scenarioStop').value=(side==='LONG'?sw.low.p:sw.high.p).toFixed(2);updateRiskScenario()});
+  const clear=$('scenarioClear');if(clear)clear.addEventListener('click',()=>{['scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if($(id))$(id).value='' });updateRiskScenario()});
+  updateRiskScenario();
+}
+
 function updateFinalDecision(entryConf,consensus){
   const side=entryConf.side||'WAIT';
   let status='WAIT', badge='wait', action='WAIT — no confirmed entry.', reason='The Final Decision Engine summarizes hierarchy and confirmation gates.';
@@ -2557,15 +2615,16 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
   connectWS();await loadAll();
 });
 
-const savedRisk=(()=>{try{return JSON.parse(localStorage.getItem('cspRisk_v839')||'{}')}catch(e){return {}}})();
+const savedRisk=(()=>{try{return JSON.parse(localStorage.getItem('cspRisk_v840')||'{}')}catch(e){return {}}})();
 if($('riskEquity')&&savedRisk.equity) $('riskEquity').value=savedRisk.equity;
 if($('riskPct')&&savedRisk.pct) $('riskPct').value=savedRisk.pct;
 ['riskEquity','riskPct'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{
   if(id==='riskPct'){const n=Number(e.value);if(Number.isFinite(n)&&n>100)e.value='100';}
-  try{localStorage.setItem('cspRisk_v839',JSON.stringify({equity:$('riskEquity')?.value||'',pct:$('riskPct')?.value||'1'}));}catch(err){}
+  try{localStorage.setItem('cspRisk_v840',JSON.stringify({equity:$('riskEquity')?.value||'',pct:$('riskPct')?.value||'1'}));}catch(err){}
   const d=mtfDecision();if(d)updateUI(d);
 });});
 
+initRiskScenario();
 window.addEventListener('resize',draw);
 renderAlerts();
 renderAlertEngine();
