@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.7 Professional</title>
+<title>Crypto Structure Pro v8.8 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.7 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.8 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -674,7 +674,10 @@ function getConfluenceScore(a,hi,lo){
   const recent=g.slice(-8,-1);
   const minL=Math.min(...recent.map(x=>x.l)),maxH=Math.max(...recent.map(x=>x.h));
   const sweepLong=last.l<minL&&last.c>minL,sweepShort=last.h>maxH&&last.c<maxH;
-  const structureAligned=bullish?(m1.bull>=m1.bear+8):(m1.bear>=m1.bull+8);
+  // Structure score must reflect the actual 15m trigger structure, not only the 1H score.
+  // A 15m consolidation/range therefore does NOT receive full structure points.
+  const st15=structureState(m15);
+  const structureAligned=bullish?st15.bullish:st15.bearish;
   if(structureAligned)breakdown.structure=15;
 
   let eqH=0,eqL=0;
@@ -1078,9 +1081,15 @@ function scannerState(d){
   const side=d.watchSide;
   if(side!=='LONG'&&side!=='SHORT')return {name:'WAIT',cls:'wait',rank:0};
   const roadmap=buildRoadmap(d,side);
+  // Scanner progression follows the ordered confirmation sequence.
+  // A later gate such as FVG cannot make a setup 'DEVELOPING' while gate #1
+  // (15m directional structure) is still missing.
   const done=roadmap.filter(x=>x[1]).length;
-  if(done>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
-  if(done>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
+  const firstMissing=roadmap.findIndex(x=>!x[1]);
+  const sequenceDone=firstMissing<0?roadmap.length:firstMissing;
+  if(sequenceDone>=7)return {name:'CONFIRMED',cls:'confirmed',rank:4};
+  if(sequenceDone>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
+  if(sequenceDone>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
   return {name:'WATCH',cls:'watch',rank:1};
 }
 function scannerNext(d){
