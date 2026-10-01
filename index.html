@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.25 Professional</title>
+<title>Crypto Structure Pro v8.26 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -127,6 +127,8 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
 @media(max-width:520px){.snapshotGrid{grid-template-columns:1fr 1fr}}
 
+
+.macroPanel{border-color:#405d86}.macroPanel .liqFibTitle{color:#8db9ff}.macroGood{color:var(--green)!important}.macroBad{color:var(--red)!important}.macroNeutral{color:var(--yellow)!important}.macroMuted{color:var(--muted)!important}.macroTarget{font-size:13px!important}.macroSmall{font-size:12px!important;line-height:1.35}
 .reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
 .extensionPanel{border-color:#6b4a91}.extensionPanel .liqFibTitle{color:#c29cff}.extTarget{color:#c29cff}.extTarget.active{color:#39d99a}.extTarget.passed{color:#8f9bb3}.extBadge.long{color:var(--green);border-color:#285a4b}.extBadge.short{color:var(--red);border-color:#6b3340}.extBadge.wait{color:var(--muted)}
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
@@ -136,7 +138,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.25 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.26 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -207,6 +209,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="mtfBox"><small>ALIGNMENT SCORE</small><b id="mtfScore">—</b></div>
         </div>
         <div class="mtfNote" id="mtfNote">12H defines the major structure. 4H confirms the main structure, 1H defines the setup, and 15m remains the trigger timeframe.</div>
+      </div>
+
+      <div class="liqFibPanel macroPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Macro Regime Engine</span><span class="liqFibBadge separate" id="macroBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>1M MACRO REGIME</small><b id="macro1M">—</b></div>
+          <div class="liqFibBox"><small>1W MACRO STRUCTURE</small><b id="macro1W">—</b></div>
+          <div class="liqFibBox"><small>MA 7 / 14 / 28</small><b id="macroMA">—</b></div>
+          <div class="liqFibBox"><small>VOLUME REGIME</small><b id="macroVolume">—</b></div>
+          <div class="liqFibBox"><small>PREVIOUS DAY H / L</small><b class="macroTarget" id="macroPD">—</b></div>
+          <div class="liqFibBox"><small>PREVIOUS WEEK H / L</small><b class="macroTarget" id="macroPW">—</b></div>
+          <div class="liqFibBox"><small>PREVIOUS MONTH H / L</small><b class="macroTarget" id="macroPM">—</b></div>
+          <div class="liqFibBox"><small>12H MAJOR SWING</small><b class="macroTarget" id="macro12Swing">—</b></div>
+        </div>
+        <div class="liqFibNote" id="macroNote">1M and 1W provide macro context. 12H remains the major structure authority; previous-period highs/lows are tracked as HTF liquidity references.</div>
       </div>
 
       <div class="liqFibPanel">
@@ -328,6 +345,7 @@ const state={
   tf:'1h',
   data:[],
   mtf:{},
+  macro:{'1w':null,'1M':null},
   ws:null,
   wsTimer:null,
   lastAlertKey:null,
@@ -637,6 +655,55 @@ function structureState(s){
   // Only a clean HH+HL structure outside consolidation counts as bullish trigger.
   // Only a clean LH+LL structure outside consolidation counts as bearish trigger.
   return {state,bullish:bullish&&state==='BULLISH',bearish:bearish&&state==='BEARISH',parts,context:ctx,detail,transitionReason};
+}
+
+function sma(values,n){
+  if(!values||values.length<n)return null;
+  const v=values.slice(-n);
+  return v.reduce((sum,x)=>sum+Number(x||0),0)/v.length;
+}
+
+function getMacroRegime(a){
+  if(!a||a.length<35)return {regime:'WAIT',maAlignment:'WAIT',ma7:null,ma14:null,ma28:null,maSpread:null,volumeRegime:'WAIT',last:null,prevHigh:null,prevLow:null,majorHigh:null,majorLow:null};
+  const x=a.slice(0,-1), closes=x.map(q=>q.c), vols=x.map(q=>q.v||0), last=x.at(-1);
+  const ma7=sma(closes,7),ma14=sma(closes,14),ma28=sma(closes,28);
+  const ma7Prev=sma(closes.slice(0,-3),7),ma14Prev=sma(closes.slice(0,-3),14),ma28Prev=sma(closes.slice(0,-3),28);
+  const slope7=ma7Prev?ma7-ma7Prev:0, slope14=ma14Prev?ma14-ma14Prev:0, slope28=ma28Prev?ma28-ma28Prev:0;
+  const bullishMA=ma7>ma14&&ma14>ma28, bearishMA=ma7<ma14&&ma14<ma28;
+  const slopeBull=slope7>0&&slope14>=0&&slope28>=0, slopeBear=slope7<0&&slope14<=0&&slope28<=0;
+  const spread=Math.abs(ma7-ma28)/Math.max(Math.abs(last.c),1)*100;
+  const compression=spread<1.2;
+  let regime='TRANSITION';
+  if(bullishMA&&slopeBull&&last.c>=ma14)regime='BULLISH';
+  else if(bearishMA&&slopeBear&&last.c<=ma14)regime='BEARISH';
+  else if(compression)regime='COMPRESSION';
+  const maAlignment=bullishMA?'7 > 14 > 28':bearishMA?'7 < 14 < 28':'MIXED';
+  const avgVol10=sma(vols,10)||0,avgVol5=sma(vols,5)||0,lastVol=last.v||0;
+  let volumeRegime='NORMAL';
+  if(avgVol10&&lastVol>avgVol10*2.2)volumeRegime='CLIMAX';
+  else if(avgVol10&&lastVol>avgVol10*1.35)volumeRegime='EXPANSION';
+  else if(avgVol10&&lastVol<avgVol10*.65)volumeRegime='DRY-UP';
+  const p=pivots(x,3),hi=p.hi.at(-1)?.p||null,lo=p.lo.at(-1)?.p||null;
+  const prev=x.at(-2)||null;
+  return {regime,maAlignment,ma7,ma14,ma28,maSpread:spread,slope7,slope14,slope28,volumeRegime,last,prevHigh:prev?.h||null,prevLow:prev?.l||null,majorHigh:hi,majorLow:lo};
+}
+
+function getMacroSummary(){
+  const m1m=getMacroRegime(state.macro['1M']);
+  const m1w=getMacroRegime(state.macro['1w']);
+  const day=state.mtf['1d'];
+  const week=state.macro['1w'],month=state.macro['1M'];
+  const prevDay=day?.last ? day.last : null;
+  const prevWeek=week?.slice?.(-2)?.[0]||null;
+  const prevMonth=month?.slice?.(-2)?.[0]||null;
+  const s12=state.mtf['12h'];
+  const major12=s12 ? structureState(s12) : null;
+  const macroDirs=[m1m.regime,m1w.regime];
+  let badge='NEUTRAL';
+  if(macroDirs.every(x=>x==='BULLISH'))badge='BULLISH';
+  else if(macroDirs.every(x=>x==='BEARISH'))badge='BEARISH';
+  else if(macroDirs.includes('BULLISH')&&macroDirs.includes('BEARISH'))badge='MIXED';
+  return {m1m,m1w,prevDay,prevWeek,prevMonth,major12,badge};
 }
 
 function mtfDecision(){
@@ -1349,7 +1416,7 @@ function renderRoadmap(d,side){
 }
 
 function updateUI(d){
-  const s=d.s1,last=s.last;
+  const s=state.mtf[state.tf]||d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
@@ -1357,6 +1424,23 @@ function updateUI(d){
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull} · 12H ${d.s12.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear} · 12H ${d.s12.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`${d.main4.state} · L ${d.s4.bull} / S ${d.s4.bear}`;$('s12').textContent=`${d.major12.state} · L ${d.s12.bull} / S ${d.s12.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
+  const macro=getMacroSummary();
+  const macroBadge=$('macroBadge');
+  if(macroBadge){
+    macroBadge.textContent=macro.badge;
+    macroBadge.className='liqFibBadge '+(macro.badge==='BULLISH'?'confluence':macro.badge==='BEARISH'?'resistance':macro.badge==='MIXED'?'flip':'separate');
+  }
+  const macroClass=v=>v==='BULLISH'?'macroGood':v==='BEARISH'?'macroBad':v==='COMPRESSION'?'macroNeutral':'macroMuted';
+  if($('macro1M')){$('macro1M').textContent=macro.m1m.regime;$('macro1M').className=macroClass(macro.m1m.regime);}
+  if($('macro1W')){$('macro1W').textContent=macro.m1w.regime;$('macro1W').className=macroClass(macro.m1w.regime);}
+  if($('macroMA'))$('macroMA').textContent=`${macro.m1w.maAlignment} · ${macro.m1w.maSpread?.toFixed(2)||'—'}% spread`;
+  if($('macroVolume'))$('macroVolume').textContent=macro.m1w.volumeRegime;
+  if($('macroPD'))$('macroPD').textContent=macro.prevDay?`${fmt(macro.prevDay.h)} / ${fmt(macro.prevDay.l)}`:'—';
+  if($('macroPW'))$('macroPW').textContent=macro.prevWeek?`${fmt(macro.prevWeek.h)} / ${fmt(macro.prevWeek.l)}`:'—';
+  if($('macroPM'))$('macroPM').textContent=macro.prevMonth?`${fmt(macro.prevMonth.h)} / ${fmt(macro.prevMonth.l)}`:'—';
+  if($('macro12Swing'))$('macro12Swing').textContent=macro.major12?`${fmt(d.s12.p.hi.at(-1)?.p)} / ${fmt(d.s12.p.lo.at(-1)?.p)}`:'—';
+  if($('macroNote'))$('macroNote').textContent=`1M ${macro.m1m.regime} · 1W ${macro.m1w.regime} · 1W MA ${macro.m1w.maAlignment}. Previous Day/Week/Month highs and lows are tracked as HTF liquidity references. 12H remains the Major Structure authority (${d.major12.state}).`;
+
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
   const lf=getLiquidityFibContext(a,hi,lo);
   const lfBadge=$('liqFibBadge');
@@ -1470,7 +1554,7 @@ function updateUI(d){
         : `12H ${major12Dir} and 4H ${fourHourDir} are aligned. 1H remains the setup timeframe and 15m the trigger.`;
   }
   $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${mtfScore}/15 · ${mtfStatus} · TRIGGER ${trigger}.`;
-  $('qualityChecks').innerHTML=['12H major structure','4H main structure','1H setup','15m trigger','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+  $('qualityChecks').innerHTML=['1M macro regime','1W macro structure','12H major structure','4H main structure','1H setup','15m trigger','HTF liquidity','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
 
   const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],[`MTF Alignment · ${mtfStatus}`,'mtf',15]];
   $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
@@ -1632,10 +1716,13 @@ async function loadAll(){
   setStatus('Scanning…','yellow');
 
   try{
-    const results=await Promise.all(tfs.map(tf=>loadTF(tf)));
+    const allTfs=[...tfs,'1w','1M'];
+    const results=await Promise.all(allTfs.map(tf=>loadTF(tf)));
     for(let i=0;i<tfs.length;i++)state.mtf[tfs[i]]=scan(results[i]);
+    state.macro['1w']=results[allTfs.indexOf('1w')];
+    state.macro['1M']=results[allTfs.indexOf('1M')];
 
-    state.data=state.mtf[state.tf] ? await loadTF(state.tf) : results[tfs.indexOf(state.tf)];
+    state.data=results[tfs.indexOf(state.tf)];
     draw();
 
     const d=mtfDecision();
@@ -1812,7 +1899,7 @@ function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRa
 
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
-  state.mtf={};state.lastAlertKey=null;
+  state.mtf={};state.macro={'1w':null,'1M':null};state.lastAlertKey=null;
   startMonitorWS();
   connectWS();await loadAll();
 };
