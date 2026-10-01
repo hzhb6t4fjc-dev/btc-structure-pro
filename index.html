@@ -1024,12 +1024,13 @@ function updateUI(d){
         : 'WAIT — no directional trigger is dominant.';
 
   const roadmapSide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+  state.activeSetupSide=roadmapSide==='LONG'||roadmapSide==='SHORT'?roadmapSide:'WAIT';
   const roadmap=roadmapSide==='LONG'||roadmapSide==='SHORT'?buildRoadmap(d,roadmapSide):[];
   $('checks').innerHTML=roadmap.map(([label,ok])=>`<span class="check ${ok?'green':''}">${ok?'✓':'○'} ${label}</span>`).join('');
   renderRoadmap(d,roadmapSide||'WAIT');
   updateConfirmation(d,roadmapSide||'WAIT');
   updateSetupState(d,roadmapSide||'WAIT');
-  updateLiveMonitor(d);
+  updateLiveMonitor(d,state.activeSetupSide);
 
   if(d.side){
     maybeCreateSnapshot(d,conf);
@@ -1172,22 +1173,20 @@ async function loadAll(){
   }
 }
 
-function updateLiveMonitor(d){
+function updateLiveMonitor(d,activeSide){
   const badge=$('monitorBadge'),text=$('monitorText'),meta=$('monitorMeta');
   if(!badge||!text||!meta)return;
   state.lastScanTs=Date.now();
   const s15=state.mtf['15m'];
   state.lastCandleTs=s15&&s15.last?s15.last.t:0;
-  // Keep the live monitor aligned with the same directional bias used by the main setup state.
-  // A raw score (watchSide) can disagree with the 1H/4H directional bias, so it must not
-  // override the active LONG/SHORT setup shown elsewhere in the UI.
-  const side=d && d.side
-    ? d.side
-    : d && d.shortBias
-      ? 'SHORT'
-      : d && d.longBias
-        ? 'LONG'
-        : (d&&d.watchSide)||'WAIT';
+  // IMPORTANT: use the exact same active side selected by the main setup state.
+  // Do not derive the monitor side independently from raw MTF scores, because that
+  // can disagree with the displayed LONG/SHORT bias (e.g. setup SHORT, monitor LONG).
+  const side=(activeSide==='LONG'||activeSide==='SHORT')
+    ? activeSide
+    : d && d.side
+      ? d.side
+      : 'WAIT';
   const idx=state.confirmation.index||0;
   const total=7;
   if(d&&d.side){
@@ -1331,7 +1330,11 @@ renderScanner();
     setTimeout(runScanner,5000);
     setInterval(()=>{
       const d=mtfDecision();
-      if(d)updateLiveMonitor(d);
+      if(d){
+        const conf=getConfluenceScore(d);
+        const activeSide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+        updateLiveMonitor(d,activeSide);
+      }
     },1000);
   }catch(e){
     console.error(e);
@@ -1341,5 +1344,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
+<!-- v8.11: Live Trigger Monitor is locked to the same active side as Setup State / Signal Quality. -->
 </body>
 </html>
