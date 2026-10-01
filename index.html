@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.8 Professional</title>
+<title>Crypto Structure Pro v8.9 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.8 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.9 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -181,9 +181,8 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="stateMeta" id="snapshotMeta"></div>
         </div>
         <div class="confirmation eventPanel" id="eventPanel">
-          <div class="roadmapHead"><span class="roadmapTitle">Confirmation history</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
-          <div class="reason" style="margin:6px 0 10px">History only — past confirmations and invalidations are recorded here. The active setup is determined only by the current sequence (for example, 0/7 CONFIRMED).</div>
-          <div class="eventLog" id="eventLog">No confirmation history yet.</div>
+          <div class="roadmapHead"><span class="roadmapTitle">Confirmation event log</span><span class="roadmapNext" id="eventCount">0 EVENTS</span></div>
+          <div class="eventLog" id="eventLog">No confirmation events yet.</div>
         </div>
         <div class="reason" style="margin-top:8px"><b>Risk/Reward:</b> <span id="rr">—</span> · <b>Trigger:</b> <span id="triggerText">—</span></div>
       </div>
@@ -525,7 +524,7 @@ function structureState(s){
   }
 
   let detail=state;
-  if(state==='CONSOLIDATION') detail=`CONSOLIDATION · ${location} · HH/LL are range pivots, not a bearish trend`;
+  if(state==='CONSOLIDATION') detail=`CONSOLIDATION · ${location}`;
   else if(state==='BULLISH TRANSITION') detail=`BULLISH TRANSITION · ${transitionReason||location}`;
   else if(state==='BEARISH TRANSITION') detail=`BEARISH TRANSITION · ${transitionReason||location}`;
 
@@ -674,10 +673,7 @@ function getConfluenceScore(a,hi,lo){
   const recent=g.slice(-8,-1);
   const minL=Math.min(...recent.map(x=>x.l)),maxH=Math.max(...recent.map(x=>x.h));
   const sweepLong=last.l<minL&&last.c>minL,sweepShort=last.h>maxH&&last.c<maxH;
-  // Structure score must reflect the actual 15m trigger structure, not only the 1H score.
-  // A 15m consolidation/range therefore does NOT receive full structure points.
-  const st15=structureState(m15);
-  const structureAligned=bullish?st15.bullish:st15.bearish;
+  const structureAligned=bullish?(m1.bull>=m1.bear+8):(m1.bear>=m1.bull+8);
   if(structureAligned)breakdown.structure=15;
 
   let eqH=0,eqL=0;
@@ -812,7 +808,7 @@ function buildRoadmap(d,side){
   const alignment=long ? d.longBias : d.shortBias;
   const score=long ? d.longScore>=70 : d.shortScore>=70;
   return [
-    [long?'15m bullish structure (HH + HL outside range)':'15m bearish structure (LH + LL outside range)',structure],
+    [long?'15m bullish structure':'15m bearish structure',structure],
     ['Liquidity sweep',sweep],
     ['Displacement',displacement],
     ['MSS',mss],
@@ -902,7 +898,7 @@ function updateConfirmation(d,side){
     status.innerHTML=`<b>${side}</b> confirmation sequence completed in order. The current setup can pass the strict trigger gate.`;
   }else{
     const next=steps[idx][0];
-    status.innerHTML=`Next sequence gate: <b>${next}</b>. Historical events remain recorded below; only the current ${side} sequence determines the active setup.`;
+    status.innerHTML=`Next sequence gate: <b>${next}</b>. Previously observed confirmations remain recorded for this ${side} watch.`;
   }
   stepsBox.innerHTML=steps.map(([label],i)=>{
     if(observed[i]) return `<span class="cstep done">✓ ${label}<small>${observed[i].time}</small></span>`;
@@ -918,7 +914,7 @@ function updateSetupState(d,side){
   let stateName='WAIT',cls='wait',desc='Waiting for a directional side.';
   let index=state.confirmation.index||0;
   const steps=side==='LONG'||side==='SHORT'?buildRoadmap(d,side):[];
-  const invalidated=index>0 && index<steps.length && state.confirmation.statuses[index]==='INVALIDATED';
+  const invalidated=index<steps.length && state.confirmation.statuses[index]==='INVALIDATED';
   if(invalidated){
     stateName='INVALIDATED'; cls='invalidated';
     desc=`${side} setup paused: ${steps[index][0]} is no longer confirmed. The sequence must recover this gate before continuing.`;
@@ -961,9 +957,7 @@ function renderRoadmap(d,side){
   }
   const steps=buildRoadmap(d,side);
   const st=d.st15||structureState(d.s15);
-  const current=st.state==='CONSOLIDATION'
-    ? `CONSOLIDATION · ${st.context?.rangeLocation||'RANGE'}`
-    : (st.parts.length?st.parts.join(' + '):'No clear swing sequence');
+  const current=st.parts.length?st.parts.join(' + '):'No clear swing sequence';
   $('roadmapStatus').innerHTML=`Current 15m structure: <b>${current}</b> → <b>${st.state}</b>`;
   const done=steps.filter(x=>x[1]).length;
   const firstMissing=steps.find(x=>!x[1]);
@@ -982,21 +976,12 @@ function renderRoadmap(d,side){
   }).join('');
 }
 
-function consolidationZoneLabel(st){
-  const loc=st?.context?.rangeLocation||'MID-RANGE';
-  if(loc==='NEAR SUPPORT') return 'support/consolidation zone detected';
-  if(loc==='NEAR RESISTANCE') return 'resistance/consolidation zone detected';
-  if(loc==='ABOVE RESISTANCE') return 'above range resistance';
-  if(loc==='BELOW SUPPORT') return 'below range support';
-  return 'range/consolidation zone detected';
-}
-
 function updateUI(d){
   const s=d.s1,last=s.last;
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
-  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':(chartStructure.state.includes('TRANSITION')?'Transition':'Mixed');
+  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
@@ -1063,12 +1048,10 @@ function updateUI(d){
     const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
     const firstMissing=(conf.direction==='LONG'?buildRoadmap(d,'LONG'):conf.direction==='SHORT'?buildRoadmap(d,'SHORT'):[]).find(x=>!x[1]);
     const st=d.st15||structureState(d.s15);
-    const currentStructure=st.state==='CONSOLIDATION'
-      ? `CONSOLIDATION · ${st.context?.rangeLocation||'RANGE'} → ${st.state}`
-      : (st.parts.length?st.parts.join(' + ')+' → '+(st.detail||st.state):'No clear swing sequence');
+    const currentStructure=st.parts.length?st.parts.join(' + ')+' → '+(st.detail||st.state):'No clear swing sequence';
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
-      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}${st.state==='CONSOLIDATION'?' · '+consolidationZoneLabel(st):''}.`;
+      : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}${st.state==='CONSOLIDATION'?' · support/consolidation zone detected':''}.`;
     $('entry').textContent=$('invalid').textContent=$('tp1').textContent=$('tp2').textContent=$('rr').textContent='—';
   }
   $('updated').textContent=new Date().toLocaleTimeString();
@@ -1081,15 +1064,9 @@ function scannerState(d){
   const side=d.watchSide;
   if(side!=='LONG'&&side!=='SHORT')return {name:'WAIT',cls:'wait',rank:0};
   const roadmap=buildRoadmap(d,side);
-  // Scanner progression follows the ordered confirmation sequence.
-  // A later gate such as FVG cannot make a setup 'DEVELOPING' while gate #1
-  // (15m directional structure) is still missing.
   const done=roadmap.filter(x=>x[1]).length;
-  const firstMissing=roadmap.findIndex(x=>!x[1]);
-  const sequenceDone=firstMissing<0?roadmap.length:firstMissing;
-  if(sequenceDone>=7)return {name:'CONFIRMED',cls:'confirmed',rank:4};
-  if(sequenceDone>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
-  if(sequenceDone>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
+  if(done>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
+  if(done>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
   return {name:'WATCH',cls:'watch',rank:1};
 }
 function scannerNext(d){
