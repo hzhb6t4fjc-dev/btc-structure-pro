@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.33 Professional</title>
+<title>Crypto Structure Pro v8.34 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -21,7 +21,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .panel{background:rgba(16,23,38,.96);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)}
 .head{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
 .title{font-weight:750}.muted{color:var(--muted)}.controls{display:flex;gap:6px;flex-wrap:wrap}
-.chartbox{height:500px;position:relative}.chartbox canvas{width:100%;height:100%;display:block}.chartLegend{position:absolute;top:9px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none;font-size:9px;color:var(--muted)}.chartLegend .legendLeft{display:flex;gap:5px;flex-wrap:wrap}.chartLegend .tag{padding:4px 6px;border:1px solid rgba(38,51,78,.9);border-radius:999px;background:rgba(7,11,20,.78);backdrop-filter:blur(4px)}.chartLegend .legendRight{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.chartLegend .priceTag{font-weight:800;color:var(--text);border-color:#31578d}.chartLegend .focusTag{font-weight:800;color:#ffcf52;border-color:#6a5620}.chartLegend{align-items:flex-start}
+.chartFocusBar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 11px;background:linear-gradient(180deg,#0d1728,#0a1220);border-bottom:1px solid var(--line);font-size:10px}.chartFocusBar .focusMain{font-weight:850;color:#ffcf52;letter-spacing:.15px;line-height:1.35}.chartFocusBar .focusSub{color:var(--muted);font-size:9px;margin-top:2px}.chartFocusBar .focusPrice{flex:0 0 auto;font-weight:850;color:var(--text);border:1px solid #31578d;border-radius:999px;padding:5px 8px;background:#0c1321}.chartbox{height:500px;position:relative}.chartbox canvas{width:100%;height:100%;display:block}.chartLegend{position:absolute;top:9px;left:10px;right:10px;display:flex;justify-content:flex-start;align-items:flex-start;gap:8px;pointer-events:none;font-size:9px;color:var(--muted)}.chartLegend .legendLeft{display:flex;gap:5px;flex-wrap:wrap}.chartLegend .tag{padding:4px 6px;border:1px solid rgba(38,51,78,.9);border-radius:999px;background:rgba(7,11,20,.78);backdrop-filter:blur(4px)}.chartLegend .priceTag,.chartLegend .focusTag{display:none}
 .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:11px}
 .metric{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px}
 .metric .k{font-size:10px;color:var(--muted)}.metric .v{font-size:15px;font-weight:750;margin-top:4px}
@@ -164,7 +164,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.33 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.34 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -190,7 +190,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <button class="btn" data-tf="1d">1D</button>
         </div>
       </div>
-      <div class="chartbox"><canvas id="chart"></canvas><div class="chartLegend"><div class="legendLeft"><span class="tag">● Structure</span><span class="tag">● Liquidity</span><span class="tag">● Fibonacci</span></div><div class="legendRight"><span class="tag focusTag" id="chartFocusTag">FOCUS —</span><span class="tag priceTag" id="chartPriceTag">PRICE —</span></div></div></div>
+      <div class="chartFocusBar"><div><div class="focusMain" id="chartFocusMain">FOCUS —</div><div class="focusSub" id="chartFocusSub">Waiting for synchronized price and liquidity context…</div></div><div class="focusPrice" id="chartFocusPrice">PRICE —</div></div><div class="chartbox"><canvas id="chart"></canvas><div class="chartLegend"><div class="legendLeft"><span class="tag">● Structure</span><span class="tag">● Liquidity</span><span class="tag">● Fibonacci</span></div></div></div>
       <div class="metrics">
         <div class="metric"><div class="k">Price</div><div class="v" id="price">—</div></div>
         <div class="metric"><div class="k">Structure</div><div class="v" id="structure">—</div></div>
@@ -385,6 +385,8 @@ const state={
   symbol:'BTCUSDT',
   tf:'1h',
   data:[],
+  livePrice:null,
+  liveCandleTs:null,
   mtf:{},
   macro:{'1w':null,'1M':null},
   ws:null,
@@ -1591,7 +1593,8 @@ function updateFinalDecision(entryConf,consensus){
 
 function updateUI(d){
   const s=state.mtf[state.tf]||d.s1,last=s.last;
-  $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
+  const snapshotPrice=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):last.c;
+  $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(snapshotPrice);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
   $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
@@ -1902,6 +1905,8 @@ async function loadAll(){
     state.macro['1M']=results[allTfs.indexOf('1M')];
 
     state.data=results[tfs.indexOf(state.tf)];
+    state.livePrice=state.data.at(-1)?.c??null;
+    state.liveCandleTs=state.data.at(-1)?.t??null;
     draw();
 
     const d=mtfDecision();
@@ -1981,6 +1986,22 @@ function startMonitorWS(){
   }catch(e){state.monitorTimer=setTimeout(startMonitorWS,5000);}
 }
 
+function syncLiveKline(k){
+  if(!k||!Number.isFinite(+k.c))return;
+  const candle={t:+k.t,o:+k.o,h:+k.h,l:+k.l,c:+k.c,v:+k.v,closed:!!k.x};
+  state.livePrice=candle.c;
+  state.liveCandleTs=candle.t;
+  if(Array.isArray(state.data)&&state.data.length){
+    const last=state.data[state.data.length-1];
+    if(last.t===candle.t){Object.assign(last,candle);}
+    else if(candle.t>last.t){state.data.push(candle);if(state.data.length>240)state.data.shift();}
+  }
+  const m=state.mtf[state.tf];
+  if(m&&m.last&&m.last.t===candle.t)Object.assign(m.last,candle);
+  const priceEl=$('price');if(priceEl)priceEl.textContent='$'+fmt(candle.c);
+  draw();
+}
+
 function connectWS(){
   if(state.wsTimer)clearTimeout(state.wsTimer);
   if(state.ws){try{state.ws.close()}catch(e){}state.ws=null}
@@ -1993,7 +2014,7 @@ function connectWS(){
       try{
         const k=JSON.parse(ev.data).k;
         if(!k)return;
-        $('price').textContent='$'+fmt(+k.c);
+        syncLiveKline(k);
         if(k.x)loadAll();
       }catch(e){}
     };
@@ -2119,17 +2140,31 @@ function drawStructureOverlay(ctx,a,y,x,pad,w,h,isMobile){
 }
 
 function updateChartFocus(a){
-  const focus=$('chartFocusTag');
-  if(!focus||!a?.length)return;
-  const price=a.at(-1).c;
+  const main=$('chartFocusMain'),sub=$('chartFocusSub'),priceTag=$('chartFocusPrice');
+  if(!a?.length)return;
+  const price=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):a.at(-1).c;
   const swing=getFibSwing(a),levels=getFibLevelsFromSwing(swing);
   const f75=levels.find(v=>v.r===.75);
   const zones=getChartLiquidityZones(a);
-  const nearest=zones.sort((x,z)=>Math.abs(x.p-price)-Math.abs(z.p-price))[0];
+  const nearest=zones.slice().sort((x,z)=>Math.abs(x.p-price)-Math.abs(z.p-price))[0];
   const bits=[];
-  if(f75){const dir=f75.p<price?'BELOW':'ABOVE';bits.push(`75% ${dir} · ${Math.abs((price-f75.p)/price*100).toFixed(2)}%`);}
-  if(nearest){const dir=nearest.p<price?'BELOW':'ABOVE';bits.push(`${nearest.kind} LIQ ${dir} · ${Math.abs((price-nearest.p)/price*100).toFixed(2)}%`);}
-  focus.textContent=bits.join(' · ')||'FOCUS —';
+  if(f75){
+    const d=(price-f75.p)/price*100,dir=d>=0?'ABOVE':'BELOW';
+    bits.push(`75% ${dir} · ${Math.abs(d).toFixed(2)}%`);
+  }
+  if(nearest){
+    const d=(price-nearest.p)/price*100,dir=d>=0?'BELOW':'ABOVE';
+    bits.push(`${nearest.kind} LIQ ${dir} · ${Math.abs(d).toFixed(2)}%`);
+  }
+  if(main)main.textContent=bits.join(' · ')||'FOCUS —';
+  if(sub){
+    if(nearest&&f75){
+      const cluster=Math.abs(nearest.p-f75.p)/price*100;
+      sub.textContent=`Nearest ${nearest.kind.toLowerCase()} liquidity ${fmt(nearest.p)} · 75% ${fmt(f75.p)} · cluster distance ${cluster.toFixed(2)}%`;
+    }else if(nearest){sub.textContent=`Nearest ${nearest.kind.toLowerCase()} liquidity ${fmt(nearest.p)} · ${nearest.touches} touches`;}
+    else sub.textContent='No repeated liquidity zone detected in the visible range.';
+  }
+  if(priceTag)priceTag.textContent='PRICE $'+fmt(price);
 }
 
 function draw(){
@@ -2162,7 +2197,7 @@ function draw(){
 
   drawStructureOverlay(ctx,a,y,x,pad,w,h,isMobile);
 
-  const last=a.at(-1),lastPrice=last.c,lx=x(a.length-1),py=y(lastPrice);
+  const last=a.at(-1),lastPrice=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):last.c,lx=x(a.length-1),py=y(lastPrice);
   ctx.save();
   ctx.strokeStyle='rgba(114,169,255,.7)';ctx.setLineDash([2,3]);ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();
@@ -2176,7 +2211,7 @@ function draw(){
 
   ctx.fillStyle='#8f9bb3';ctx.font=`${isMobile?9:10}px sans-serif`;
   for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),4,pad+k*plotHeight/4);}
-  const tag=$('chartPriceTag');if(tag)tag.textContent='PRICE $'+fmt(lastPrice);
+  const focusPrice=$('chartFocusPrice');if(focusPrice)focusPrice.textContent='PRICE $'+fmt(lastPrice);
   updateChartFocus(a);
 }
 
@@ -2253,6 +2288,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.33: Smart Chart Focus Engine adds adaptive labels, current-price line, mobile simplification and collision-aware chart annotations. -->
+<!-- v8.34: Smart Chart Focus Engine adds adaptive labels, current-price line, mobile simplification and collision-aware chart annotations. -->
 </body>
 </html>
