@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.16 Professional</title>
+<title>Crypto Structure Pro v8.17 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -109,7 +109,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.16 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.17 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -717,10 +717,47 @@ function s4SafeLow(s){return s.p.lo[s.p.lo.length-1]?.p??null}
 function s4SafeHigh(s){return s.p.hi[s.p.hi.length-1]?.p??null}
 
 
-function getLiquidityFibContext(a,hi,lo){
-  if(!a||a.length<20||!Number.isFinite(hi)||!Number.isFinite(lo)||hi<=lo){
-    return {liq:null,fib:null,distance:null,relation:'SEPARATE',fibPct:null};
+function getFibSwing(a){
+  const g=a.slice(-100);
+  const p=pivots(g,3);
+  const highs=p.hi.slice(-8);
+  const lows=p.lo.slice(-8);
+  if(!highs.length||!lows.length)return null;
+
+  // Use the latest confirmed swing pair, not the absolute candle high/low.
+  // The two anchors must be confirmed pivots from the same visible structure.
+  const lastHigh=highs[highs.length-1];
+  const lastLow=lows[lows.length-1];
+
+  let low=lastLow,high=lastHigh;
+  if(lastHigh.i>lastLow.i){
+    const priorLow=lows.filter(v=>v.i<lastHigh.i).slice(-1)[0];
+    if(priorLow) low=priorLow;
+  }else{
+    const priorHigh=highs.filter(v=>v.i<lastLow.i).slice(-1)[0];
+    if(priorHigh) high=priorHigh;
   }
+
+  if(!low||!high||high.p<=low.p)return null;
+  return {
+    low:{i:low.i,p:low.p},
+    high:{i:high.i,p:high.p},
+    range:high.p-low.p,
+    direction:high.i>low.i?'UP':'DOWN'
+  };
+}
+
+function getFibLevelsFromSwing(swing){
+  if(!swing||!Number.isFinite(swing.range)||swing.range<=0)return [];
+  return [0,.236,.382,.5,.618,.75,.786,1].map(r=>({
+    r,
+    p:swing.low.p+swing.range*r
+  }));
+}
+
+function getLiquidityFibContext(a,hi,lo){
+  if(!a||a.length<20)return {liq:null,fib:null,distance:null,relation:'SEPARATE',fibPct:null,swing:null};
+
   const g=a.slice(-60),pts=[];
   for(let i=2;i<g.length-2;i++){
     const q=g[i];
@@ -736,20 +773,28 @@ function getLiquidityFibContext(a,hi,lo){
   const visible=zones.filter(z=>z.touches>=2)
     .sort((a,b)=>b.touches-a.touches)
     .slice(0,3);
+
   const price=g[g.length-1].c;
   const liq=visible.length
     ? visible.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0]
     : null;
-  const fibLevels=[0,.236,.382,.5,.618,.786,1].map(r=>({r,p:lo+(hi-lo)*r}));
-  const fib=fibLevels.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0];
+
+  const swing=getFibSwing(a);
+  const fibLevels=getFibLevelsFromSwing(swing);
+  const fib=fibLevels.length
+    ? fibLevels.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0]
+    : null;
+
   const distance=liq&&fib?Math.abs(liq.p-fib.p)/Math.max(price,1)*100:null;
   const relation=distance===null?'SEPARATE':distance<=0.5?'CONFLUENCE':distance<=1?'NEAR':'SEPARATE';
+
   return {
     liq,
     fib,
     distance,
     relation,
-    fibPct:fib?fib.r*100:null
+    fibPct:fib?fib.r*100:null,
+    swing
   };
 }
 
@@ -794,9 +839,13 @@ function getConfluenceScore(a,hi,lo){
   const avgVol=g.slice(0,-1).reduce((s,x)=>s+(x.v||0),0)/(g.length-1);
   if((last.v||0)>avgVol*1.3&&((bullish&&last.c>last.o)||(!bullish&&last.c<last.o)))breakdown.volume=10;
 
-  for(const f of [.236,.382,.5,.618,.786]){
-    const fp=lo+range*f;
-    if(Math.abs(last.c-fp)/Math.max(last.c,1)<.01){breakdown.fibonacci=10;break;}
+  const fibSwing=getFibSwing(a);
+  const fibLevels=getFibLevelsFromSwing(fibSwing);
+  for(const fibLevel of fibLevels){
+    if(Math.abs(last.c-fibLevel.p)/Math.max(last.c,1)<.01){
+      breakdown.fibonacci=10;
+      break;
+    }
   }
 
   /* MTF Alignment — 15
@@ -1091,11 +1140,12 @@ function updateUI(d){
   if($('liqFibDistance')) $('liqFibDistance').textContent=lf.distance===null?'—':`${lf.distance.toFixed(2)}%`;
   if($('liqFibRelation')) $('liqFibRelation').textContent=lf.relation;
   if($('liqFibNote')){
+    const swingText=lf.swing?`Swing Low ${fmt(lf.swing.low.p)} → Swing High ${fmt(lf.swing.high.p)} · 75% ${fmt(lf.swing.low.p+lf.swing.range*.75)}`:'Swing anchors unavailable';
     $('liqFibNote').textContent=lf.relation==='CONFLUENCE'
-      ? `Nearest repeated liquidity and Fibonacci level are tightly clustered. This is a location confluence, not an entry signal.`
+      ? `${swingText}. Nearest repeated liquidity and Fibonacci are tightly clustered. This is a location confluence, not an entry signal.`
       : lf.relation==='NEAR'
-        ? `Liquidity and Fibonacci are relatively close. Monitor price reaction before treating the area as a confluence zone.`
-        : `Nearest repeated liquidity and Fibonacci level are separated. No location confluence is identified at the current price.`;
+        ? `${swingText}. Liquidity and Fibonacci are relatively close. Monitor price reaction before treating the area as a confluence zone.`
+        : `${swingText}. Nearest repeated liquidity and Fibonacci are separated. No location confluence is identified at the current price.`;
   }
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
@@ -1390,7 +1440,27 @@ function connectWS(){
   }
 }
 
-function drawFib(ctx,hi,lo,y,pad,w){const range=hi-lo;if(!range)return;const levels=[0,.236,.382,.5,.618,.786,1];ctx.save();ctx.font='10px Arial';ctx.setLineDash([4,4]);for(const r of levels){const price=lo+range*r,yy=y(price);ctx.strokeStyle='rgba(114,169,255,.25)';ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();ctx.fillStyle='#72a9ff';ctx.fillText((r*100).toFixed(1)+'%',pad+4,yy-3)}ctx.restore()}
+function drawFib(ctx,a,y,pad,w){
+  const swing=getFibSwing(a);
+  const levels=getFibLevelsFromSwing(swing);
+  if(!levels.length)return;
+  ctx.save();
+  ctx.font='10px Arial';
+  ctx.setLineDash([4,4]);
+  for(const level of levels){
+    const yy=y(level.p);
+    if(yy<pad-12||yy>y(0)+12)continue;
+    ctx.strokeStyle=level.r===.75?'rgba(255,207,82,.65)':'rgba(114,169,255,.25)';
+    ctx.lineWidth=level.r===.75?1.5:1;
+    ctx.beginPath();
+    ctx.moveTo(pad,yy);
+    ctx.lineTo(w-pad,yy);
+    ctx.stroke();
+    ctx.fillStyle=level.r===.75?'#ffcf52':'#72a9ff';
+    ctx.fillText((level.r*100).toFixed(1)+'%',pad+4,yy-3);
+  }
+  ctx.restore();
+}
 function drawLiquidity(ctx,a,y,pad,w){const g=a.slice(-60),pts=[];for(let i=2;i<g.length-2;i++){const q=g[i];if(q.h>=g[i-1].h&&q.h>=g[i-2].h&&q.h>=g[i+1].h&&q.h>=g[i+2].h)pts.push(q.h);if(q.l<=g[i-1].l&&q.l<=g[i-2].l&&q.l<=g[i+1].l&&q.l<=g[i+2].l)pts.push(q.l)}const zones=[];for(const p of pts){const z=zones.find(v=>Math.abs(v.p-p)/Math.max(v.p,1)<.004);if(z)z.touches++;else zones.push({p,touches:1})}const visible=zones.filter(z=>z.touches>=2).sort((a,b)=>b.touches-a.touches).slice(0,3);ctx.save();ctx.font='bold 9px Arial';for(const z of visible){const yy=y(z.p),kind=z.touches>=3?'HIGH':'MEDIUM',hh=kind==='HIGH'?18:13;ctx.fillStyle=kind==='HIGH'?'rgba(255,70,110,.18)':'rgba(255,180,0,.13)';ctx.fillRect(pad,yy-hh/2,w-pad*2,hh);const label=`${kind} LIQUIDITY · ${fmt(z.p)}`;ctx.fillStyle=kind==='HIGH'?'#ff466e':'#ffb400';ctx.fillText(label,Math.max(pad+4,w-pad-ctx.measureText(label).width-4),yy-5)}ctx.restore()}
 function drawStructureOverlay(ctx,a,y,x,pad,w,h){
   const p=pivots(a,3);
@@ -1406,7 +1476,7 @@ function drawStructureOverlay(ctx,a,y,x,pad,w,h){
   ctx.restore();
 }
 
-function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,hi,lo,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}drawStructureOverlay(ctx,a,y,x,pad,w,h);const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
+function draw(){const c=$('chart'),ctx=c.getContext('2d'),d=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);const a=state.data.slice(-100);if(!a.length)return;const hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),range=hi-lo||1,pad=32,x=i=>pad+i*(w-pad*1.5)/Math.max(1,a.length-1),y=v=>h-pad-(v-lo)/range*(h-pad*1.5);ctx.strokeStyle='#1e2940';ctx.lineWidth=1;for(let k=0;k<6;k++){const yy=pad+k*(h-pad*1.5)/5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}drawFib(ctx,a,y,pad,w);drawLiquidity(ctx,a,y,pad,w);for(let i=0;i<a.length;i++){const q=a[i],xx=x(i);ctx.strokeStyle=q.c>=q.o?'#39d99a':'#ff6478';ctx.beginPath();ctx.moveTo(xx,y(q.h));ctx.lineTo(xx,y(q.l));ctx.stroke();ctx.lineWidth=Math.max(2,Math.min(6,w/250));ctx.beginPath();ctx.moveTo(xx,y(q.o));ctx.lineTo(xx,y(q.c));ctx.stroke();ctx.lineWidth=1}drawStructureOverlay(ctx,a,y,x,pad,w,h);const lx=x(a.length-1);ctx.strokeStyle='rgba(114,169,255,.45)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(lx,pad);ctx.lineTo(lx,h-pad);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8f9bb3';ctx.font='10px sans-serif';for(let k=0;k<5;k++){const val=hi-k*range/4;ctx.fillText('$'+fmt(val),5,pad+k*(h-pad*1.5)/4)}}
 
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
