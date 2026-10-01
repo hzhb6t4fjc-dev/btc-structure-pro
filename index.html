@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.34 Professional</title>
+<title>Crypto Structure Pro v8.35 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -286,6 +286,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
       <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="entryConfirmMajor">WAIT</b></div><div class="liqFibBox"><small>SETUP SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="entryConfirmHierarchy">WAIT</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → hierarchy alignment → volume.</div></div>
       <div class="liqFibPanel finalDecisionPanel"><div class="liqFibHead"><span class="liqFibTitle">Final Decision Engine</span><span class="liqFibBadge finalDecisionBadge wait" id="finalDecisionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>FINAL STATUS</small><b id="finalDecisionStatus">WAIT</b></div><div class="liqFibBox"><small>MAJOR BIAS</small><b id="finalDecisionBias">WAIT</b></div><div class="liqFibBox"><small>SETUP</small><b id="finalDecisionSetup">—</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="finalDecisionHierarchy">WAIT</b></div><div class="liqFibBox"><small>CONFIRMATION</small><b id="finalDecisionGates">0/7</b></div><div class="liqFibBox"><small>NEXT ACTION</small><b id="finalDecisionNext">Wait</b></div></div><div class="liqFibNote finalDecisionAction" id="finalDecisionAction">WAIT — no confirmed entry.</div><div class="liqFibNote finalDecisionReason" id="finalDecisionReason">The Final Decision Engine summarizes the hierarchy and the seven confirmation gates. It does not create an entry by itself.</div></div>
+      <div class="liqFibPanel triggerReadinessPanel"><div class="liqFibHead"><span class="liqFibTitle">Trigger Proximity Engine</span><span class="liqFibBadge" id="triggerReadinessBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TRIGGER READINESS</small><b id="triggerReadinessScore">0/100</b></div><div class="liqFibBox"><small>STATE</small><b id="triggerReadinessState">FAR</b></div><div class="liqFibBox"><small>LOCATION</small><b id="triggerReadinessLocation">WAIT</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="triggerReadinessStructure">WAIT</b></div><div class="liqFibBox"><small>TRIGGER GATES</small><b id="triggerReadinessGates">0/5</b></div><div class="liqFibBox"><small>HIERARCHY</small><b id="triggerReadinessHierarchy">WAIT</b></div></div><div class="entryGateGrid" id="triggerReadinessGrid"></div><div class="liqFibNote" id="triggerReadinessNote">Trigger readiness measures proximity and confirmation development. It never overrides 12H authority or the Final Decision Engine.</div></div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -1571,6 +1572,59 @@ function updateConsensus(d,macro,r75,conf){
     :`Consensus ${c.dominant} BIAS · ${c.biasLevel}. Long ${c.longPct}% · Short ${c.shortPct}%. Lower timeframes can confirm the bias but cannot override the 12H authority or a 12H/4H conflict.`;
 }
 
+function getTriggerProximity(a,d,r75,entryConf){
+  const price=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):(a.at(-1)?.c||0);
+  const swing=getFibSwing(a), levels=getFibLevelsFromSwing(swing), f75=levels.find(v=>v.r===.75);
+  const zones=getChartLiquidityZones(a);
+  const nearest=zones.length?zones.slice().sort((x,y)=>Math.abs(x.p-price)-Math.abs(y.p-price))[0]:null;
+  const pct=(p)=>p==null||!price?null:Math.abs((price-p)/price*100);
+  const fibDist=pct(f75?.p), liqDist=pct(nearest?.p);
+  const locationScore=(fibDist==null?0:fibDist<=.15?20:fibDist<=.35?15:fibDist<=.75?10:fibDist<=1.5?5:0)
+    +(liqDist==null?0:liqDist<=.15?15:liqDist<=.35?12:liqDist<=.75?8:liqDist<=1.5?4:0);
+
+  const side=entryConf.side || (d.watchSide==='LONG'||d.watchSide==='SHORT'?d.watchSide:null);
+  const m15=state.mtf['15m'];
+  const m15State=m15?structureState(m15):null;
+  const structureDir=m15State?.bullish?'LONG':m15State?.bearish?'SHORT':'NEUTRAL';
+  const structureScore=!side?0:structureDir===side?15:structureDir==='NEUTRAL'?7:0;
+
+  const sweep=!!m15 && (side==='LONG'?m15.L.some(x=>x.includes('sweep')):side==='SHORT'?m15.S.some(x=>x.includes('sweep')):false);
+  const displacement=!!m15 && (side==='LONG'?m15.L.includes('displacement'):side==='SHORT'?m15.S.includes('displacement'):false);
+  const mss=!!m15 && (side==='LONG'?m15.L.includes('MSS up'):side==='SHORT'?m15.S.includes('MSS down'):false);
+  const fvg=!!m15 && (side==='LONG'?m15.L.includes('bullish FVG'):side==='SHORT'?m15.S.includes('bearish FVG'):false);
+  const volume=r75.volume==='EXPANSION';
+  const triggerChecks=[['Liquidity sweep',sweep],['Displacement',displacement],['MSS',mss],['FVG',fvg],['Volume',volume]];
+  const triggerScore=triggerChecks.reduce((n,x)=>n+(x[1]?10:0),0);
+
+  const hierarchy=entryConf.hierarchy||'WAIT';
+  const raw=Math.min(100,locationScore+structureScore+triggerScore);
+  const score=hierarchy==='COUNTER-TREND'?Math.min(raw,39):hierarchy==='WAIT'?Math.min(raw,59):raw;
+  let stateLabel='FAR';
+  if(entryConf.status==='CONFIRMED'&&hierarchy==='ALIGNED')stateLabel='TRIGGER ACTIVE';
+  else if(hierarchy==='COUNTER-TREND')stateLabel='COUNTER-TREND';
+  else if(score>=75)stateLabel='NEAR TRIGGER';
+  else if(score>=45)stateLabel='APPROACHING';
+
+  const location=fibDist==null?'WAIT':fibDist<=.15?'AT 75%':fibDist<=.75?'NEAR 75%':'AWAY';
+  const hierarchyScore=hierarchy==='ALIGNED'?10:0;
+  const finalScore=entryConf.status==='CONFIRMED'&&hierarchy==='ALIGNED'?100:Math.min(100,score+hierarchyScore);
+  return {score:finalScore,state:stateLabel,location,structure:structureDir,triggerChecks,triggerDone:triggerChecks.filter(x=>x[1]).length,hierarchy,fibDist,liqDist,nearest,f75,side};
+}
+
+function updateTriggerProximity(a,d,r75,entryConf){
+  const t=getTriggerProximity(a,d,r75,entryConf);
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  set('triggerReadinessScore',`${t.score}/100`);set('triggerReadinessState',t.state);set('triggerReadinessLocation',t.location);set('triggerReadinessStructure',t.structure);set('triggerReadinessGates',`${t.triggerDone}/5`);set('triggerReadinessHierarchy',t.hierarchy);
+  const b=$('triggerReadinessBadge');if(b){b.textContent=t.state;b.className='liqFibBadge '+(t.state==='TRIGGER ACTIVE'?'confirmed':t.state==='NEAR TRIGGER'?'ready':t.state==='APPROACHING'?'developing':t.state==='COUNTER-TREND'?'counter':'wait');}
+  const g=$('triggerReadinessGrid');if(g)g.innerHTML=t.triggerChecks.map(([label,ok])=>`<div class="entryGate ${ok?'ok':'pending'}"><span>${label}</span><b>${ok?'PASS':'WAIT'}</b></div>`).join('');
+  const reason=t.state==='COUNTER-TREND'
+    ?`${t.side||'Setup'} remains counter-trend to the ${entryConf.major||'12H'} Major Authority. Readiness is capped until hierarchy aligns.`
+    :t.state==='TRIGGER ACTIVE'
+      ?'All trigger components are active and the hierarchy is aligned. Final Decision remains the confirmation authority.'
+      :`Location ${t.location} · structure ${t.structure} · ${t.triggerDone}/5 trigger gates active. Readiness is informational and does not create an entry.`;
+  set('triggerReadinessNote',reason);
+}
+
 function updateFinalDecision(entryConf,consensus){
   const side=entryConf.side||'WAIT';
   let status='WAIT', badge='wait', action='WAIT — no confirmed entry.', reason='The Final Decision Engine summarizes hierarchy and confirmation gates.';
@@ -1678,7 +1732,9 @@ function updateUI(d){
   if($('entryConfirmNext'))$('entryConfirmNext').textContent=entryConf.next||'—';
   if($('entryConfirmGateGrid'))$('entryConfirmGateGrid').innerHTML=entryConf.gates.map(([label,ok])=>`<div class="entryGate ${ok?'ok':'pending'}"><span>${label}</span><b>${ok?'PASS':'WAIT'}</b></div>`).join('');
   if($('entryConfirmNote'))$('entryConfirmNote').textContent=entryConf.note;
-  updateFinalDecision(entryConf,getConsensus(d,macro,r75,conf));
+  const consensusNow=getConsensus(d,macro,r75,conf);
+  updateFinalDecision(entryConf,consensusNow);
+  updateTriggerProximity(a,d,r75,entryConf);
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
@@ -2288,6 +2344,6 @@ renderScanner();
 })();
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.34: Smart Chart Focus Engine adds adaptive labels, current-price line, mobile simplification and collision-aware chart annotations. -->
+<!-- v8.35: Trigger Proximity Engine adds location/structure/trigger readiness with hierarchy protection. -->
 </body>
 </html>
