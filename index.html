@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.24 Professional</title>
+<title>Crypto Structure Pro v8.25 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -71,12 +71,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .mtfStatus.aligned{color:var(--green);border-color:#285a4b}
 .mtfStatus.partial{color:var(--yellow);border-color:#5b4d24}
 .mtfStatus.conflict{color:var(--red);border-color:#6b3340}
-.mtfGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.mtfGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .mtfBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}
 .mtfBox small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}
 .mtfBox b{font-size:12px}
 .mtfNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.4}
-@media(max-width:560px){.mtfGrid{grid-template-columns:1fr 1fr}.mtfBox:last-child{grid-column:1/-1}}
+@media(max-width:560px){.mtfGrid{grid-template-columns:1fr}.mtfBox:last-child{grid-column:auto}}
 
 
 .liqFibPanel{margin:11px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#090f1a}
@@ -158,6 +158,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <button class="btn" data-tf="15m">15m</button>
           <button class="btn active" data-tf="1h">1H</button>
           <button class="btn" data-tf="4h">4H</button>
+          <button class="btn" data-tf="12h">12H</button>
           <button class="btn" data-tf="1d">1D</button>
         </div>
       </div>
@@ -188,9 +189,10 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
       <div class="scanner">
         <div class="box"><b>15m trigger</b><div class="small" id="s15">—</div></div>
-        <div class="box"><b>1H bias</b><div class="small" id="s1">—</div></div>
-        <div class="box"><b>4H bias</b><div class="small" id="s4">—</div></div>
-        <div class="box"><b>1D context</b><div class="small" id="sD">—</div></div>
+        <div class="box"><b>1H setup</b><div class="small" id="s1">—</div></div>
+        <div class="box"><b>4H main structure</b><div class="small" id="s4">—</div></div>
+        <div class="box"><b>12H major structure</b><div class="small" id="s12">—</div></div>
+        <div class="box"><b>1D macro context</b><div class="small" id="sD">—</div></div>
       </div>
 
       <div class="mtfMonitor">
@@ -199,11 +201,12 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <span class="mtfStatus conflict" id="mtfMonitorStatus">CONFLICT</span>
         </div>
         <div class="mtfGrid">
-          <div class="mtfBox"><small>1H DIRECTION</small><b id="mtf1h">—</b></div>
-          <div class="mtfBox"><small>4H DIRECTION</small><b id="mtf4h">—</b></div>
+          <div class="mtfBox"><small>12H MAJOR STRUCTURE</small><b id="mtf12h">—</b></div>
+          <div class="mtfBox"><small>4H MAIN STRUCTURE</small><b id="mtf4h">—</b></div>
+          <div class="mtfBox"><small>1H SETUP STRUCTURE</small><b id="mtf1h">—</b></div>
           <div class="mtfBox"><small>ALIGNMENT SCORE</small><b id="mtfScore">—</b></div>
         </div>
-        <div class="mtfNote" id="mtfNote">1H and 4H are checked independently. The 15m timeframe remains the trigger timeframe.</div>
+        <div class="mtfNote" id="mtfNote">12H defines the major structure. 4H confirms the main structure, 1H defines the setup, and 15m remains the trigger timeframe.</div>
       </div>
 
       <div class="liqFibPanel">
@@ -224,7 +227,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="liqFibPanel extensionPanel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Extension · Target Engine</span><span class="liqFibBadge extBadge wait" id="fibExtBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TP1 · 1.272</small><b class="extTarget" id="fibExt1272">—</b></div><div class="liqFibBox"><small>TP2 · 1.618</small><b class="extTarget" id="fibExt1618">—</b></div><div class="liqFibBox"><small>TP3 · 2.000</small><b class="extTarget" id="fibExt2000">—</b></div><div class="liqFibBox"><small>TP4 · 2.618</small><b class="extTarget" id="fibExt2618">—</b></div><div class="liqFibBox"><small>NEXT TARGET</small><b id="fibExtNext">—</b></div><div class="liqFibBox"><small>DIRECTION</small><b id="fibExtDirection">—</b></div></div><div class="liqFibNote" id="fibExtNote">Fibonacci Extension projects target levels beyond the confirmed swing. Targets are reference zones, not guaranteed take-profit signals.</div></div>
 
 
-      <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → MTF → volume.</div></div>
+      <div class="liqFibPanel entryConfirmPanel"><div class="liqFibHead"><span class="liqFibTitle">Entry Confirmation Engine</span><span class="liqFibBadge" id="entryConfirmBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>STATE</small><b id="entryConfirmState">WAIT</b></div><div class="liqFibBox"><small>SIDE</small><b id="entryConfirmSide">—</b></div><div class="liqFibBox"><small>GATES</small><b id="entryConfirmGates">0/7</b></div><div class="liqFibBox"><small>NEXT GATE</small><b id="entryConfirmNext">—</b></div></div><div class="entryGateGrid" id="entryConfirmGateGrid"></div><div class="liqFibNote" id="entryConfirmNote">Waiting for the confirmation sequence: 75% reaction → liquidity → displacement → MSS → FVG → 12H/4H/1H alignment → volume.</div></div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -347,7 +350,7 @@ const state={
 };
 
 const $=id=>document.getElementById(id);
-const tfs=['15m','1h','4h','1d'];
+const tfs=['15m','1h','4h','12h','1d'];
 const FALLBACK_SYMBOLS=['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','TRXUSDT'];
 const API='https://api.binance.com/api/v3';
 const fmt=n=>{
@@ -638,23 +641,26 @@ function structureState(s){
 
 function mtfDecision(){
   const a=state.mtf;
-  if(!a['15m']||!a['1h']||!a['4h'])return null;
+  if(!a['15m']||!a['1h']||!a['4h']||!a['12h'])return null;
 
-  const s15=a['15m'],s1=a['1h'],s4=a['4h'],sd=a['1d'];
+  const s15=a['15m'],s1=a['1h'],s4=a['4h'],s12=a['12h'],sd=a['1d'];
+  const major12=structureState(s12);
+  const main4=structureState(s4);
 
-  let longScore=Math.round(s15.bull*.35+s1.bull*.30+s4.bull*.35);
-  let shortScore=Math.round(s15.bear*.35+s1.bear*.30+s4.bear*.35);
+  // Hierarchy: 12H = major structure, 4H = main structure, 1H = setup, 15m = trigger.
+  let longScore=Math.round(s15.bull*.25+s1.bull*.20+s4.bull*.25+s12.bull*.30);
+  let shortScore=Math.round(s15.bear*.25+s1.bear*.20+s4.bear*.25+s12.bear*.30);
 
   if(sd){
-    longScore=Math.round(longScore+(sd.bull-sd.bear)*.06);
-    shortScore=Math.round(shortScore+(sd.bear-sd.bull)*.06);
+    longScore=Math.round(longScore+(sd.bull-sd.bear)*.04);
+    shortScore=Math.round(shortScore+(sd.bear-sd.bull)*.04);
   }
 
   longScore=Math.max(0,Math.min(100,longScore));
   shortScore=Math.max(0,Math.min(100,shortScore));
 
-  const longBias=s1.bull>=35&&s4.bull>=30&&longScore>shortScore+10;
-  const shortBias=s1.bear>=35&&s4.bear>=30&&shortScore>longScore+10;
+  const longBias=major12.bullish&&s4.bull>=30&&s1.bull>=35&&longScore>shortScore+10;
+  const shortBias=major12.bearish&&s4.bear>=30&&s1.bear>=35&&shortScore>longScore+10;
 
   const longSweep=s15.L.some(x=>x.includes('sweep'));
   const shortSweep=s15.S.some(x=>x.includes('sweep'));
@@ -668,16 +674,6 @@ function mtfDecision(){
   const longStructure=st15.bullish;
   const shortStructure=st15.bearish;
 
-  /*
-    Strict trigger:
-    LONG/SHORT is confirmed only when the 15m trigger has:
-    1) directional structure
-    2) liquidity sweep
-    3) displacement
-    4) MSS
-    5) FVG
-    plus higher-timeframe alignment and score separation.
-  */
   const longTrigger=longStructure&&longSweep&&longDisp&&longMSS&&longFVG;
   const shortTrigger=shortStructure&&shortSweep&&shortDisp&&shortMSS&&shortFVG;
 
@@ -694,7 +690,9 @@ function mtfDecision(){
   if(!longDisp)missingLong.push('displacement');
   if(!longMSS)missingLong.push('MSS');
   if(!longFVG)missingLong.push('FVG');
-  if(!longBias)missingLong.push('1H/4H alignment');
+  if(!major12.bullish)missingLong.push('12H major structure');
+  if(s4.bull<30)missingLong.push('4H main structure');
+  if(s1.bull<35)missingLong.push('1H setup structure');
   if(longScore<70)missingLong.push('score ≥70');
 
   const missingShort=[];
@@ -703,12 +701,14 @@ function mtfDecision(){
   if(!shortDisp)missingShort.push('displacement');
   if(!shortMSS)missingShort.push('MSS');
   if(!shortFVG)missingShort.push('FVG');
-  if(!shortBias)missingShort.push('1H/4H alignment');
+  if(!major12.bearish)missingShort.push('12H major structure');
+  if(s4.bear<30)missingShort.push('4H main structure');
+  if(s1.bear<35)missingShort.push('1H setup structure');
   if(shortScore<70)missingShort.push('score ≥70');
 
-  const watchSide=longScore>shortScore? 'LONG':shortScore>longScore?'SHORT':'WAIT';
+  const watchSide=longScore>shortScore?'LONG':shortScore>longScore?'SHORT':'WAIT';
   const triggerReason=side
-    ? `CONFIRMED ${side}: 15m trigger + liquidity + displacement + MSS + FVG + MTF alignment.`
+    ? `CONFIRMED ${side}: 12H major structure + 4H main structure + 1H setup + 15m trigger.`
     : watchSide==='LONG'
       ? `LONG WATCH — waiting for: ${missingLong.join(', ')}.`
       : watchSide==='SHORT'
@@ -716,7 +716,7 @@ function mtfDecision(){
         : 'WAIT — no directional trigger is dominant.';
 
   return{
-    longScore,shortScore,side,s15,s1,s4,sd,
+    longScore,shortScore,side,s15,s1,s4,s12,sd,major12,main4,
     longTrigger,shortTrigger,
     longBias,shortBias,st15,
     missingLong,missingShort,
@@ -934,12 +934,13 @@ function getEntryConfirmation(d,r75,ext,conf){
   const m15=state.mtf['15m'];
   const m1=state.mtf['1h'];
   const m4=state.mtf['4h'];
+  const m12=state.mtf['12h'];
   const reaction=r75.state==='REJECTION'||r75.state==='RECLAIM';
   const sweep=!!m15 && (direction==='LONG' ? m15.L.some(x=>x.includes('sweep')) : direction==='SHORT' ? m15.S.some(x=>x.includes('sweep')) : false);
   const displacement=!!m15 && (direction==='LONG' ? m15.L.includes('displacement') : direction==='SHORT' ? m15.S.includes('displacement') : false);
   const mss=!!m15 && (direction==='LONG' ? m15.L.includes('MSS up') : direction==='SHORT' ? m15.S.includes('MSS down') : false);
   const fvg=!!m15 && (direction==='LONG' ? m15.L.includes('bullish FVG') : direction==='SHORT' ? m15.S.includes('bearish FVG') : false);
-  const mtf=!!m1&&!!m4 && (direction==='LONG' ? m1.bull>=35&&m4.bull>=30 : direction==='SHORT' ? m1.bear>=35&&m4.bear>=30 : false);
+  const mtf=!!m1&&!!m4&&!!m12 && (direction==='LONG' ? m12.bull>=30&&m4.bull>=30&&m1.bull>=35 : direction==='SHORT' ? m12.bear>=30&&m4.bear>=30&&m1.bear>=35 : false);
   const volume=r75.volume==='EXPANSION';
   const gates=[
     ['75% reaction',reaction],
@@ -1080,27 +1081,24 @@ function getConfluenceScore(a,hi,lo){
   }
 
   /* MTF Alignment — 15
-     1H + 4H aligned with the current direction = 15/15
-     one higher timeframe aligned while the other is neutral = 10/15
-     both neutral = 0/15
-     opposite higher-timeframe directions = 0/15
-     15m remains the trigger timeframe and is not allowed to
-     manufacture higher-timeframe alignment.
+     12H major structure + 4H main structure define the higher-timeframe alignment.
+     1H is the setup timeframe and 15m remains the trigger timeframe.
   */
-  const oneHourDir=m1.bull>m1.bear?'LONG':m1.bear>m1.bull?'SHORT':'NEUTRAL';
-  const fourHourDir=m4?
+  const m12=state.mtf['12h'];
+  const major12Dir=m12?
+    (m12.bull>m12.bear?'LONG':m12.bear>m12.bull?'SHORT':'NEUTRAL'):
+    'NEUTRAL';
+  const main4Dir=m4?
     (m4.bull>m4.bear?'LONG':m4.bear>m4.bull?'SHORT':'NEUTRAL'):
     'NEUTRAL';
 
   if(bullish){
-    if(oneHourDir==='LONG'&&fourHourDir==='LONG')breakdown.mtf=15;
-    else if((oneHourDir==='LONG'&&fourHourDir==='NEUTRAL')||
-            (oneHourDir==='NEUTRAL'&&fourHourDir==='LONG'))breakdown.mtf=10;
+    if(major12Dir==='LONG'&&main4Dir==='LONG')breakdown.mtf=15;
+    else if((major12Dir==='LONG'&&main4Dir==='NEUTRAL')||(major12Dir==='NEUTRAL'&&main4Dir==='LONG'))breakdown.mtf=10;
     else breakdown.mtf=0;
   }else{
-    if(oneHourDir==='SHORT'&&fourHourDir==='SHORT')breakdown.mtf=15;
-    else if((oneHourDir==='SHORT'&&fourHourDir==='NEUTRAL')||
-            (oneHourDir==='NEUTRAL'&&fourHourDir==='SHORT'))breakdown.mtf=10;
+    if(major12Dir==='SHORT'&&main4Dir==='SHORT')breakdown.mtf=15;
+    else if((major12Dir==='SHORT'&&main4Dir==='NEUTRAL')||(major12Dir==='NEUTRAL'&&main4Dir==='SHORT'))breakdown.mtf=10;
     else breakdown.mtf=0;
   }
 
@@ -1357,8 +1355,8 @@ function updateUI(d){
   const chartStructure=structureState(s);
   $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
-  $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
-  $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
+  $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull} · 12H ${d.s12.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear} · 12H ${d.s12.bear}`;
+  $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`${d.main4.state} · L ${d.s4.bull} / S ${d.s4.bear}`;$('s12').textContent=`${d.major12.state} · L ${d.s12.bull} / S ${d.s12.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
   const a=state.data,hi=Math.max(...a.map(x=>x.h)),lo=Math.min(...a.map(x=>x.l)),conf=getConfluenceScore(a,hi,lo);
   const lf=getLiquidityFibContext(a,hi,lo);
   const lfBadge=$('liqFibBadge');
@@ -1454,23 +1452,25 @@ function updateUI(d){
 
   const oneHourDir=d.s1.bull>d.s1.bear?'LONG':d.s1.bear>d.s1.bull?'SHORT':'NEUTRAL';
   const fourHourDir=d.s4.bull>d.s4.bear?'LONG':d.s4.bear>d.s4.bull?'SHORT':'NEUTRAL';
+  const major12Dir=d.s12.bull>d.s12.bear?'LONG':d.s12.bear>d.s12.bull?'SHORT':'NEUTRAL';
   const mtfStatusEl=$('mtfMonitorStatus');
   if(mtfStatusEl){
     mtfStatusEl.textContent=mtfStatus;
     mtfStatusEl.className='mtfStatus '+(mtfStatus==='ALIGNED'?'aligned':mtfStatus==='PARTIAL'?'partial':'conflict');
   }
+  if($('mtf12h')) $('mtf12h').textContent=`${d.major12.state} · ${major12Dir} · L${d.s12.bull} / S${d.s12.bear}`;
+  if($('mtf4h')) $('mtf4h').textContent=`${d.main4.state} · ${fourHourDir} · L${d.s4.bull} / S${d.s4.bear}`;
   if($('mtf1h')) $('mtf1h').textContent=`${oneHourDir} · L${d.s1.bull} / S${d.s1.bear}`;
-  if($('mtf4h')) $('mtf4h').textContent=`${fourHourDir} · L${d.s4.bull} / S${d.s4.bear}`;
   if($('mtfScore')) $('mtfScore').textContent=`${mtfScore}/15`;
   if($('mtfNote')){
     $('mtfNote').textContent=mtfStatus==='CONFLICT'
-      ? `1H ${oneHourDir} vs 4H ${fourHourDir}: higher-timeframe conflict. No MTF alignment credit is awarded.`
+      ? `12H ${major12Dir} vs 4H ${fourHourDir}: major/main structure conflict. No MTF alignment credit is awarded.`
       : mtfStatus==='PARTIAL'
-        ? `One higher timeframe is directional while the other is neutral. Partial alignment credit is awarded.`
-        : `1H and 4H are aligned in the same direction. Full MTF alignment credit is awarded.`;
+        ? `12H ${major12Dir} and 4H ${fourHourDir}: partial major/main structure alignment.`
+        : `12H ${major12Dir} and 4H ${fourHourDir} are aligned. 1H remains the setup timeframe and 15m the trigger.`;
   }
   $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${mtfScore}/15 · ${mtfStatus} · TRIGGER ${trigger}.`;
-  $('qualityChecks').innerHTML=['MTF 15m/1H/4H','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+  $('qualityChecks').innerHTML=['12H major structure','4H main structure','1H setup','15m trigger','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
 
   const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],[`MTF Alignment · ${mtfStatus}`,'mtf',15]];
   $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
@@ -1594,11 +1594,11 @@ function renderScanner(){
   }).join('');
 }
 async function scanOneSymbol(sym){
-  const [r15,r1,r4,rD]=await Promise.all(['15m','1h','4h','1d'].map(tf=>loadTFSymbol(sym,tf)));
+  const [r15,r1,r4,r12,rD]=await Promise.all(['15m','1h','4h','12h','1d'].map(tf=>loadTFSymbol(sym,tf)));
   const oldMtf=state.mtf,oldSymbol=state.symbol;
   try{
     state.symbol=sym;
-    state.mtf={'15m':scan(r15),'1h':scan(r1),'4h':scan(r4),'1d':scan(rD)};
+    state.mtf={'15m':scan(r15),'1h':scan(r1),'4h':scan(r4),'12h':scan(r12),'1d':scan(rD)};
     const d=mtfDecision();
     const side=d&&d.side?d.side:(d?d.watchSide:'WAIT');
     const maxScore=d?Math.max(d.longScore,d.shortScore):0;
