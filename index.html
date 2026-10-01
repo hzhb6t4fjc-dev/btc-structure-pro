@@ -1218,8 +1218,14 @@ function startMonitorWS(){
         const k=JSON.parse(ev.data).k;
         if(k&&k.x){ loadAll(); }
         else if(k){
-          const s15=state.mtf['15m'];
-          if(s15){$('monitorText').textContent=`Live 15m candle active. Watching ${state.symbol.replace('USDT','/USDT')} for trigger changes.`;}
+          // Keep the live monitor synchronized with the same active setup side.
+          // Do not overwrite SHORT/LONG with a generic symbol-only message.
+          const d=mtfDecision();
+          if(d){
+            const conf=getConfluenceScore(d);
+            const activeSide=d.side || (conf.direction==='LONG'?'LONG':conf.direction==='SHORT'?'SHORT':d.watchSide);
+            updateLiveMonitor(d,activeSide);
+          }
         }
       }catch(e){}
     };
