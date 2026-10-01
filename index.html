@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.17 Professional</title>
+<title>Crypto Structure Pro v8.18 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -86,6 +86,14 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .liqFibBadge.confluence{color:var(--green);border-color:#285a4b}
 .liqFibBadge.near{color:var(--yellow);border-color:#5b4d24}
 .liqFibBadge.separate{color:var(--muted)}
+.fib75Panel{border-color:#5a4b24}
+.fib75Panel .liqFibTitle{color:#ffcf52}
+#fib75Badge{color:var(--muted)}
+#fib75Badge.support{color:var(--green);border-color:#285a4b}
+#fib75Badge.resistance{color:var(--red);border-color:#6b3340}
+#fib75Badge.flip{color:var(--yellow);border-color:#5b4d24}
+#fib75Badge.neutral{color:var(--muted)}
+
 .liqFibGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
 .liqFibBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}
 .liqFibBox small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}
@@ -109,7 +117,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.17 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.18 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -190,7 +198,21 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>PRICE DISTANCE</small><b id="liqFibDistance">—</b></div>
           <div class="liqFibBox"><small>ZONE RELATION</small><b id="liqFibRelation">—</b></div>
         </div>
-        <div class="liqFibNote" id="liqFibNote">Liquidity zones are derived from repeated swing highs/lows. Fibonacci levels use the current chart range.</div>
+        <div class="liqFibNote" id="liqFibNote">Liquidity zones are derived from repeated swing highs/lows. Fibonacci uses the confirmed Swing Low → Swing High structure.</div>
+      </div>
+
+      <div class="liqFibPanel fib75Panel">
+        <div class="liqFibHead">
+          <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
+          <span class="liqFibBadge separate" id="fib75Badge">NEUTRAL</span>
+        </div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>75% LEVEL</small><b id="fib75Level">—</b></div>
+          <div class="liqFibBox"><small>NEAREST RESISTANCE</small><b id="fib75Resistance">—</b></div>
+          <div class="liqFibBox"><small>NEAREST SUPPORT</small><b id="fib75Support">—</b></div>
+          <div class="liqFibBox"><small>PRICE vs 75%</small><b id="fib75PriceRelation">—</b></div>
+        </div>
+        <div class="liqFibNote" id="fib75Note">The 75% level is evaluated against nearby pivot support/resistance. It is a location map, not an entry signal.</div>
       </div>
 
       <div class="setup">
@@ -798,6 +820,68 @@ function getLiquidityFibContext(a,hi,lo){
   };
 }
 
+
+function getFib75SRContext(a){
+  const swing=getFibSwing(a);
+  if(!swing)return {swing:null,fib75:null,resistance:null,support:null,relation:'NEUTRAL',priceRelation:'UNKNOWN'};
+
+  const fib75=swing.low.p+swing.range*.75;
+  const g=a.slice(-80);
+  const p=pivots(g,3);
+  const raw=[
+    ...p.hi.map(v=>({p:v.p,type:'RESISTANCE'})),
+    ...p.lo.map(v=>({p:v.p,type:'SUPPORT'}))
+  ];
+
+  const zones=[];
+  for(const item of raw){
+    const z=zones.find(v=>Math.abs(v.p-item.p)/Math.max(item.p,1)<.004);
+    if(z){
+      z.touches++;
+      if(item.type==='RESISTANCE')z.resTouches++;
+      if(item.type==='SUPPORT')z.supTouches++;
+      z.p=(z.p*(z.touches-1)+item.p)/z.touches;
+    }else{
+      zones.push({
+        p:item.p,
+        touches:1,
+        resTouches:item.type==='RESISTANCE'?1:0,
+        supTouches:item.type==='SUPPORT'?1:0
+      });
+    }
+  }
+
+  const resistanceZones=zones.filter(z=>z.p>fib75);
+  const supportZones=zones.filter(z=>z.p<fib75);
+
+  const resistance=resistanceZones.length
+    ? resistanceZones.sort((x,y)=>Math.abs(x.p-fib75)-Math.abs(y.p-fib75))[0]
+    : null;
+
+  const support=supportZones.length
+    ? supportZones.sort((x,y)=>Math.abs(x.p-fib75)-Math.abs(y.p-fib75))[0]
+    : null;
+
+  const threshold=.005;
+  const rNear=resistance&&Math.abs(resistance.p-fib75)/fib75<=threshold;
+  const sNear=support&&Math.abs(support.p-fib75)/fib75<=threshold;
+
+  let relation='NEUTRAL';
+  if(rNear&&sNear)relation='FLIP ZONE';
+  else if(rNear)relation='RESISTANCE';
+  else if(sNear)relation='SUPPORT';
+
+  const price=g[g.length-1].c;
+  const priceDistance=(price-fib75)/fib75*100;
+  const priceRelation=Math.abs(priceDistance)<=.15
+    ? 'AT 75%'
+    : priceDistance>0
+      ? 'ABOVE 75%'
+      : 'BELOW 75%';
+
+  return {swing,fib75,resistance,support,relation,priceRelation,priceDistance};
+}
+
 function getConfluenceScore(a,hi,lo){
   if(!a||a.length<20)return {score:0,direction:'WAIT',breakdown:{}};
   const g=a.slice(-20),last=g[g.length-1],range=hi-lo||1;
@@ -1147,6 +1231,34 @@ function updateUI(d){
         ? `${swingText}. Liquidity and Fibonacci are relatively close. Monitor price reaction before treating the area as a confluence zone.`
         : `${swingText}. Nearest repeated liquidity and Fibonacci are separated. No location confluence is identified at the current price.`;
   }
+
+  const sr75=getFib75SRContext(a);
+  const fib75Badge=$('fib75Badge');
+  if(fib75Badge){
+    fib75Badge.textContent=sr75.relation;
+    fib75Badge.className='liqFibBadge '+(
+      sr75.relation==='SUPPORT'?'support':
+      sr75.relation==='RESISTANCE'?'resistance':
+      sr75.relation==='FLIP ZONE'?'flip':'neutral'
+    );
+  }
+  if($('fib75Level')) $('fib75Level').textContent=sr75.fib75?fmt(sr75.fib75):'—';
+  if($('fib75Resistance')) $('fib75Resistance').textContent=sr75.resistance
+    ? `${fmt(sr75.resistance.p)} · ${sr75.resistance.touches} touches`
+    : 'None above';
+  if($('fib75Support')) $('fib75Support').textContent=sr75.support
+    ? `${fmt(sr75.support.p)} · ${sr75.support.touches} touches`
+    : 'None below';
+  if($('fib75PriceRelation')) $('fib75PriceRelation').textContent=sr75.fib75
+    ? `${sr75.priceRelation} · ${sr75.priceDistance.toFixed(2)}%`
+    : '—';
+  if($('fib75Note')){
+    const r=sr75.resistance?`R ${fmt(sr75.resistance.p)}`:'R —';
+    const s=sr75.support?`S ${fmt(sr75.support.p)}`:'S —';
+    $('fib75Note').textContent=sr75.fib75
+      ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${sr75.relation==='FLIP ZONE'?'Both support and resistance are close to the 75% area; treat it as a potential flip zone and wait for price reaction.':sr75.relation==='RESISTANCE'?'A nearby pivot resistance sits above the 75% level; watch for rejection or a clean reclaim.':sr75.relation==='SUPPORT'?'A nearby pivot support sits below the 75% level; watch whether the area holds or breaks.':'No nearby pivot support/resistance is within the 0.5% 75% proximity band.'}`;
+    else $('fib75Note').textContent='The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
+  }
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
@@ -1446,11 +1558,28 @@ function drawFib(ctx,a,y,pad,w){
   if(!levels.length)return;
   ctx.save();
   ctx.font='10px Arial';
+
+  const fib75=levels.find(v=>v.r===.75);
+  if(fib75){
+    const yy=y(fib75.p);
+    const bandPx=Math.max(7,Math.abs(y(fib75.p*1.005)-y(fib75.p)));
+    if(yy>pad-20&&yy<h-pad+20){
+      ctx.fillStyle='rgba(255,207,82,.06)';
+      ctx.fillRect(pad,yy-bandPx,w-pad*2,bandPx*2);
+      ctx.strokeStyle='rgba(255,207,82,.65)';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(pad,yy);
+      ctx.lineTo(w-pad,yy);
+      ctx.stroke();
+    }
+  }
+
   ctx.setLineDash([4,4]);
   for(const level of levels){
     const yy=y(level.p);
     if(yy<pad-12||yy>y(0)+12)continue;
-    ctx.strokeStyle=level.r===.75?'rgba(255,207,82,.65)':'rgba(114,169,255,.25)';
+    ctx.strokeStyle=level.r===.75?'rgba(255,207,82,.85)':'rgba(114,169,255,.25)';
     ctx.lineWidth=level.r===.75?1.5:1;
     ctx.beginPath();
     ctx.moveTo(pad,yy);
