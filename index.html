@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.9 Professional</title>
+<title>Crypto Structure Pro v8.10 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.9 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.10 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -1178,7 +1178,16 @@ function updateLiveMonitor(d){
   state.lastScanTs=Date.now();
   const s15=state.mtf['15m'];
   state.lastCandleTs=s15&&s15.last?s15.last.t:0;
-  const side=d && (d.side || d.watchSide) ? (d.side||d.watchSide) : 'WAIT';
+  // Keep the live monitor aligned with the same directional bias used by the main setup state.
+  // A raw score (watchSide) can disagree with the 1H/4H directional bias, so it must not
+  // override the active LONG/SHORT setup shown elsewhere in the UI.
+  const side=d && d.side
+    ? d.side
+    : d && d.shortBias
+      ? 'SHORT'
+      : d && d.longBias
+        ? 'LONG'
+        : (d&&d.watchSide)||'WAIT';
   const idx=state.confirmation.index||0;
   const total=7;
   if(d&&d.side){
