@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.46 Professional</title>
+<title>Crypto Structure Pro v8.50 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -189,14 +189,14 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
-.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.active{border-color:#72a9ff;background:#182b4f}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
+.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.46 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.50 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -1916,6 +1916,9 @@ function updateRiskManagement(a,entryConf,tradePlan,ext){
 }
 
 function updateRiskScenario(){
+  const plannerSide=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
+  $('scenarioLongBtn')?.classList.toggle('planner-selected',plannerSide==='LONG');
+  $('scenarioShortBtn')?.classList.toggle('planner-selected',plannerSide==='SHORT');
   const num=id=>{const v=Number($(id)?.value);return Number.isFinite(v)&&v>0?v:null};
   const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
   const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
@@ -1953,19 +1956,50 @@ function updateRiskScenario(){
   set('scenarioResultNote',`Hypothetical ${side} planning · ${modeMeta.label} using ${modeMeta.source}. Max loss ${fmt(riskAmount)} USDT · position size ${positionSize.toFixed(6)} base units. This does not create or confirm a live trade.`);
   if(badge){badge.textContent='CALCULATED';badge.className='liqFibBadge confirmed'};
 }
+
+function applyScenarioLevels(side, price, stop){
+  side = side === 'SHORT' ? 'SHORT' : 'LONG';
+  price = Number(price);
+  stop = Number(stop);
+  if(!Number.isFinite(price) || price<=0) return false;
+
+  // Hard invariant:
+  // LONG  => Stop < Entry, Targets > Entry
+  // SHORT => Stop > Entry, Targets < Entry
+  if(!Number.isFinite(stop) || (side==='LONG' && stop>=price) || (side==='SHORT' && stop<=price)){
+    const fallback = Math.max(price*0.005, 1);
+    stop = side==='LONG' ? price-fallback : price+fallback;
+  }
+
+  const riskDist = Math.abs(price-stop);
+  $('scenarioSide').value=side;
+  $('scenarioEntry').value=price.toFixed(2);
+  $('scenarioStop').value=stop.toFixed(2);
+
+  [1.272,1.618,2].forEach((r,i)=>{
+    const el=$(['scenarioTP1','scenarioTP2','scenarioTP3'][i]);
+    if(el) el.value=(side==='LONG' ? price+r*riskDist : price-r*riskDist).toFixed(2);
+  });
+  return true;
+}
+
 function initRiskScenario(){
-  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v846')||'null')}catch(e){return null}})();
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v850')||'null')}catch(e){return null}})();
   if(saved){['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if(saved[id]!=null&&$(id))$(id).value=saved[id]})}
-  const persist=()=>{try{localStorage.setItem('cspScenario_v846',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
+  const persist=()=>{try{localStorage.setItem('cspScenario_v850',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
   ['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{persist();updateRiskScenario()})});
+  const syncPlannerSideButtons=()=>{
+    const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
+    $('scenarioLongBtn')?.classList.toggle('planner-selected',side==='LONG');
+    $('scenarioShortBtn')?.classList.toggle('planner-selected',side==='SHORT');
+  };
   const manualSide=(side)=>{
     const e=$('scenarioSide');
     if(!e)return;
     e.value=side;
     persist();
+    syncPlannerSideButtons();
     updateRiskScenario();
-    $('scenarioLongBtn')?.classList.toggle('active',side==='LONG');
-    $('scenarioShortBtn')?.classList.toggle('active',side==='SHORT');
   };
   $('scenarioLongBtn')?.addEventListener('click',()=>manualSide('LONG'));
   $('scenarioShortBtn')?.addEventListener('click',()=>manualSide('SHORT'));
@@ -1979,22 +2013,34 @@ function initRiskScenario(){
     const sw=source?getFibSwingFromScan(source):null;
     const s12=state.mtf?.['12h']; const st12=s12?structureState(s12):null;
     const d=mtfDecision();
-    const side=st12?.bullish?'LONG':st12?.bearish?'SHORT':d?.side||d?.watchSide||($('scenarioSide')?.value==='SHORT'?'SHORT':'LONG');
+
+    // Build-from-live follows the actual live setup side first.
+    const side=(state.activeSetupSide==='LONG'||state.activeSetupSide==='SHORT')
+      ?state.activeSetupSide
+      :(d?.side==='LONG'||d?.side==='SHORT')
+        ?d.side
+        :(d?.watchSide==='LONG'||d?.watchSide==='SHORT')
+          ?d.watchSide
+          :($('scenarioSide')?.value==='SHORT'?'SHORT':'LONG');
+
     const price=Number(state.livePrice)||Number(source?.last?.c);
-    if($('scenarioSide'))$('scenarioSide').value=side;
-    if(price&&$('scenarioEntry'))$('scenarioEntry').value=price.toFixed(2);
-    if(sw){
-      let stop=side==='LONG'?sw.low.p:sw.high.p;
-      if((side==='LONG'&&stop>=price)||(side==='SHORT'&&stop<=price)){
-        const alt=side==='LONG'?source?.last?.l:source?.last?.h;
-        if(Number.isFinite(alt)&&((side==='LONG'&&alt<price)||(side==='SHORT'&&alt>price)))stop=alt;
-      }
-      if($('scenarioStop')&&Number.isFinite(stop))$('scenarioStop').value=Number(stop).toFixed(2);
-      const base=side==='LONG'?sw.low.p:sw.high.p, sign=side==='LONG'?1:-1;
-      [1.272,1.618,2].forEach((r,i)=>{const el=$(['scenarioTP1','scenarioTP2','scenarioTP3'][i]);if(el)el.value=(base+sign*sw.range*r).toFixed(2)});
+    let stop=NaN;
+    if(sw) stop=Number(side==='LONG'?sw.low?.p:sw.high?.p);
+    const candleAlt=Number(side==='LONG'?source?.last?.l:source?.last?.h);
+
+    if(!Number.isFinite(stop) || (side==='LONG'&&stop>=price) || (side==='SHORT'&&stop<=price)){
+      stop=candleAlt;
     }
-    persist();updateRiskScenario();
-    const note=$('scenarioResultNote'); if(note)note.textContent=`Planner built from ${sourceTf.toUpperCase()} ${mode} context. Major Authority: ${st12?.bullish?'LONG':st12?.bearish?'SHORT':'WAIT'}. Review Entry, Stop and Targets before using the scenario.`;
+    if(!Number.isFinite(stop) || (side==='LONG'&&stop>=price) || (side==='SHORT'&&stop<=price)){
+      const fallback=Math.max(Number(sw?.range)||0,price*0.005);
+      stop=side==='LONG'?price-fallback*0.5:price+fallback*0.5;
+    }
+
+    if(applyScenarioLevels(side,price,stop)){
+      persist();updateRiskScenario();
+      const note=$('scenarioResultNote');
+      if(note) note.textContent=`Planner built from ${sourceTf.toUpperCase()} ${mode} context. Major Authority: ${st12?.bullish?'LONG':st12?.bearish?'SHORT':'WAIT'}. Entry/Stop/Targets are direction-safe for ${side}.`;
+    }
   });
   const useSwing=$('scenarioUseSwing');if(useSwing)useSwing.addEventListener('click',()=>{
     const mode=$('scenarioMode')?.value||'INTRADAY';
@@ -2003,23 +2049,25 @@ function initRiskScenario(){
     const sw=source?getFibSwingFromScan(source):null;
     const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
     const price=Number(state.livePrice)||Number(source?.last?.c);
-    if(!sw){set('scenarioStatus','SWING STOP UNAVAILABLE');set('scenarioResultNote',`No confirmed swing pair is available on the ${sourceTf} planner source yet.`);return;}
-    if(price&&(!$('scenarioEntry')?.value||Number($('scenarioEntry').value)<=0))$('scenarioEntry').value=price.toFixed(2);
-    let stop=Number(side==='LONG'?sw.low.p:sw.high.p);
-    if((side==='LONG'&&stop>=price)||(side==='SHORT'&&stop<=price)){
-      const alt=side==='LONG'?source?.last?.l:source?.last?.h;
-      if(Number.isFinite(alt)&&((side==='LONG'&&alt<price)||(side==='SHORT'&&alt>price)))stop=alt;
+    if(!sw){
+      set('scenarioStatus','SWING STOP UNAVAILABLE');
+      set('scenarioResultNote',`No confirmed swing pair is available on the ${sourceTf} planner source yet.`);
+      return;
     }
-    $('scenarioStop').value=stop.toFixed(2);
-    const base=side==='LONG'?sw.low.p:sw.high.p, sign=side==='LONG'?1:-1;
-    [1.272,1.618,2].forEach((r,i)=>{const el=$(['scenarioTP1','scenarioTP2','scenarioTP3'][i]);if(el)el.value=(base+sign*sw.range*r).toFixed(2)});
-    persist();updateRiskScenario();
+    let stop=Number(side==='LONG'?sw.low?.p:sw.high?.p);
+    const alt=Number(side==='LONG'?source?.last?.l:source?.last?.h);
+    if(!Number.isFinite(stop) || (side==='LONG'&&stop>=price) || (side==='SHORT'&&stop<=price)) stop=alt;
+    if(!Number.isFinite(stop) || (side==='LONG'&&stop>=price) || (side==='SHORT'&&stop<=price)){
+      const fallback=Math.max(Number(sw.range)||0,price*0.005);
+      stop=side==='LONG'?price-fallback*0.5:price+fallback*0.5;
+    }
+    if(applyScenarioLevels(side,price,stop)){persist();updateRiskScenario();}
   });
   const clear=$('scenarioClear');if(clear)clear.addEventListener('click',()=>{['scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if($(id))$(id).value='' });persist();updateRiskScenario()});
   updateRiskScenario();
   const initialSide=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
-  $('scenarioLongBtn')?.classList.toggle('active',initialSide==='LONG');
-  $('scenarioShortBtn')?.classList.toggle('active',initialSide==='SHORT');
+  $('scenarioLongBtn')?.classList.toggle('planner-selected',initialSide==='LONG');
+  $('scenarioShortBtn')?.classList.toggle('planner-selected',initialSide==='SHORT');
 }
 
 function updateFinalDecision(entryConf,consensus){
