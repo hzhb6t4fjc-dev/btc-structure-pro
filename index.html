@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.5 Professional</title>
+<title>Crypto Structure Pro v8.6 Professional</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.5 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.6 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -524,7 +524,7 @@ function structureState(s){
   }
 
   let detail=state;
-  if(state==='CONSOLIDATION') detail=`CONSOLIDATION · ${location}`;
+  if(state==='CONSOLIDATION') detail=`CONSOLIDATION · ${location} · HH/LL are range pivots, not a bearish trend`;
   else if(state==='BULLISH TRANSITION') detail=`BULLISH TRANSITION · ${transitionReason||location}`;
   else if(state==='BEARISH TRANSITION') detail=`BEARISH TRANSITION · ${transitionReason||location}`;
 
@@ -808,7 +808,7 @@ function buildRoadmap(d,side){
   const alignment=long ? d.longBias : d.shortBias;
   const score=long ? d.longScore>=70 : d.shortScore>=70;
   return [
-    [long?'15m bullish structure':'15m bearish structure',structure],
+    [long?'15m bullish structure (HH + HL outside range)':'15m bearish structure (LH + LL outside range)',structure],
     ['Liquidity sweep',sweep],
     ['Displacement',displacement],
     ['MSS',mss],
@@ -957,7 +957,9 @@ function renderRoadmap(d,side){
   }
   const steps=buildRoadmap(d,side);
   const st=d.st15||structureState(d.s15);
-  const current=st.parts.length?st.parts.join(' + '):'No clear swing sequence';
+  const current=st.state==='CONSOLIDATION'
+    ? `CONSOLIDATION · ${st.context?.rangeLocation||'RANGE'}`
+    : (st.parts.length?st.parts.join(' + '):'No clear swing sequence');
   $('roadmapStatus').innerHTML=`Current 15m structure: <b>${current}</b> → <b>${st.state}</b>`;
   const done=steps.filter(x=>x[1]).length;
   const firstMissing=steps.find(x=>!x[1]);
@@ -981,7 +983,7 @@ function updateUI(d){
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(last.c);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
-  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
+  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':(chartStructure.state.includes('TRANSITION')?'Transition':'Mixed');
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`L ${d.s4.bull} / S ${d.s4.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
@@ -1048,7 +1050,9 @@ function updateUI(d){
     const sideMissing=conf.direction==='LONG'?d.missingLong:conf.direction==='SHORT'?d.missingShort:[];
     const firstMissing=(conf.direction==='LONG'?buildRoadmap(d,'LONG'):conf.direction==='SHORT'?buildRoadmap(d,'SHORT'):[]).find(x=>!x[1]);
     const st=d.st15||structureState(d.s15);
-    const currentStructure=st.parts.length?st.parts.join(' + ')+' → '+(st.detail||st.state):'No clear swing sequence';
+    const currentStructure=st.state==='CONSOLIDATION'
+      ? `CONSOLIDATION · ${st.context?.rangeLocation||'RANGE'} → ${st.state}`
+      : (st.parts.length?st.parts.join(' + ')+' → '+(st.detail||st.state):'No clear swing sequence');
     $('setupText').textContent=conf.direction==='WAIT'
       ? 'No dominant directional bias is confirmed by the current rules.'
       : `Bias ${conf.direction}, but no confirmed entry. Next confirmation: ${firstMissing?firstMissing[0]:'all trigger conditions are satisfied'}. Current 15m structure: ${currentStructure}${st.state==='CONSOLIDATION'?' · support/consolidation zone detected':''}.`;
