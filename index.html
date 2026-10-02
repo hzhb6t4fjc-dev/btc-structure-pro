@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.64.1 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow + Order Book</title>
+<title>Crypto Structure Pro v8.64.2 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow + Order Book</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -215,7 +215,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.64.1 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.64.2 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -569,7 +569,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="vpBox"><small>NEAREST ASK WALL</small><b id="obAskWall">—</b></div>
           <div class="vpBox"><small>FLOW / BOOK</small><b id="obFlowBook">—</b></div>
         </div>
-        <div class="liqFibNote" id="obNote">Live Binance Spot order-book depth. Walls are liquidity concentrations away from the top-of-book inside the displayed levels; they are not guaranteed to remain and do not create or override a Market Validation entry.</div>
+        <div class="liqFibNote" id="obNote">Live Binance Spot order-book depth. Walls exclude the top 3 levels and must clear a minimum distance plus size thresholds; they are not guaranteed to remain and do not create or override a Market Validation entry.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -2655,29 +2655,30 @@ function getOrderBookSummary(){
   const n=20,bb=bids.slice(0,n),aa=asks.slice(0,n);
   const bidNotional=bb.reduce((a,[p,q])=>a+p*q,0),askNotional=aa.reduce((a,[p,q])=>a+p*q,0),total=bidNotional+askNotional;
   const imbalance=total?(bidNotional-askNotional)/total*100:0;
-  // Liquidity Wall Validation 1.0:
+  // Liquidity Distance Validation 2.0:
   // Best bid/ask are top-of-book liquidity, not walls.
   // A wall must be meaningfully away from the touch and significant relative
   // to both the local median and the side's displayed notional.
+  // Liquidity Distance Validation 2.0:
+  // A large order immediately next to the touch is near-touch liquidity,
+  // not a meaningful wall. Require size significance and minimum distance.
+  const minWallDistPct=Math.max(0.05,spreadPct*4);
   const wallData=(arr,sideNotional)=>{
     if(arr.length<4||!sideNotional)return null;
-    // Exclude the first 3 levels: these are top-of-book liquidity, not a wall.
     const eligible=arr.slice(3);
     if(!eligible.length)return null;
     const vals=eligible.map(([p,q])=>p*q).sort((a,b)=>a-b);
     const med=vals[Math.floor(vals.length/2)]||0;
     if(!med)return null;
-    const candidates=eligible.map(([p,q],i)=>({
-      p,q,n:p*q,
-      multiple:(p*q)/med,
-      share:(p*q)/sideNotional*100,
-      rank:i+4
-    })).filter(x=>x.multiple>=4&&x.share>=8)
+    const candidates=eligible.map(([p,q],i)=>{
+      const dist=mid?Math.abs(p-mid)/mid*100:0;
+      return {p,q,n:p*q,dist,multiple:(p*q)/med,share:(p*q)/sideNotional*100,rank:i+4};
+    }).filter(x=>x.dist>=minWallDistPct&&x.multiple>=4&&x.share>=8)
       .sort((a,b)=>(b.share-a.share)||(b.n-a.n));
     return candidates[0]||null;
   };
   const bidWall=wallData(bb,bidNotional),askWall=wallData(aa,askNotional);
-  const wallDist=x=>x&&mid?Math.abs(x.p-mid)/mid*100:null;
+  const wallDist=x=>x&&mid?x.dist:null;
   const flow=getOrderFlowSummary();
   let flowBook='OPEN / BALANCED';
   if(flow?.imbalance==='BUY DOMINANCE'&&askWall&&wallDist(askWall)<=0.50)flowBook='BUY FLOW → ASK WALL';
@@ -2689,7 +2690,7 @@ function getOrderBookSummary(){
   let bookState='BALANCED';
   if(imbalance>=12)bookState='BID DOMINANCE';
   else if(imbalance<=-12)bookState='ASK DOMINANCE';
-  return {bestBid,bestAsk,mid,spread,spreadPct,bidNotional,askNotional,imbalance,bidWall,askWall,bidWallDist:wallDist(bidWall),askWallDist:wallDist(askWall),flowBook,bookState,countBid:bids.length,countAsk:asks.length};
+  return {bestBid,bestAsk,mid,spread,spreadPct,minWallDistPct,bidNotional,askNotional,imbalance,bidWall,askWall,bidWallDist:wallDist(bidWall),askWallDist:wallDist(askWall),flowBook,bookState,countBid:bids.length,countAsk:asks.length};
 }
 function renderOrderBook(){
   const panel=$('orderBookPanel');if(!panel)return;
