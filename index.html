@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.51 Professional</title>
+<title>Crypto Structure Pro v8.52 Intraday Entry Map</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -189,7 +189,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
-.riskScenarioPanel{border-color:#8a6a16}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
+.riskScenarioPanel{border-color:#8a6a16}.intradayEntryMap{border-color:#315d8c}.intradayEntryMap.hidden{display:none}.intradayMapHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.intradayMapTitle{font-weight:800}.intradayMapBadge{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid #3b4d6b;color:#9fb7da;background:#0d1728}.intradayMapGrid{margin-top:8px}.intradayCandidate{border:1px solid #263758;border-radius:10px;padding:10px;background:#0b1322}.intradayCandidate.long{border-color:#245b45}.intradayCandidate.short{border-color:#63313a}.intradayCandidate h4{margin:0 0 8px;font-size:14px}.intradayCandidate .mapLine{display:flex;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}.intradayCandidate .mapLine span{color:#93a0b8}.intradayCandidate .mapLine b{text-align:right}.intradayMapActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.intradayMapActions .btn{flex:1;min-width:120px}.intradayMapNote{margin-top:9px;font-size:12px;line-height:1.45;color:#9aa7bf}.intradayMapStatus{font-weight:800}.intradayMapStatus.ready{color:var(--green)}.intradayMapStatus.wait{color:var(--yellow)}.intradayMapStatus.counter{color:#f0a45d}@media(max-width:560px){.intradayCandidate .mapLine{flex-direction:column;gap:2px}.intradayCandidate .mapLine b{text-align:left}.intradayMapActions .btn{min-width:100%}.intradayMapHead{align-items:flex-start}}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
 </style>
 </head>
 <body>
@@ -411,6 +411,41 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="scenarioResultNote">Enter Entry, Stop and targets to calculate a hypothetical position size and R multiples. The simulator is separate from live setup confirmation.</div>
       </div>
+      <div class="liqFibPanel intradayEntryMap" id="intradayEntryMap">
+        <div class="liqFibHead intradayMapHead">
+          <span class="intradayMapTitle">Intraday Entry Map · Monday Range + Fibonacci 75%</span>
+          <span class="intradayMapBadge" id="intradayMapBadge">WAIT</span>
+        </div>
+        <div class="liqFibGrid intradayMapGrid">
+          <div class="liqFibBox"><small>MONDAY HIGH</small><b id="intradayMondayHigh">—</b></div>
+          <div class="liqFibBox"><small>MONDAY LOW</small><b id="intradayMondayLow">—</b></div>
+          <div class="liqFibBox"><small>MONDAY RANGE</small><b id="intradayMondayRange">—</b></div>
+          <div class="liqFibBox"><small>FIB 0.75</small><b id="intradayFib75">—</b></div>
+          <div class="liqFibBox"><small>FIB 0.75 SUPPORT</small><b id="intradayFibSupport">—</b></div>
+          <div class="liqFibBox"><small>FIB 0.75 RESISTANCE</small><b id="intradayFibResistance">—</b></div>
+        </div>
+        <div class="liqFibGrid intradayMapGrid">
+          <div class="intradayCandidate long">
+            <h4>LONG · POTENTIAL ENTRY</h4>
+            <div class="mapLine"><span>Entry Zone</span><b id="intradayLongZone">—</b></div>
+            <div class="mapLine"><span>Auto Entry</span><b id="intradayLongEntry">—</b></div>
+            <div class="mapLine"><span>Confluence</span><b id="intradayLongConfluence">—</b></div>
+            <div class="mapLine"><span>Context</span><b id="intradayLongContext">—</b></div>
+            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayLongStatus">WAIT</b></div>
+            <div class="intradayMapActions"><button class="btn" type="button" id="intradayLongApply">USE LONG ENTRY</button></div>
+          </div>
+          <div class="intradayCandidate short">
+            <h4>SHORT · POTENTIAL ENTRY</h4>
+            <div class="mapLine"><span>Entry Zone</span><b id="intradayShortZone">—</b></div>
+            <div class="mapLine"><span>Auto Entry</span><b id="intradayShortEntry">—</b></div>
+            <div class="mapLine"><span>Confluence</span><b id="intradayShortConfluence">—</b></div>
+            <div class="mapLine"><span>Context</span><b id="intradayShortContext">—</b></div>
+            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayShortStatus">WAIT</b></div>
+            <div class="intradayMapActions"><button class="btn" type="button" id="intradayShortApply">USE SHORT ENTRY</button></div>
+          </div>
+        </div>
+        <div class="liqFibNote" id="intradayMapNote">Intraday candidates use the 1H data source. Monday levels are calculated from the latest completed Monday in Binance UTC data. The map identifies potential locations; confirmation still comes from the existing structure, liquidity and trigger engines.</div>
+      </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -513,6 +548,7 @@ const state={
   livePrice:null,
   liveCandleTs:null,
   mtf:{},
+  rawMtf:{},
   macro:{'1w':null,'1M':null},
   ws:null,
   wsTimer:null,
@@ -1915,6 +1951,138 @@ function updateRiskManagement(a,entryConf,tradePlan,ext){
   set('riskNote',`${simulated?'Counter-trend hypothetical sizing · live execution remains BLOCKED. ':' '}Maximum loss ${fmt(riskAmount)} USDT · position size ${positionSize.toFixed(6)} base units · notional ${fmt(notional)} USDT.`);
 }
 
+
+function getLatestCompletedMondayRange(a){
+  if(!Array.isArray(a)||!a.length)return null;
+  const now=new Date();
+  const utcDay=now.getUTCDay();
+  const todayKey=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+  const groups={};
+  for(const c of a){
+    if(!c||!Number.isFinite(c.t))continue;
+    const d=new Date(c.t);
+    if(d.getUTCDay()!==1)continue;
+    const key=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());
+    if(key>=todayKey && utcDay===1)continue;
+    if(!groups[key])groups[key]={date:new Date(key),high:-Infinity,low:Infinity,count:0};
+    groups[key].high=Math.max(groups[key].high,Number(c.h));
+    groups[key].low=Math.min(groups[key].low,Number(c.l));
+    groups[key].count++;
+  }
+  const keys=Object.keys(groups).map(Number).filter(k=>k<todayKey).sort((a,b)=>b-a);
+  if(!keys.length)return null;
+  const g=groups[keys[0]];
+  if(!Number.isFinite(g.high)||!Number.isFinite(g.low)||g.high<=g.low)return null;
+  return {...g,key:keys[0],label:g.date.toISOString().slice(0,10)};
+}
+
+function getIntradayEntryMap(){
+  const a=state.rawMtf?.['1h'];
+  if(!Array.isArray(a)||a.length<50)return null;
+  const price=Number(a.at(-1)?.c);
+  const monday=getLatestCompletedMondayRange(a);
+  const fib=getFib75SRContext(a);
+  if(!monday||!Number.isFinite(price)||!fib?.fib75)return {price,monday,fib};
+
+  const levels={
+    long:[
+      {name:'Monday Low',p:monday.low},
+      {name:'Fib 0.75',p:fib.fib75},
+      ...(fib.support?[{name:'Fib 0.75 Support',p:fib.support.p}]:[])
+    ],
+    short:[
+      {name:'Monday High',p:monday.high},
+      {name:'Fib 0.75',p:fib.fib75},
+      ...(fib.resistance?[{name:'Fib 0.75 Resistance',p:fib.resistance.p}]:[])
+    ]
+  };
+
+  const build=(side)=>{
+    const raw=levels[side.toLowerCase()].filter(x=>Number.isFinite(x.p));
+    const ref=side==='LONG'
+      ?raw.filter(x=>x.p<=price).sort((a,b)=>Math.abs(price-b.p)-Math.abs(price-a.p))
+      :raw.filter(x=>x.p>=price).sort((a,b)=>Math.abs(price-b.p)-Math.abs(price-a.p));
+    const source=ref.length?ref:raw.slice().sort((a,b)=>Math.abs(price-a.p)-Math.abs(price-b.p));
+    const anchor=source[0];
+    const cluster=raw.filter(x=>Math.abs(x.p-anchor.p)/Math.max(anchor.p,1)<=0.005);
+    const entry=cluster.reduce((s,x)=>s+x.p,0)/(cluster.length||1);
+    const zoneLow=Math.min(...cluster.map(x=>x.p)),zoneHigh=Math.max(...cluster.map(x=>x.p));
+    const names=[...new Set(cluster.map(x=>x.name))];
+    const confluence=cluster.length>=3?'STRONG · 3 LEVELS':cluster.length===2?'CONFLUENCE · 2 LEVELS':'SINGLE LEVEL';
+    const inLocation=side==='LONG'?entry<=price*1.002:entry>=price*.998;
+    const status=cluster.length>=2?'DEVELOPING':inLocation?'WATCH':'WAIT';
+    const context=names.join(' + ')+(entry<=price&&side==='LONG'?' · below/near price':entry>=price&&side==='SHORT'?' · above/near price':' · away from price');
+    return {side,entry,zoneLow,zoneHigh,names,confluence,status,context,levels:cluster};
+  };
+  return {price,monday,fib,long:build('LONG'),short:build('SHORT')};
+}
+
+function renderIntradayEntryMap(){
+  const panel=$('intradayEntryMap');
+  if(!panel)return;
+  const intraday=$('scenarioMode')?.value==='INTRADAY';
+  panel.classList.toggle('hidden',!intraday);
+  if(!intraday)return;
+  const m=getIntradayEntryMap();
+  if(!m){
+    ['intradayMondayHigh','intradayMondayLow','intradayMondayRange','intradayFib75','intradayFibSupport','intradayFibResistance','intradayLongZone','intradayLongEntry','intradayLongConfluence','intradayLongContext','intradayShortZone','intradayShortEntry','intradayShortConfluence','intradayShortContext'].forEach(id=>{if($(id))$(id).textContent='—'});
+    if($('intradayMapBadge'))$('intradayMapBadge').textContent='WAIT';
+    if($('intradayMapNote'))$('intradayMapNote').textContent='Waiting for enough 1H data to calculate Monday Range and Fibonacci 75% entry locations.';
+    return;
+  }
+  const set=(id,v)=>{if($(id))$(id).textContent=v};
+  set('intradayMondayHigh',fmt(m.monday?.high));
+  set('intradayMondayLow',fmt(m.monday?.low));
+  set('intradayMondayRange',m.monday?`${fmt(m.monday.high-m.monday.low)} · ${m.monday.label} UTC`:'—');
+  set('intradayFib75',fmt(m.fib?.fib75));
+  set('intradayFibSupport',m.fib?.support?fmt(m.fib.support.p):'None below');
+  set('intradayFibResistance',m.fib?.resistance?fmt(m.fib.resistance.p):'None above');
+  const renderSide=(x,prefix)=>{
+    set(prefix+'Zone',x?`${fmt(x.zoneLow)} – ${fmt(x.zoneHigh)}`:'—');
+    set(prefix+'Entry',x?fmt(x.entry):'—');
+    set(prefix+'Confluence',x?x.confluence:'—');
+    set(prefix+'Context',x?x.context:'—');
+    const st=$(prefix+'Status');
+    if(st){st.textContent=x?.status||'WAIT';st.className='intradayMapStatus '+(x?.status==='DEVELOPING'?'ready':x?.status==='WATCH'?'counter':'wait')}
+  };
+  renderSide(m.long,'intradayLong');
+  renderSide(m.short,'intradayShort');
+  const badge=$('intradayMapBadge');
+  if(badge){const s=m.long?.status==='DEVELOPING'||m.short?.status==='DEVELOPING'?'DEVELOPING':m.long?.status==='WATCH'||m.short?.status==='WATCH'?'WATCH':'WAIT';badge.textContent=s;}
+  if($('intradayMapNote'))$('intradayMapNote').textContent=`1H Intraday Map · latest completed Monday ${m.monday?.label||'—'} UTC · current 1H price ${fmt(m.price)}. LONG uses Monday Low / Fib 0.75 Support locations; SHORT uses Monday High / Fib 0.75 Resistance locations. These are potential entry zones, not automatic confirmations.`;
+}
+
+function applyIntradayCandidate(side){
+  if($('scenarioMode'))$('scenarioMode').value='INTRADAY';
+  const m=getIntradayEntryMap();
+  const x=side==='SHORT'?m?.short:m?.long;
+  if(!x)return;
+  const a=state.rawMtf?.['1h'];
+  const price=Number(x.entry);
+  if(!Number.isFinite(price)||price<=0)return;
+  const fib=m.fib, monday=m.monday;
+  const source=state.mtf?.['1h'];
+  let stop=NaN;
+  if(source){
+    const piv=side==='LONG'?(source.p?.lo||[]).filter(v=>Number(v.p)<price):(source.p?.hi||[]).filter(v=>Number(v.p)>price);
+    if(piv.length)stop=Number(piv[piv.length-1].p);
+  }
+  if(!Number.isFinite(stop)){
+    if(side==='LONG')stop=Number.isFinite(monday?.low)?Math.min(monday.low,price*(1-0.003)):NaN;
+    else stop=Number.isFinite(monday?.high)?Math.max(monday.high,price*(1+0.003)):NaN;
+  }
+  if(!Number.isFinite(stop)||(side==='LONG'&&stop>=price)||(side==='SHORT'&&stop<=price)){
+    const d=Math.max(price*.005,1);stop=side==='LONG'?price-d:price+d;
+  }
+  if(applyScenarioLevels(side,price,stop)){
+    try{localStorage.setItem('cspScenario_v852',JSON.stringify({scenarioMode:'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:side,scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(e){}
+    updateRiskScenario();
+    const note=$('scenarioResultNote');
+    if(note)note.textContent=`Intraday ${side} candidate loaded from Monday Range + Fibonacci 75% map. ${x.confluence}. Planner remains hypothetical; wait for the existing confirmation engine before treating it as a live setup.`;
+    $('scenarioEntry')?.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
 function updateRiskScenario(){
   const plannerSide=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
   $('scenarioLongBtn')?.classList.toggle('planner-selected',plannerSide==='LONG');
@@ -1931,6 +2099,7 @@ function updateRiskScenario(){
   }[mode]||{label:'INTRADAY',source:'1H SETUP',tf:'1h'};
   set('scenarioModeStatus',modeMeta.label);
   set('scenarioSourceStatus',modeMeta.source);
+  renderIntradayEntryMap();
   const major=state.mtf?.['12h'];
   const majorState=major?structureState(major):null;
   set('scenarioBiasStatus',majorState?.bullish?'LONG':majorState?.bearish?'SHORT':'WAIT');
@@ -1984,9 +2153,9 @@ function applyScenarioLevels(side, price, stop){
 }
 
 function initRiskScenario(){
-  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v851')||'null')}catch(e){return null}})();
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem('cspScenario_v852')||'null')}catch(e){return null}})();
   if(saved){['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if(saved[id]!=null&&$(id))$(id).value=saved[id]})}
-  const persist=()=>{try{localStorage.setItem('cspScenario_v851',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
+  const persist=()=>{try{localStorage.setItem('cspScenario_v852',JSON.stringify({scenarioMode:$('scenarioMode')?.value||'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:$('scenarioSide')?.value||'LONG',scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(err){}}
   ['scenarioMode','scenarioEquity','scenarioRiskPct','scenarioSide','scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{persist();updateRiskScenario()})});
   const syncPlannerSideButtons=()=>{
     const side=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
@@ -2110,6 +2279,8 @@ function initRiskScenario(){
       set('scenarioResultNote',`${side} swing stop loaded from ${sourceTf.toUpperCase()}. Stop is direction-safe relative to Entry.`);
     }
   });
+  $('intradayLongApply')?.addEventListener('click',()=>applyIntradayCandidate('LONG'));
+  $('intradayShortApply')?.addEventListener('click',()=>applyIntradayCandidate('SHORT'));
   const clear=$('scenarioClear');if(clear)clear.addEventListener('click',()=>{['scenarioEntry','scenarioStop','scenarioTP1','scenarioTP2','scenarioTP3'].forEach(id=>{if($(id))$(id).value='' });persist();updateRiskScenario()});
   updateRiskScenario();
   const initialSide=$('scenarioSide')?.value==='SHORT'?'SHORT':'LONG';
@@ -2451,7 +2622,7 @@ async function loadAll(){
   try{
     const allTfs=[...tfs,'1w','1M'];
     const results=await Promise.all(allTfs.map(tf=>loadTF(tf)));
-    for(let i=0;i<tfs.length;i++)state.mtf[tfs[i]]=scan(results[i]);
+    for(let i=0;i<tfs.length;i++){state.mtf[tfs[i]]=scan(results[i]);state.rawMtf[tfs[i]]=results[i];}
     state.macro['1w']=results[allTfs.indexOf('1w')];
     state.macro['1M']=results[allTfs.indexOf('1M')];
 
@@ -2459,6 +2630,7 @@ async function loadAll(){
     state.livePrice=state.data.at(-1)?.c??null;
     state.liveCandleTs=state.data.at(-1)?.t??null;
     draw();
+    renderIntradayEntryMap();
 
     const d=mtfDecision();
     if(d){updateUI(d);maybeAlert(d)}
