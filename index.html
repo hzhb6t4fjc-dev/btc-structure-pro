@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.52 Intraday Entry Map</title>
+<title>Crypto Structure Pro v8.61 Market Validation Engine 2.0</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -79,6 +79,15 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .mtfNote{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.4}
 @media(max-width:560px){.mtfGrid{grid-template-columns:1fr}.mtfBox:last-child{grid-column:auto}}
 
+
+
+/* v8.58 Intraday State Machine Engine */
+.intradayContextPanel{border-color:#31578d}.intradayContextPanel .liqFibTitle{color:#72a9ff}
+.intradayZoneGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.intradayZone{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}.intradayZone small{display:block;color:var(--muted);font-size:9px;margin-bottom:3px}.intradayZone b{font-size:12px;line-height:1.35}.intradayZone.support b{color:var(--green)}.intradayZone.resistance b{color:var(--red)}
+.intradayZoneList{display:grid;gap:6px;margin-top:8px}.intradayZoneRow{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:#0c1321;font-size:10px}.intradayZoneRow span{color:var(--muted)}.intradayZoneRow b{font-size:10px}.intradayZoneRow .strength{color:var(--blue)}
+.intradayNoTrade{margin-top:8px;border:1px solid #5b4d24;border-radius:9px;padding:8px;background:#0c1321}.intradayNoTrade b{color:#ffcf52}.intradayNoTrade.ok{border-color:#285a4b}.intradayNoTrade.ok b{color:var(--green)}
+@media(max-width:560px){.intradayZoneGrid{grid-template-columns:1fr}}
 
 .liqFibPanel{margin:11px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#090f1a}
 .liqFibHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -196,7 +205,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.51 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.61 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -411,9 +420,30 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="scenarioResultNote">Enter Entry, Stop and targets to calculate a hypothetical position size and R multiples. The simulator is separate from live setup confirmation.</div>
       </div>
+      <div class="liqFibPanel intradayContextPanel" id="intradayContextEngine">
+        <div class="liqFibHead"><span class="liqFibTitle">Intraday Zone &amp; Context Engine</span><span class="liqFibBadge separate" id="intradayContextBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>MARKET LOCATION</small><b id="intradayContextLocation">—</b></div>
+          <div class="liqFibBox"><small>SESSION</small><b id="intradayContextSession">—</b></div>
+          <div class="liqFibBox"><small>VOLATILITY · 1H ATR</small><b id="intradayContextVolatility">—</b></div>
+          <div class="liqFibBox"><small>RANGE CONDITION</small><b id="intradayContextRangeCondition">—</b></div>
+          <div class="liqFibBox"><small>12H AUTHORITY</small><b id="intradayContextMajor">—</b></div>
+          <div class="liqFibBox"><small>4H MAIN</small><b id="intradayContextMain">—</b></div>
+        </div>
+        <div class="intradayZoneGrid">
+          <div class="intradayZone support"><small>NEAREST SUPPORT ZONE</small><b id="intradayNearestSupport">—</b></div>
+          <div class="intradayZone resistance"><small>NEAREST RESISTANCE ZONE</small><b id="intradayNearestResistance">—</b></div>
+        </div>
+        <div class="liqFibNote"><b>KEY SUPPORT ZONES</b></div>
+        <div class="intradayZoneList" id="intradaySupportZones">—</div>
+        <div class="liqFibNote"><b>KEY RESISTANCE ZONES</b></div>
+        <div class="intradayZoneList" id="intradayResistanceZones">—</div>
+        <div class="intradayNoTrade" id="intradayNoTradeBox"><b id="intradayNoTradeTitle">NO-TRADE FILTER</b><div class="liqFibNote" id="intradayNoTradeReason">Waiting for context.</div></div>
+        <div class="liqFibNote" id="intradayContextNote">Zones combine confirmed 1H pivots, repeated reactions, Monday range relationship and Fibonacci context. Zones are locations, not entries.</div>
+      </div>
       <div class="liqFibPanel intradayEntryMap" id="intradayEntryMap">
         <div class="liqFibHead intradayMapHead">
-          <span class="intradayMapTitle">Intraday Entry Map · Monday Range + Fibonacci 75%</span>
+          <span class="intradayMapTitle">Intraday Zone & Entry Engine · Monday Range + Key S/R Zones</span>
           <span class="intradayMapBadge" id="intradayMapBadge">WAIT</span>
         </div>
         <div class="liqFibGrid intradayMapGrid">
@@ -427,24 +457,42 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="liqFibGrid intradayMapGrid">
           <div class="intradayCandidate long">
             <h4>LONG · POTENTIAL ENTRY</h4>
-            <div class="mapLine"><span>Entry Zone</span><b id="intradayLongZone">—</b></div>
-            <div class="mapLine"><span>Auto Entry</span><b id="intradayLongEntry">—</b></div>
-            <div class="mapLine"><span>Confluence</span><b id="intradayLongConfluence">—</b></div>
-            <div class="mapLine"><span>Context</span><b id="intradayLongContext">—</b></div>
+            <div class="mapLine"><span>Primary Zone</span><b id="intradayLongZone">—</b></div>
+            <div class="mapLine"><span>Reference Entry</span><b id="intradayLongEntry">—</b></div>
+            <div class="mapLine"><span>Zone Confluence</span><b id="intradayLongConfluence">—</b></div>
+            <div class="mapLine"><span>Location</span><b id="intradayLongLocation">—</b></div>
+            <div class="mapLine"><span>Setup Type</span><b id="intradayLongSetup">—</b></div>
+            <div class="mapLine"><span>Range / Breakout</span><b id="intradayLongRangeState">—</b></div>
+            <div class="mapLine"><span>Setup Score</span><b id="intradayLongScore">—</b></div>
+            <div class="mapLine"><span>Confirmation</span><b id="intradayLongConfirmation">—</b></div><div class="mapLine"><span>Confirmation Path</span><b id="intradayLongPath">—</b></div>
+            <div class="mapLine"><span>Liquidity Sweep</span><b id="intradayLongSweep">—</b></div>
+            <div class="mapLine"><span>Displacement / MSS</span><b id="intradayLongDMss">—</b></div>
+            <div class="mapLine"><span>FVG / Volume</span><b id="intradayLongFvgVol">—</b></div>
             <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayLongStatus">WAIT</b></div>
-            <div class="intradayMapActions"><button class="btn" type="button" id="intradayLongApply">USE LONG ENTRY</button></div>
+            <div class="mapLine"><span>Invalidation</span><b id="intradayLongInvalidation">—</b></div>
+            <div class="mapLine"><span>Context</span><b id="intradayLongContext">—</b></div>
+            <div class="intradayMapActions"><button class="btn" type="button" id="intradayLongApply">USE LONG PLAN</button></div>
           </div>
           <div class="intradayCandidate short">
             <h4>SHORT · POTENTIAL ENTRY</h4>
-            <div class="mapLine"><span>Entry Zone</span><b id="intradayShortZone">—</b></div>
-            <div class="mapLine"><span>Auto Entry</span><b id="intradayShortEntry">—</b></div>
-            <div class="mapLine"><span>Confluence</span><b id="intradayShortConfluence">—</b></div>
-            <div class="mapLine"><span>Context</span><b id="intradayShortContext">—</b></div>
+            <div class="mapLine"><span>Primary Zone</span><b id="intradayShortZone">—</b></div>
+            <div class="mapLine"><span>Reference Entry</span><b id="intradayShortEntry">—</b></div>
+            <div class="mapLine"><span>Zone Confluence</span><b id="intradayShortConfluence">—</b></div>
+            <div class="mapLine"><span>Location</span><b id="intradayShortLocation">—</b></div>
+            <div class="mapLine"><span>Setup Type</span><b id="intradayShortSetup">—</b></div>
+            <div class="mapLine"><span>Range / Breakout</span><b id="intradayShortRangeState">—</b></div>
+            <div class="mapLine"><span>Setup Score</span><b id="intradayShortScore">—</b></div>
+            <div class="mapLine"><span>Confirmation</span><b id="intradayShortConfirmation">—</b></div><div class="mapLine"><span>Confirmation Path</span><b id="intradayShortPath">—</b></div>
+            <div class="mapLine"><span>Liquidity Sweep</span><b id="intradayShortSweep">—</b></div>
+            <div class="mapLine"><span>Displacement / MSS</span><b id="intradayShortDMss">—</b></div>
+            <div class="mapLine"><span>FVG / Volume</span><b id="intradayShortFvgVol">—</b></div>
             <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayShortStatus">WAIT</b></div>
-            <div class="intradayMapActions"><button class="btn" type="button" id="intradayShortApply">USE SHORT ENTRY</button></div>
+            <div class="mapLine"><span>Invalidation</span><b id="intradayShortInvalidation">—</b></div>
+            <div class="mapLine"><span>Context</span><b id="intradayShortContext">—</b></div>
+            <div class="intradayMapActions"><button class="btn" type="button" id="intradayShortApply">USE SHORT PLAN</button></div>
           </div>
         </div>
-        <div class="liqFibNote" id="intradayMapNote">Intraday candidates use the 1H data source. Monday levels are calculated from the latest completed Monday in Binance UTC data. The map identifies potential locations; confirmation still comes from the existing structure, liquidity and trigger engines.</div>
+        <div class="liqFibNote" id="intradayMapNote">Intraday engine hierarchy: 1H Key S/R Zone first → Monday Range relationship → Liquidity → Fib 0.75 confluence → setup-specific confirmation. Zones are locations, not entries. Reference Entry is informational until the confirmation path reaches READY/CONFIRMED.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -1976,45 +2024,427 @@ function getLatestCompletedMondayRange(a){
   return {...g,key:keys[0],label:g.date.toISOString().slice(0,10)};
 }
 
+function getIntradayZoneEngine(a,monday,fib){
+  if(!Array.isArray(a)||a.length<80||!monday)return null;
+  const completed=a.slice(0,-1);
+  const price=Number(a.at(-1)?.c);
+  if(!Number.isFinite(price))return null;
+
+  // Build zones from confirmed 1H pivots + actual candle reactions.
+  // Monday High/Low are boundaries; they are not treated as internal S/R zones.
+  const sample=completed.slice(-240);
+  const piv=pivots(sample,3);
+  const tr=[];
+  for(let i=1;i<sample.length;i++){
+    const q=sample[i],prev=sample[i-1];
+    tr.push(Math.max(q.h-q.l,Math.abs(q.h-prev.c),Math.abs(q.l-prev.c)));
+  }
+  const atr14=tr.slice(-14).reduce((x,y)=>x+y,0)/Math.max(tr.slice(-14).length,1);
+  const atr50=tr.slice(-50).reduce((x,y)=>x+y,0)/Math.max(tr.slice(-50).length,1);
+  const clusterTol=Math.max(atr14*.28,price*.0012,1);
+  const reactionTol=Math.max(atr14*.20,price*.0009,1);
+
+  const candidates=[];
+  for(const x of piv.lo){
+    const p=Number(x.p);
+    if(Number.isFinite(p)&&p>=monday.low&&p<=monday.high)candidates.push({p,type:'SUPPORT',i:x.i});
+  }
+  for(const x of piv.hi){
+    const p=Number(x.p);
+    if(Number.isFinite(p)&&p>=monday.low&&p<=monday.high)candidates.push({p,type:'RESISTANCE',i:x.i});
+  }
+
+  const clusters=[];
+  for(const item of candidates.sort((x,y)=>x.p-y.p)){
+    let z=clusters.find(v=>v.type===item.type&&Math.abs(v.center-item.p)<=clusterTol);
+    if(!z){z={type:item.type,center:item.p,low:item.p,high:item.p,pivots:0,recent:0,firstIndex:item.i,lastIndex:item.i};clusters.push(z);}
+    z.center=(z.center*z.pivots+item.p)/(z.pivots+1);
+    z.low=Math.min(z.low,item.p);z.high=Math.max(z.high,item.p);z.pivots++;z.lastIndex=Math.max(z.lastIndex,item.i);z.firstIndex=Math.min(z.firstIndex,item.i);
+    const age=(sample.length-1)-item.i;
+    if(age<=36)z.recent++;
+  }
+
+  const enrich=(z)=>{
+    const touches=sample.reduce((n,c)=>{
+      if(z.type==='SUPPORT')return n+(Math.abs(Number(c.l)-z.center)<=reactionTol?1:0);
+      return n+(Math.abs(Number(c.h)-z.center)<=reactionTol?1:0);
+    },0);
+    const reactions=sample.reduce((n,c,i)=>{
+      if(i<1)return n;
+      const prev=sample[i-1];
+      if(z.type==='SUPPORT' && Number(c.l)<=z.center+reactionTol && Number(c.c)>z.center && Number(c.c)>Number(prev.c))return n+1;
+      if(z.type==='RESISTANCE' && Number(c.h)>=z.center-reactionTol && Number(c.c)<z.center && Number(c.c)<Number(prev.c))return n+1;
+      return n;
+    },0);
+    const fibLevel=z.type==='SUPPORT'?fib?.support?.p:fib?.resistance?.p;
+    const fibConfluence=Number.isFinite(fibLevel)&&Math.abs(fibLevel-z.center)<=Math.max(clusterTol*1.5,reactionTol*2);
+    const mondayBoundary=z.type==='SUPPORT'?monday.low:monday.high;
+    const mondayConfluence=Math.abs(z.center-mondayBoundary)<=Math.max(clusterTol*1.5,reactionTol*2);
+    const strength=Math.min(100,
+      18 + Math.min(24,z.pivots*8) + Math.min(18,z.recent*5) +
+      Math.min(16,reactions*3) + Math.min(10,touches*2) +
+      (fibConfluence?9:0) + (mondayConfluence?5:0)
+    );
+    return {...z,touches,reactions,strength,fibConfluence,mondayConfluence};
+  };
+
+  const all=clusters.map(enrich);
+  const supports=all.filter(z=>z.type==='SUPPORT'&&z.strength>=45).sort((x,y)=>y.strength-x.strength||Math.abs(price-x.center)-Math.abs(price-y.center)).slice(0,5);
+  const resistances=all.filter(z=>z.type==='RESISTANCE'&&z.strength>=45).sort((x,y)=>y.strength-x.strength||Math.abs(price-x.center)-Math.abs(price-y.center)).slice(0,5);
+
+  const below=supports.filter(z=>z.center<price).sort((x,y)=>Math.abs(price-x.center)-Math.abs(price-y.center));
+  const above=resistances.filter(z=>z.center>price).sort((x,y)=>Math.abs(price-x.center)-Math.abs(price-y.center));
+  const nearestSupport=below[0]||null;
+  const nearestResistance=above[0]||null;
+
+  const ratio=atr50?atr14/atr50:1;
+  const volatility=ratio<.75?'LOW':ratio<1.35?'NORMAL':ratio<1.8?'HIGH':'EXTREME';
+  const lastTs=Number(a.at(-1)?.t);
+  const hour=Number.isFinite(lastTs)?new Date(lastTs).getUTCHours():null;
+  const session=hour==null?'UNKNOWN':hour<7?'ASIA':hour<12?'LONDON':hour<21?'NEW YORK':'OFF SESSION';
+  const rangeSize=Math.max(monday.high-monday.low,1);
+  const rangePct=(price-monday.low)/rangeSize;
+  const rangeCondition=price<monday.low?'BELOW RANGE':price>monday.high?'ABOVE RANGE':rangePct<.2?'LOWER RANGE':rangePct>.8?'UPPER RANGE':'MID-RANGE';
+  const m12=state.mtf?.['12h'],m4=state.mtf?.['4h'];
+  const d12=m12?(m12.bull>m12.bear?'LONG':m12.bear>m12.bull?'SHORT':'NEUTRAL'):'WAIT';
+  const d4=m4?(m4.bull>m4.bear?'LONG':m4.bear>m4.bull?'SHORT':'NEUTRAL'):'WAIT';
+  const compression=!!m12?.context?.consolidation || ratio<.75;
+  const conflict=d12!=='WAIT'&&d4!=='WAIT'&&d12!=='NEUTRAL'&&d4!=='NEUTRAL'&&d12!==d4;
+  const reasons=[];
+  if(rangeCondition==='MID-RANGE'&&!nearestSupport&&!nearestResistance)reasons.push('price is in the middle of the Monday range with no key zone nearby');
+  if(conflict)reasons.push('12H and 4H directional conflict');
+  if(compression)reasons.push('compression / low-volatility condition');
+  if(volatility==='EXTREME')reasons.push('extreme 1H volatility');
+  if(!nearestSupport&&!nearestResistance)reasons.push('no qualified 1H support/resistance zone near price');
+  return {price,monday,supports,resistances,nearestSupport,nearestResistance,atr14,ratio,volatility,session,rangeCondition,d12,d4,bias:d12==='LONG'||d12==='SHORT'?d12:(d4==='LONG'||d4==='SHORT'?d4:'WAIT'),noTrade:reasons.length>0,reasons,clusterTol};
+}
+
+function analyzeRangeSequence(a,monday,side){
+  if(!Array.isArray(a)||a.length<20||!monday)return null;
+
+  // IMPORTANT: use CLOSED 1H candles only. The live/open candle must never
+  // create a breakout, retest, hold or invalidation state.
+  const candles=a.slice(0,-1).slice(-80);
+  const isLong=side==='LONG';
+  const low=Number(monday.low), high=Number(monday.high);
+  const boundary=isLong?low:high;                 // reversal boundary
+  const continuationBoundary=isLong?high:low;     // breakout boundary
+  const tol=Math.max(Math.abs(boundary)*0.00035,1);
+  const cClose=c=>Number(c?.c);
+  const cHigh=c=>Number(c?.h);
+  const cLow=c=>Number(c?.l);
+  const inside=c=>cClose(c)>=low-tol&&cClose(c)<=high+tol;
+  const beyondReversal=c=>isLong?cLow(c)<low-tol:cHigh(c)>high+tol;
+  const failedReclaim=c=>isLong?cClose(c)<low-tol:cClose(c)>high+tol;
+  const brokeContinuation=(prev,c)=>isLong
+    ?cClose(c)>high+tol&&cClose(prev)<=high+tol
+    :cClose(c)<low-tol&&cClose(prev)>=low-tol;
+  const touchesContinuation=c=>isLong?cLow(c)<=high+tol:cHigh(c)>=low-tol;
+  const holdsContinuation=c=>isLong?cClose(c)>high+tol:cClose(c)<low-tol;
+  const failsContinuation=c=>isLong?cClose(c)<high-tol:cClose(c)>low+tol;
+
+  // ---------------- REVERSAL STATE ----------------
+  let deviation=false,reentry=false,reentryIndex=-1,eventIndex=-1,extreme=null;
+  for(let i=candles.length-1;i>=0;i--){
+    if(beyondReversal(candles[i])){eventIndex=i;break;}
+  }
+  if(eventIndex>=0){
+    deviation=true;
+    extreme=isLong
+      ?Math.min(...candles.slice(eventIndex).map(c=>cLow(c)))
+      :Math.max(...candles.slice(eventIndex).map(c=>cHigh(c)));
+    for(let i=eventIndex+1;i<candles.length;i++){
+      if(inside(candles[i])){reentry=true;reentryIndex=i;break;}
+    }
+  }
+
+  let reversalReset=false,reversalResetIndex=-1;
+  if(reentryIndex>=0){
+    for(let i=reentryIndex+1;i<candles.length;i++){
+      if(failedReclaim(candles[i])){reversalReset=true;reversalResetIndex=i;break;}
+    }
+  }
+
+  // ---------------- CONTINUATION STATE ----------------
+  let breakout=false,breakoutIndex=-1,retest=false,hold=false,failed=false,failedIndex=-1,holdIndex=-1;
+  for(let i=candles.length-1;i>=1;i--){
+    if(brokeContinuation(candles[i-1],candles[i])){breakoutIndex=i;break;}
+  }
+  if(breakoutIndex>=0){
+    breakout=true;
+    for(let i=breakoutIndex+1;i<candles.length;i++){
+      const c=candles[i];
+      if(touchesContinuation(c)){
+        retest=true;
+        if(holdsContinuation(c)){
+          hold=true;
+          holdIndex=i;
+        }else if(failsContinuation(c)){
+          failed=true;
+          failedIndex=i;
+          break;
+        }
+      }
+      // After a valid hold, any later decisive close back through the broken
+      // level invalidates the continuation and starts a new cycle.
+      if(hold && i>holdIndex && failsContinuation(c)){
+        failed=true;
+        failedIndex=i;
+        break;
+      }
+    }
+  }
+
+  // A newer structural event takes precedence over an older one.
+  // This prevents an old reversal reclaim from masking a later breakout,
+  // and prevents a stale breakout from masking a newer deviation/re-entry.
+  const reversalEventTime=reentryIndex>=0?reentryIndex:eventIndex;
+  const continuationEventTime=breakoutIndex;
+  let activeType='WAIT';
+  if(reversalEventTime>=0||continuationEventTime>=0){
+    activeType=continuationEventTime>reversalEventTime?'CONTINUATION':'REVERSAL';
+  }
+
+  const activeReversal=activeType==='REVERSAL'&&deviation&&reentry&&!reversalReset;
+  const activeContinuation=activeType==='CONTINUATION'&&breakout&&!failed;
+  const invalidated=(activeType==='CONTINUATION'&&failed)||(activeType==='REVERSAL'&&reversalReset);
+
+  let mode='WAIT';
+  if(invalidated)mode='RESET';
+  else if(activeContinuation)mode=hold?'RETEST_HOLD':'BREAKOUT';
+  else if(activeReversal)mode='RECLAIMED';
+  else if(activeType==='REVERSAL'&&deviation)mode='DEVIATION';
+  else if(activeType==='CONTINUATION'&&breakout)mode='BREAKOUT_FAILED';
+
+  return {
+    side,boundary,continuationBoundary,deviation,reentry,reentryIndex,eventIndex,extreme,
+    reversalReset,reversalResetIndex,
+    breakout,breakoutIndex,retest,hold,holdIndex,failed,failedIndex,
+    activeReversal,activeContinuation,invalidated,activeType,mode,
+    lastCandle:candles.at(-1)||null,
+    // Explicit validation events used by the UI and downstream engines.
+    breakConfirmed:breakout,
+    retestConfirmed:retest,
+    flipConfirmed:hold,
+    reversalReentryConfirmed:reentry,
+    failedBreak:failed,
+    failedReclaim:reversalReset
+  };
+}
+
 function getIntradayEntryMap(){
   const a=state.rawMtf?.['1h'];
-  if(!Array.isArray(a)||a.length<50)return null;
+  if(!Array.isArray(a)||a.length<80)return null;
   const price=Number(a.at(-1)?.c);
   const monday=getLatestCompletedMondayRange(a);
   const fib=getFib75SRContext(a);
-  if(!monday||!Number.isFinite(price)||!fib?.fib75)return {price,monday,fib};
+  const zoneEngine=getIntradayZoneEngine(a,monday,fib);
+  if(!monday||!Number.isFinite(price)||!zoneEngine)return {price,monday,fib,zoneEngine};
 
-  const levels={
-    long:[
-      {name:'Monday Low',p:monday.low},
-      {name:'Fib 0.75',p:fib.fib75},
-      ...(fib.support?[{name:'Fib 0.75 Support',p:fib.support.p}]:[])
-    ],
-    short:[
-      {name:'Monday High',p:monday.high},
-      {name:'Fib 0.75',p:fib.fib75},
-      ...(fib.resistance?[{name:'Fib 0.75 Resistance',p:fib.resistance.p}]:[])
-    ]
+  const s15=state.mtf?.['15m'];
+  const raw15=state.rawMtf?.['15m'];
+  const recent15=Array.isArray(raw15)?raw15.slice(-32):[];
+  const bool=(side,key)=>{
+    if(!s15)return false;
+    if(key==='sweep')return side==='LONG'?s15.L.some(x=>x.includes('sweep')):s15.S.some(x=>x.includes('sweep'));
+    if(key==='displacement')return side==='LONG'?s15.L.includes('displacement'):s15.S.includes('displacement');
+    if(key==='mss')return side==='LONG'?s15.L.includes('MSS up'):s15.S.includes('MSS down');
+    if(key==='fvg')return side==='LONG'?s15.L.includes('bullish FVG'):s15.S.includes('bearish FVG');
+    return false;
   };
+  const volume=side=>!!s15&&(side==='LONG'?s15.L.includes('volume expansion'):s15.S.includes('volume expansion'));
+  const rangePosition=price>monday.high?'ABOVE MONDAY RANGE':price<monday.low?'BELOW MONDAY RANGE':'INSIDE MONDAY RANGE';
+  const candleTouches=(low,high)=>recent15.some(c=>Number(c?.l)<=high&&Number(c?.h)>=low);
 
   const build=(side)=>{
-    const raw=levels[side.toLowerCase()].filter(x=>Number.isFinite(x.p));
-    const ref=side==='LONG'
-      ?raw.filter(x=>x.p<=price).sort((a,b)=>Math.abs(price-b.p)-Math.abs(price-a.p))
-      :raw.filter(x=>x.p>=price).sort((a,b)=>Math.abs(price-b.p)-Math.abs(price-a.p));
-    const source=ref.length?ref:raw.slice().sort((a,b)=>Math.abs(price-a.p)-Math.abs(price-b.p));
-    const anchor=source[0];
-    const cluster=raw.filter(x=>Math.abs(x.p-anchor.p)/Math.max(anchor.p,1)<=0.005);
-    const entry=cluster.reduce((s,x)=>s+x.p,0)/(cluster.length||1);
-    const zoneLow=Math.min(...cluster.map(x=>x.p)),zoneHigh=Math.max(...cluster.map(x=>x.p));
-    const names=[...new Set(cluster.map(x=>x.name))];
-    const confluence=cluster.length>=3?'STRONG · 3 LEVELS':cluster.length===2?'CONFLUENCE · 2 LEVELS':'SINGLE LEVEL';
-    const inLocation=side==='LONG'?entry<=price*1.002:entry>=price*.998;
-    const status=cluster.length>=2?'DEVELOPING':inLocation?'WATCH':'WAIT';
-    const context=names.join(' + ')+(entry<=price&&side==='LONG'?' · below/near price':entry>=price&&side==='SHORT'?' · above/near price':' · away from price');
-    return {side,entry,zoneLow,zoneHigh,names,confluence,status,context,levels:cluster};
+    const isLong=side==='LONG';
+    const primary=isLong?zoneEngine.nearestSupport:zoneEngine.nearestResistance;
+    const boundary=isLong?monday.low:monday.high;
+    const fibLevel=isLong?fib?.support?.p:fib?.resistance?.p;
+    const primaryDistance=primary?Math.abs(price-primary.center)/Math.max(price,1):Infinity;
+    const fibDistance=Number.isFinite(fibLevel)?Math.abs(price-fibLevel)/Math.max(price,1):Infinity;
+    const zoneNear=!!primary&&primaryDistance<=.018;
+    const fibNear=Number.isFinite(fibLevel)&&fibDistance<=.018;
+    const primaryTouched=!!primary&&candleTouches(primary.low,primary.high);
+    const fibTouched=Number.isFinite(fibLevel)&&candleTouches(fibLevel,fibLevel);
+    const sweep=bool(side,'sweep'),displacement=bool(side,'displacement'),mss=bool(side,'mss'),fvg=bool(side,'fvg'),vol=volume(side);
+    const seq=analyzeRangeSequence(a,monday,side);
+    const reversalActive=!!seq?.activeReversal;
+    const continuationActive=!!seq?.activeContinuation;
+
+    // MARKET-VALIDATION LOGIC (strict):
+    // LONG reversal      = downside deviation -> close back inside -> sweep -> displacement -> MSS.
+    // SHORT reversal     = upside deviation -> close back inside -> sweep -> displacement -> MSS.
+    // LONG continuation  = breakout ABOVE resistance -> close above -> retest old resistance ->
+    //                      hold it as NEW SUPPORT -> displacement -> MSS.
+    // SHORT continuation = breakdown BELOW support -> close below -> retest old support ->
+    //                      hold it as NEW RESISTANCE -> displacement -> MSS.
+    // A location, Fib level, sweep alone, breakout alone, or FVG/volume alone NEVER creates a valid entry.
+    // Fib is confluence/location only; the range state + structure confirmation controls validity.
+    let setupType='LOCATION WATCH';
+    let setupFamily='LOCATION';
+    if(seq?.invalidated){
+      setupFamily=seq?.failedBreak?'CONTINUATION':'DEVIATION_RECLAIM';
+      if(seq?.failedBreak){
+        setupType=isLong?'FAILED BREAKOUT — LONG INVALID':'FAILED BREAKDOWN — SHORT INVALID';
+      }else{
+        setupType=isLong?'FAILED DOWNSIDE RECLAIM — LONG INVALID':'FAILED UPSIDE RE-ENTRY — SHORT INVALID';
+      }
+    }else if(seq?.activeType==='REVERSAL' && seq?.deviation){
+      setupFamily='DEVIATION_RECLAIM';
+      setupType=seq?.reentry
+        ?(isLong?'DOWNSIDE DEVIATION + RANGE RE-ENTRY':'UPSIDE DEVIATION + RANGE RE-ENTRY')
+        :(isLong?'DOWNSIDE DEVIATION WATCH':'UPSIDE DEVIATION WATCH');
+    }else if(seq?.mode==='DEVIATION'){
+      setupFamily='DEVIATION_RECLAIM';
+      setupType=isLong?'DOWNSIDE DEVIATION WATCH':'UPSIDE DEVIATION WATCH';
+    }else if(seq?.activeType==='CONTINUATION' && seq?.breakout){
+      setupFamily='CONTINUATION';
+      setupType=seq?.retest
+        ?(isLong?'BREAKOUT + RETEST':'BREAKDOWN + RETEST')
+        :(isLong?'BREAKOUT WATCH':'BREAKDOWN WATCH');
+    }else if(primary&&primaryTouched&&(primary.fibConfluence||primary.mondayConfluence)&&primary.strength>=70){
+      setupFamily='REACTION';
+      setupType='CONFLUENCE REACTION';
+    }else if(fibTouched||fibNear){
+      setupFamily='LOCATION';
+      setupType=isLong?'FIB 0.75 SUPPORT LOCATION':'FIB 0.75 RESISTANCE LOCATION';
+    }else if(primary){
+      setupFamily='LOCATION';
+      setupType=isLong?'KEY SUPPORT LOCATION':'KEY RESISTANCE LOCATION';
+    }
+
+    const reactionInteraction=reversalActive||primaryTouched||fibTouched;
+    const deviationCore=reversalActive&&sweep&&displacement&&mss;
+    const continuationCore=continuationActive&&seq.retest&&seq.hold&&displacement&&mss;
+    const reactionCore=reactionInteraction&&sweep&&displacement&&mss;
+    const coreReady=setupFamily==='DEVIATION_RECLAIM'?deviationCore:setupFamily==='CONTINUATION'?continuationCore:reactionCore;
+
+    let status='WAIT';
+    if(seq?.invalidated){
+      status='INVALIDATED';
+    }else if(coreReady){
+      status=(fvg&&vol)?'CONFIRMED':'READY';
+    }else if(reversalActive||continuationActive||sweep||displacement||mss){
+      status='DEVELOPING';
+    }else if(seq?.mode==='DEVIATION'||zoneNear||fibNear||seq?.breakout){
+      status='WATCH';
+    }
+
+    let confirmation='WAITING FOR MARKET EVENT';
+    let confirmationPath='EVENT WAIT · TRIGGER WAIT';
+    if(setupFamily==='DEVIATION_RECLAIM'){
+      confirmationPath=[seq.deviation?'DEVIATION PASS':'DEVIATION WAIT',seq.reentry?'CLOSE BACK INSIDE PASS':'RANGE RE-ENTRY WAIT',sweep?'SWEEP PASS':'SWEEP WAIT',displacement?'DISPLACEMENT PASS':'DISPLACEMENT WAIT',mss?'MSS PASS':'MSS WAIT'].join(' · ');
+      confirmation=seq.invalidated?'SETUP INVALIDATED / RESET':coreReady?(fvg&&vol?'DEVIATION REVERSAL CONFIRMED':'DEVIATION + RE-ENTRY READY'):(seq.deviation?(seq.reentry?'WAITING FOR SWEEP / DISPLACEMENT / MSS':'WAITING FOR RANGE RE-ENTRY'):'WAITING FOR DEVIATION');
+    }else if(setupFamily==='CONTINUATION'){
+      confirmationPath=[seq.breakout?'BREAKOUT PASS':'BREAKOUT WAIT',seq.retest?'RETEST PASS':'RETEST WAIT',seq.hold?'HOLD PASS':'HOLD WAIT',displacement?'DISPLACEMENT PASS':'DISPLACEMENT WAIT',mss?'MSS PASS':'MSS WAIT'].join(' · ');
+      confirmation=seq.failed?'BREAKOUT FAILED / RESET':coreReady?(fvg&&vol?'CONTINUATION CONFIRMED':'BREAKOUT + RETEST + MSS READY'):(seq.breakout?(seq.retest?(seq.hold?(displacement?'WAITING FOR MSS':'WAITING FOR DISPLACEMENT / MSS'):'WAITING FOR HOLD'):'WAITING FOR RETEST'):'WAITING FOR BREAKOUT');
+    }else if(setupFamily==='REACTION'){
+      confirmationPath=[reactionInteraction?'ZONE INTERACTION PASS':'ZONE INTERACTION WAIT',sweep?'SWEEP PASS':'SWEEP WAIT',displacement?'DISPLACEMENT PASS':'DISPLACEMENT WAIT',mss?'MSS PASS':'MSS WAIT'].join(' · ');
+      confirmation=coreReady?(fvg&&vol?'REACTION CONFIRMED':'REACTION READY'):(reactionInteraction?'WAITING FOR SWEEP / DISPLACEMENT / MSS':'WAITING FOR ZONE INTERACTION');
+    }else if(fibNear){
+      confirmationPath='LOCATION ONLY · NO ENTRY WITHOUT MARKET EVENT';
+      confirmation='LOCATION WATCH — WAIT FOR DEVIATION / RE-ENTRY OR BREAKOUT / RETEST';
+    }else if(primary){
+      confirmationPath='KEY ZONE LOCATION · TRIGGER WAIT';
+      confirmation='LOCATION WATCH — WAIT FOR MARKET CONFIRMATION';
+    }
+
+    const levels=[];
+    if(primary)levels.push({name:isLong?'Primary Support Zone':'Primary Resistance Zone',p:primary.center,type:'ZONE',zone:primary});
+    if(Math.abs(primary?.center-boundary||Infinity)/Math.max(price,1)<=.012)levels.push({name:isLong?'Monday Low':'Monday High',p:boundary,type:'MONDAY'});
+    if(Number.isFinite(fibLevel)&&fibNear)levels.push({name:isLong?'Fib 0.75 Support':'Fib 0.75 Resistance',p:fibLevel,type:'FIB'});
+    const uniq=levels.filter((v,i,self)=>self.findIndex(q=>q.name===v.name)===i);
+    const entry=primary?primary.center:(Number.isFinite(fibLevel)?fibLevel:boundary);
+    const zoneLow=primary?primary.low:entry,zoneHigh=primary?primary.high:entry;
+    const names=uniq.map(v=>v.name);
+    const confluenceCount=uniq.length;
+    let confluence='SINGLE LEVEL';
+    if(primary&&primary.fibConfluence&&primary.mondayConfluence)confluence='HIGH CONFLUENCE · ZONE + MONDAY + FIB';
+    else if(primary&&primary.fibConfluence)confluence='CONFLUENCE · KEY ZONE + FIB 0.75';
+    else if(primary&&primary.mondayConfluence)confluence='CONFLUENCE · KEY ZONE + MONDAY';
+    else if(confluenceCount>=2)confluence='CONFLUENCE';
+    else if(primary)confluence='KEY ZONE';
+
+    let location=price>monday.high?'ABOVE RANGE':price<monday.low?'BELOW RANGE':rangePosition;
+    if(primary)location+=isLong?' · SUPPORT':' · RESISTANCE';
+
+    let score=0;
+    if(primary)score+=Math.round((primary.strength||0)*.30);
+    if(seq?.deviation)score+=10;
+    if(seq?.reentry)score+=15;
+    if(seq?.breakout)score+=8;
+    if(seq?.retest)score+=7;
+    if(seq?.hold)score+=5;
+    if(primaryTouched||fibTouched)score+=8;
+    if(sweep)score+=10;if(displacement)score+=10;if(mss)score+=10;if(fvg)score+=3;if(vol)score+=4;
+    score=Math.min(100,score);
+
+    // Invalidation follows the MARKET STATE, not Fibonacci.
+    // Fib 0.75 is a location/confluence reference only. It must never be the
+    // primary invalidation for a range deviation or continuation setup.
+    let invalidation='No active setup — location only';
+    if(seq?.invalidated){
+      if(seq?.failedBreak){
+        invalidation=isLong
+          ?'1H close back below Monday High after breakout/retest — LONG continuation INVALID'
+          :'1H close back above Monday Low after breakdown/retest — SHORT continuation INVALID';
+      }else{
+        invalidation=isLong
+          ?'1H acceptance below Monday Low after re-entry — LONG reversal INVALID'
+          :'1H acceptance above Monday High after re-entry — SHORT reversal INVALID';
+      }
+    }else if(reversalActive){
+      invalidation=isLong
+        ?'1H acceptance below Monday Low / failed downside reclaim'
+        :'1H acceptance above Monday High / failed upside re-entry';
+    }else if(seq?.breakout){
+      invalidation=isLong
+        ?'1H close back below Monday High — failed breakout'
+        :'1H close back above Monday Low — failed breakdown';
+    }else if(primary && (setupFamily==='REACTION')){
+      invalidation=isLong
+        ?`1H decisive close below key support zone ${fmt(primary.low)}`
+        :`1H decisive close above key resistance zone ${fmt(primary.high)}`;
+    }
+
+    if(status==='INVALIDATED')confirmation='SETUP INVALIDATED — WAIT FOR A NEW MARKET CYCLE';
+    const context=`${side} · ${location} · ${setupType} · ${zoneEngine.session} · ${zoneEngine.volatility}`;
+    return {side,entry,zoneLow,zoneHigh,confluence,status,setupType,setupFamily,zoneStrength:primary?.strength||0,rangeState:rangePosition,confirmation,confirmationPath,sweep,displacement,mss,fvg,volume:vol,breakout:!!seq?.breakout,breakoutRetest:!!seq?.retest,breakoutHold:!!seq?.hold,onCorrectSide:isLong?entry<=price:entry>=price,context,location,score,distanceToPrice:primaryDistance,names,levels,anchor:primary?primary.center:null,primaryZone:primary,highConfluence:!!(primary&&primary.fibConfluence&&primary.mondayConfluence&&primary.strength>=70),invalidation,sequence:seq,sequenceState:seq?.mode||'WAIT',
+      validEntry:!seq?.invalidated&&coreReady&&(setupFamily==='CONTINUATION'?!!(seq?.breakout&&seq?.retest&&seq?.hold&&displacement&&mss):setupFamily==='DEVIATION_RECLAIM'?!!(seq?.deviation&&seq?.reentry&&sweep&&displacement&&mss):setupFamily==='REACTION'?!!(reactionInteraction&&sweep&&displacement&&mss):false),
+      validationRule:setupFamily==='CONTINUATION'
+        ?(isLong?'BREAKOUT CLOSE ABOVE RESISTANCE → RETEST → RESISTANCE FLIPS TO SUPPORT → HOLD → DISPLACEMENT → MSS':'BREAKDOWN CLOSE BELOW SUPPORT → RETEST → SUPPORT FLIPS TO RESISTANCE → HOLD → DISPLACEMENT → MSS')
+        :setupFamily==='DEVIATION_RECLAIM'
+          ?(isLong?'DOWNSIDE DEVIATION → CLOSE BACK INSIDE → SWEEP → DISPLACEMENT → MSS':'UPSIDE DEVIATION → CLOSE BACK INSIDE → SWEEP → DISPLACEMENT → MSS')
+          :'ZONE INTERACTION → SWEEP → DISPLACEMENT → MSS',
+      validationState:seq?.invalidated?'INVALID':(coreReady?'VALID':((setupFamily==='CONTINUATION'&&seq?.breakout)||(setupFamily==='DEVIATION_RECLAIM'&&seq?.deviation)?'DEVELOPING':'WAIT')),
+      hardGates:setupFamily==='CONTINUATION'
+        ?{break:!!seq?.breakout,retest:!!seq?.retest,flip:!!seq?.hold,displacement:!!displacement,mss:!!mss}
+        :setupFamily==='DEVIATION_RECLAIM'
+          ?{deviation:!!seq?.deviation,reentry:!!seq?.reentry,sweep:!!sweep,displacement:!!displacement,mss:!!mss}
+          :{zoneInteraction:!!reactionInteraction,sweep:!!sweep,displacement:!!displacement,mss:!!mss},
+      softConfluence:{fib:!!fibNear,volume:!!vol,fvg:!!fvg,zone:!!primary,score}
+    };
   };
-  return {price,monday,fib,long:build('LONG'),short:build('SHORT')};
+
+  return {price,monday,fib,zoneEngine,long:build('LONG'),short:build('SHORT'),rangePosition,rangePct:(price-monday.low)/Math.max(monday.high-monday.low,1)};
+}
+
+function renderIntradayContextEngine(){
+  const panel=$('intradayContextEngine'); if(!panel)return;
+  const intraday=$('scenarioMode')?.value==='INTRADAY'; panel.classList.toggle('hidden',!intraday); if(!intraday)return;
+  const a=state.rawMtf?.['1h']; const m=getIntradayEntryMap(); const z=m?.zoneEngine;
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  if(!z){['intradayContextLocation','intradayContextSession','intradayContextVolatility','intradayContextRangeCondition','intradayContextMajor','intradayContextMain','intradayNearestSupport','intradayNearestResistance'].forEach(id=>set(id,'—'));set('intradaySupportZones','—');set('intradayResistanceZones','—');set('intradayNoTradeReason','Waiting for enough 1H data.');return;}
+  set('intradayContextLocation',`${z.rangeCondition} · ${fmt(z.price)}`); set('intradayContextSession',z.session); set('intradayContextVolatility',`${z.volatility} · ATR ${fmt(z.atr14)} · ${z.ratio.toFixed(2)}× baseline`); set('intradayContextRangeCondition',`${fmt(z.monday.low)} – ${fmt(z.monday.high)}`); set('intradayContextMajor',z.d12); set('intradayContextMain',z.d4);
+  set('intradayNearestSupport',z.nearestSupport?`${fmt(z.nearestSupport.low)} – ${fmt(z.nearestSupport.high)} · ${z.nearestSupport.strength}/100`:'None nearby');
+  set('intradayNearestResistance',z.nearestResistance?`${fmt(z.nearestResistance.low)} – ${fmt(z.nearestResistance.high)} · ${z.nearestResistance.strength}/100`:'None nearby');
+  const row=x=>`<div class="intradayZoneRow"><span>${fmt(x.low)} – ${fmt(x.high)} · ${x.touches} touch${x.touches===1?'':'es'}${x.fibConfluence?' · Fib':''}${x.mondayConfluence?' · Monday':''}</span><b class="strength">${x.strength}/100</b></div>`;
+  set('intradaySupportZones',z.supports.length?z.supports.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed support zone inside Monday range</span><b>—</b></div>');
+  set('intradayResistanceZones',z.resistances.length?z.resistances.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed resistance zone inside Monday range</span><b>—</b></div>');
+  const box=$('intradayNoTradeBox'),title=$('intradayNoTradeTitle'),reason=$('intradayNoTradeReason');
+  if(box){box.classList.toggle('ok',!z.noTrade); title.textContent=z.noTrade?'NO-TRADE FILTER ACTIVE':'NO-TRADE FILTER CLEAR'; reason.textContent=z.noTrade?z.reasons.join(' · '):`Context is tradable, but an entry still requires the setup-specific confirmation sequence.`;}
+  const badge=$('intradayContextBadge'); if(badge){badge.textContent=z.noTrade?'NO TRADE':`${z.bias} CONTEXT`; badge.className='liqFibBadge '+(z.noTrade?'near':'separate');}
 }
 
 function renderIntradayEntryMap(){
@@ -2025,9 +2455,9 @@ function renderIntradayEntryMap(){
   if(!intraday)return;
   const m=getIntradayEntryMap();
   if(!m){
-    ['intradayMondayHigh','intradayMondayLow','intradayMondayRange','intradayFib75','intradayFibSupport','intradayFibResistance','intradayLongZone','intradayLongEntry','intradayLongConfluence','intradayLongContext','intradayShortZone','intradayShortEntry','intradayShortConfluence','intradayShortContext'].forEach(id=>{if($(id))$(id).textContent='—'});
+    ['intradayMondayHigh','intradayMondayLow','intradayMondayRange','intradayFib75','intradayFibSupport','intradayFibResistance','intradayLongZone','intradayLongEntry','intradayLongConfluence','intradayLongLocation','intradayLongSetup','intradayLongScore','intradayLongRangeState','intradayLongConfirmation','intradayLongPath','intradayLongSweep','intradayLongDMss','intradayLongFvgVol','intradayLongInvalidation','intradayLongContext','intradayShortZone','intradayShortEntry','intradayShortConfluence','intradayShortLocation','intradayShortSetup','intradayShortScore','intradayShortRangeState','intradayShortConfirmation','intradayShortPath','intradayShortSweep','intradayShortDMss','intradayShortFvgVol','intradayShortInvalidation','intradayShortContext'].forEach(id=>{if($(id))$(id).textContent='—'});
     if($('intradayMapBadge'))$('intradayMapBadge').textContent='WAIT';
-    if($('intradayMapNote'))$('intradayMapNote').textContent='Waiting for enough 1H data to calculate Monday Range and Fibonacci 75% entry locations.';
+    if($('intradayMapNote'))$('intradayMapNote').textContent='Waiting for enough 1H data to calculate Monday Range and Key S/R zones.';
     return;
   }
   const set=(id,v)=>{if($(id))$(id).textContent=v};
@@ -2041,15 +2471,26 @@ function renderIntradayEntryMap(){
     set(prefix+'Zone',x?`${fmt(x.zoneLow)} – ${fmt(x.zoneHigh)}`:'—');
     set(prefix+'Entry',x?fmt(x.entry):'—');
     set(prefix+'Confluence',x?x.confluence:'—');
+    set(prefix+'Location',x?x.location:'—');
+    set(prefix+'Setup',x?x.setupType:'—');
+    set(prefix+'Score',x?`${x.score}/100`:'—');
+    set(prefix+'RangeState',x?x.rangeState:'—');
+    set(prefix+'Confirmation',x?x.confirmation:'—');
+    set(prefix+'Path',x?x.confirmationPath:'—');
+    set(prefix+'Sweep',x?(x.sweep?'PASS':'WAIT'):'—');
+    set(prefix+'DMss',x?`${x.displacement?'PASS':'WAIT'} / ${x.mss?'PASS':'WAIT'}`:'—');
+    set(prefix+'FvgVol',x?`${x.fvg?'PASS':'WAIT'} / ${x.volume?'PASS':'WAIT'}`:'—');
+    set(prefix+'Invalidation',x?x.invalidation:'—');
     set(prefix+'Context',x?x.context:'—');
     const st=$(prefix+'Status');
-    if(st){st.textContent=x?.status||'WAIT';st.className='intradayMapStatus '+(x?.status==='DEVELOPING'?'ready':x?.status==='WATCH'?'counter':'wait')}
+    if(st){st.textContent=x?.status||'WAIT';st.className='intradayMapStatus '+((x?.status==='READY'||x?.status==='CONFIRMED')?'ready':(x?.status==='DEVELOPING'||x?.status==='WATCH')?'counter':'wait')}
   };
   renderSide(m.long,'intradayLong');
   renderSide(m.short,'intradayShort');
   const badge=$('intradayMapBadge');
   if(badge){const s=m.long?.status==='DEVELOPING'||m.short?.status==='DEVELOPING'?'DEVELOPING':m.long?.status==='WATCH'||m.short?.status==='WATCH'?'WATCH':'WAIT';badge.textContent=s;}
-  if($('intradayMapNote'))$('intradayMapNote').textContent=`1H Intraday Map · latest completed Monday ${m.monday?.label||'—'} UTC · current 1H price ${fmt(m.price)}. LONG uses Monday Low / Fib 0.75 Support locations; SHORT uses Monday High / Fib 0.75 Resistance locations. These are potential entry zones, not automatic confirmations.`;
+  renderIntradayContextEngine();
+  if($('intradayMapNote'))$('intradayMapNote').textContent=`1H Intraday State Engine · Monday ${m.monday?.label||'—'} UTC · current 1H price ${fmt(m.price)}. Market sequence: reversal = deviation outside range → close back inside → sweep → displacement → MSS; continuation = breakout/close beyond boundary → retest → old boundary flips into support/resistance → hold → displacement → MSS. Fib 0.75 and Key S/R are location/confluence only and never create an entry by themselves. A failed reclaim/breakout marks the setup INVALID; the engine then waits for a new market cycle. Invalidation follows the active range state, not Fib 0.75.`;
 }
 
 function applyIntradayCandidate(side){
@@ -2060,9 +2501,11 @@ function applyIntradayCandidate(side){
   const a=state.rawMtf?.['1h'];
   const price=Number(x.entry);
   if(!Number.isFinite(price)||price<=0)return;
-  const fib=m.fib, monday=m.monday;
+  const fib=m.fib, monday=m.monday, zoneEngine=m.zoneEngine;
   const source=state.mtf?.['1h'];
   let stop=NaN;
+  if(side==='LONG'&&zoneEngine?.nearestSupport?.high<price)stop=Number(zoneEngine.nearestSupport.low);
+  if(side==='SHORT'&&zoneEngine?.nearestResistance?.low>price)stop=Number(zoneEngine.nearestResistance.high);
   if(source){
     const piv=side==='LONG'?(source.p?.lo||[]).filter(v=>Number(v.p)<price):(source.p?.hi||[]).filter(v=>Number(v.p)>price);
     if(piv.length)stop=Number(piv[piv.length-1].p);
@@ -2078,7 +2521,7 @@ function applyIntradayCandidate(side){
     try{localStorage.setItem('cspScenario_v852',JSON.stringify({scenarioMode:'INTRADAY',scenarioEquity:$('scenarioEquity')?.value||'',scenarioRiskPct:$('scenarioRiskPct')?.value||'1',scenarioSide:side,scenarioEntry:$('scenarioEntry')?.value||'',scenarioStop:$('scenarioStop')?.value||'',scenarioTP1:$('scenarioTP1')?.value||'',scenarioTP2:$('scenarioTP2')?.value||'',scenarioTP3:$('scenarioTP3')?.value||''}))}catch(e){}
     updateRiskScenario();
     const note=$('scenarioResultNote');
-    if(note)note.textContent=`Intraday ${side} candidate loaded from Monday Range + Fibonacci 75% map. ${x.confluence}. Planner remains hypothetical; wait for the existing confirmation engine before treating it as a live setup.`;
+    if(note)note.textContent=`Intraday ${side} plan loaded from the Entry Map. ${x.setupType} · ${x.confirmation}. The planner is hypothetical; potential entry is not a live signal. Treat the plan as actionable only after the displayed confirmation sequence is satisfied.`;
     $('scenarioEntry')?.scrollIntoView({behavior:'smooth',block:'center'});
   }
 }
@@ -2100,6 +2543,7 @@ function updateRiskScenario(){
   set('scenarioModeStatus',modeMeta.label);
   set('scenarioSourceStatus',modeMeta.source);
   renderIntradayEntryMap();
+  renderIntradayContextEngine();
   const major=state.mtf?.['12h'];
   const majorState=major?structureState(major):null;
   set('scenarioBiasStatus',majorState?.bullish?'LONG':majorState?.bearish?'SHORT':'WAIT');
@@ -2631,6 +3075,7 @@ async function loadAll(){
     state.liveCandleTs=state.data.at(-1)?.t??null;
     draw();
     renderIntradayEntryMap();
+    renderIntradayContextEngine();
 
     const d=mtfDecision();
     if(d){updateUI(d);maybeAlert(d)}
