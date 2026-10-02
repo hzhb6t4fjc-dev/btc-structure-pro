@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.62 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP</title>
+<title>Crypto Structure Pro v8.63 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -215,7 +215,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.62 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.63 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -527,6 +527,28 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="vpNote">Volume Profile and VWAP provide auction/location context only. They do not create an entry by themselves and do not override Market Validation.</div>
       </div>
+      <div class="liqFibPanel orderFlowPanel" id="orderFlowPanel">
+        <div class="liqFibHead">
+          <span class="liqFibTitle">Order Flow · Delta / CVD Engine</span>
+          <span class="liqFibBadge separate" id="ofBadge">WAIT</span>
+        </div>
+        <div class="vpGrid">
+          <div class="vpBox"><small>AGGRESSIVE BUY</small><b id="ofBuy">—</b></div>
+          <div class="vpBox"><small>AGGRESSIVE SELL</small><b id="ofSell">—</b></div>
+          <div class="vpBox"><small>DELTA</small><b id="ofDelta">—</b></div>
+          <div class="vpBox"><small>DELTA %</small><b id="ofDeltaPct">—</b></div>
+          <div class="vpBox"><small>CVD · WINDOW</small><b id="ofCvd">—</b></div>
+          <div class="vpBox"><small>BUY / SELL RATIO</small><b id="ofRatio">—</b></div>
+          <div class="vpBox"><small>FLOW IMBALANCE</small><b id="ofImbalance">—</b></div>
+          <div class="vpBox"><small>TRADE WINDOW</small><b id="ofWindow">—</b></div>
+        </div>
+        <div class="vpContext">
+          <div class="vpBox"><small>PRICE / FLOW</small><b id="ofPriceFlow">—</b></div>
+          <div class="vpBox"><small>EXHAUSTION PROXY</small><b id="ofExhaustion">—</b></div>
+          <div class="vpBox"><small>ABSORPTION PROXY</small><b id="ofAbsorption">—</b></div>
+        </div>
+        <div class="liqFibNote" id="ofNote">Spot aggTrade flow is used as a trade-flow proxy. Delta/CVD do not represent full footprint/order-book data and do not create or override an entry.</div>
+      </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -649,7 +671,8 @@ const state={
   lastSetupStateKey:null,
   snapshots:JSON.parse(localStorage.getItem('cspSnapshots')||'[]'),
   lastSnapshotKey:null,
-  scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0}
+  scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0},
+  orderFlow:{trades:[],loaded:false,lastId:null,ws:null,wsTimer:null,source:'WAIT',lastFetch:0}
 };
 
 const $=id=>document.getElementById(id);
@@ -2509,6 +2532,95 @@ function getVolumeProfileVWAP(){
   return {price,lo,hi,poc,vah,val,vwap,hvn,lvn,location,pocRelation:rel(poc),vaRelation:location,vwapRelation:Number.isFinite(vwap)?rel(vwap):'—',window:candles.length};
 }
 
+function formatFlowQuote(n){
+  if(!Number.isFinite(Number(n)))return '—';
+  const v=Number(n);
+  return '$'+v.toLocaleString('en-US',{maximumFractionDigits:0});
+}
+function getOrderFlowSummary(){
+  const ts=Array.isArray(state.orderFlow?.trades)?state.orderFlow.trades:[];
+  if(!ts.length)return null;
+  let buy=0,sell=0;
+  for(const t of ts){
+    const q=Number(t.quoteQty);
+    if(!Number.isFinite(q))continue;
+    if(t.isBuyerMaker)sell+=q; else buy+=q;
+  }
+  const delta=buy-sell,total=buy+sell;
+  const deltaPct=total?delta/total*100:0;
+  const first=Number(ts[0]?.price),last=Number(ts.at(-1)?.price);
+  const priceChange=Number.isFinite(first)&&Number.isFinite(last)&&first?((last-first)/first*100):0;
+  const ratio=sell>0?buy/sell:null;
+  const absPct=Math.abs(deltaPct);
+  const imbalance=deltaPct>=12?'BUY DOMINANCE':deltaPct<=-12?'SELL DOMINANCE':'BALANCED';
+  let priceFlow='ALIGNED';
+  if(deltaPct>=12&&priceChange<=-0.03)priceFlow='BEARISH DIVERGENCE';
+  else if(deltaPct<=-12&&priceChange>=0.03)priceFlow='BULLISH DIVERGENCE';
+  else if(deltaPct>=12&&priceChange>0.03)priceFlow='BULLISH ALIGNED';
+  else if(deltaPct<=-12&&priceChange<-0.03)priceFlow='BEARISH ALIGNED';
+  let exhaustion='NONE';
+  if(absPct>=18&&Math.abs(priceChange)<0.08) exhaustion=deltaPct>0?'BUY EXHAUSTION PROXY':'SELL EXHAUSTION PROXY';
+  let absorption='NONE';
+  if(absPct>=22&&Math.abs(priceChange)<0.05) absorption=deltaPct>0?'SELL ABSORPTION PROXY':'BUY ABSORPTION PROXY';
+  return {buy,sell,delta,deltaPct,cvd:delta,ratio,priceChange,imbalance,priceFlow,exhaustion,absorption,count:ts.length};
+}
+function renderOrderFlow(){
+  const panel=$('orderFlowPanel');if(!panel)return;
+  const m=getOrderFlowSummary();
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  if(!m){
+    ['ofBuy','ofSell','ofDelta','ofDeltaPct','ofCvd','ofRatio','ofImbalance','ofWindow','ofPriceFlow','ofExhaustion','ofAbsorption'].forEach(id=>set(id,'—'));
+    set('ofWindow','WAITING FOR TRADES');set('ofBadge','WAIT');return;
+  }
+  set('ofBuy',formatFlowQuote(m.buy));set('ofSell',formatFlowQuote(m.sell));
+  set('ofDelta',(m.delta>=0?'+':'-')+formatFlowQuote(Math.abs(m.delta)));
+  set('ofDeltaPct',(m.deltaPct>=0?'+':'')+m.deltaPct.toFixed(1)+'%');
+  set('ofCvd',(m.cvd>=0?'+':'-')+formatFlowQuote(Math.abs(m.cvd)));
+  set('ofRatio',m.ratio?m.ratio.toFixed(2)+'x':'—');set('ofImbalance',m.imbalance);
+  set('ofWindow',`${m.count} aggregate trades`);set('ofPriceFlow',`${m.priceFlow} · ${m.priceChange>=0?'+':''}${m.priceChange.toFixed(2)}%`);
+  set('ofExhaustion',m.exhaustion);set('ofAbsorption',m.absorption);
+  const badge=$('ofBadge');if(badge){badge.textContent=m.imbalance;badge.className='liqFibBadge '+(m.imbalance==='BUY DOMINANCE'?'confluence':m.imbalance==='SELL DOMINANCE'?'resistance':'separate');}
+}
+function pushOrderFlowTrade(t){
+  if(!t||!Number.isFinite(Number(t.p))||!Number.isFinite(Number(t.q)))return;
+  const id=Number(t.a??t.id);
+  if(Number.isFinite(id)&&state.orderFlow.lastId!=null&&id<=state.orderFlow.lastId)return;
+  const price=Number(t.p),qty=Number(t.q);
+  state.orderFlow.trades.push({id,time:Number(t.T||t.time||Date.now()),price,qty,quoteQty:price*qty,isBuyerMaker:!!t.m});
+  if(Number.isFinite(id))state.orderFlow.lastId=id;
+  if(state.orderFlow.trades.length>1000)state.orderFlow.trades=state.orderFlow.trades.slice(-1000);
+  state.orderFlow.loaded=true;state.orderFlow.source='LIVE';renderOrderFlow();
+}
+async function loadOrderFlow(){
+  try{
+    const r=await timeoutFetch(`${API}/aggTrades?symbol=${encodeURIComponent(state.symbol)}&limit=1000`,9000);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(!Array.isArray(j))throw new Error('Invalid aggTrade data');
+    state.orderFlow.trades=j.map(t=>({id:Number(t.a),time:Number(t.T),price:Number(t.p),qty:Number(t.q),quoteQty:Number(t.p)*Number(t.q),isBuyerMaker:!!t.m})).filter(t=>Number.isFinite(t.price)&&Number.isFinite(t.qty));
+    state.orderFlow.lastId=state.orderFlow.trades.length?state.orderFlow.trades.at(-1).id:null;
+    state.orderFlow.loaded=true;state.orderFlow.source='REST + LIVE';state.orderFlow.lastFetch=Date.now();renderOrderFlow();
+  }catch(e){
+    state.orderFlow.source='UNAVAILABLE';renderOrderFlow();
+  }
+}
+function startOrderFlowWS(){
+  if(state.orderFlow.wsTimer)clearTimeout(state.orderFlow.wsTimer);
+  if(state.orderFlow.ws){try{state.orderFlow.ws.close()}catch(e){}state.orderFlow.ws=null;}
+  const stream=`wss://stream.binance.com:9443/ws/${state.symbol.toLowerCase()}@aggTrade`;
+  try{
+    state.orderFlow.ws=new WebSocket(stream);
+    state.orderFlow.ws.onopen=()=>{state.orderFlow.source=state.orderFlow.loaded?'REST + LIVE':'LIVE';renderOrderFlow();};
+    state.orderFlow.ws.onmessage=ev=>{try{pushOrderFlowTrade(JSON.parse(ev.data));}catch(e){}};
+    state.orderFlow.ws.onerror=()=>{};
+    state.orderFlow.ws.onclose=()=>{state.orderFlow.wsTimer=setTimeout(startOrderFlowWS,5000);};
+  }catch(e){state.orderFlow.wsTimer=setTimeout(startOrderFlowWS,5000);}
+}
+function resetOrderFlow(){
+  if(state.orderFlow.ws){try{state.orderFlow.ws.close()}catch(e){}}
+  state.orderFlow.trades=[];state.orderFlow.lastId=null;state.orderFlow.loaded=false;state.orderFlow.source='WAIT';renderOrderFlow();
+}
+
 function renderVolumeProfileVWAP(){
   const panel=$('volumeProfilePanel'); if(!panel)return;
   const m=getVolumeProfileVWAP();
@@ -2581,6 +2693,7 @@ function renderIntradayEntryMap(){
   const badge=$('intradayMapBadge');
   if(badge){const s=m.long?.status==='DEVELOPING'||m.short?.status==='DEVELOPING'?'DEVELOPING':m.long?.status==='WATCH'||m.short?.status==='WATCH'?'WATCH':'WAIT';badge.textContent=s;}
   renderIntradayContextEngine();
+  renderOrderFlow();
   if($('intradayMapNote'))$('intradayMapNote').textContent=`1H Intraday State Engine · Monday ${m.monday?.label||'—'} UTC · current 1H price ${fmt(m.price)}. Market sequence: reversal = deviation outside range → close back inside → sweep → displacement → MSS; continuation = breakout/close beyond boundary → retest → old boundary flips into support/resistance → hold → displacement → MSS. Fib 0.75 and Key S/R are location/confluence only and never create an entry by themselves. A failed reclaim/breakout marks the setup INVALID; the engine then waits for a new market cycle. Invalidation follows the active range state, not Fib 0.75.`;
 }
 
@@ -3477,8 +3590,11 @@ function draw(){
 $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
   state.mtf={};state.macro={'1w':null,'1M':null};state.lastAlertKey=null;
+  resetOrderFlow();
   startMonitorWS();
   connectWS();await loadAll();
+  await loadOrderFlow();
+  startOrderFlowWS();
 };
 
 $('symbolSearch').oninput=e=>{
@@ -3513,6 +3629,7 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.onclick=async()=>{
   state.tf=b.dataset.tf;
   $('tfLabel').textContent=state.tf.toUpperCase();
   connectWS();await loadAll();
+  await loadOrderFlow();
 });
 
 const savedRisk=(()=>{try{return JSON.parse(localStorage.getItem('cspRisk_v840')||'{}')}catch(e){return {}}})();
@@ -3536,8 +3653,10 @@ renderScanner();
     await loadSymbols();
     $('symbol').value=state.symbol;
     await loadAll();
+    await loadOrderFlow();
     connectWS();
     startMonitorWS();
+    startOrderFlowWS();
     setInterval(loadAll,30000);
     setInterval(runScanner,60000);
     setTimeout(runScanner,5000);
