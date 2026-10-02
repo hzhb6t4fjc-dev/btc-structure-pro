@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.63 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow</title>
+<title>Crypto Structure Pro v8.64 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow + Order Book</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -215,7 +215,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.63 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.64 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -549,6 +549,28 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="ofNote">Spot aggTrade flow is used as a trade-flow proxy. Delta/CVD do not represent full footprint/order-book data and do not create or override an entry.</div>
       </div>
+      <div class="liqFibPanel orderBookPanel" id="orderBookPanel">
+        <div class="liqFibHead">
+          <span class="liqFibTitle">Order Book · Liquidity Engine</span>
+          <span class="liqFibBadge separate" id="obBadge">WAIT</span>
+        </div>
+        <div class="vpGrid">
+          <div class="vpBox"><small>BEST BID</small><b id="obBestBid">—</b></div>
+          <div class="vpBox"><small>BEST ASK</small><b id="obBestAsk">—</b></div>
+          <div class="vpBox"><small>SPREAD</small><b id="obSpread">—</b></div>
+          <div class="vpBox"><small>TOP DEPTH</small><b id="obDepth">—</b></div>
+          <div class="vpBox"><small>BID NOTIONAL</small><b id="obBidNotional">—</b></div>
+          <div class="vpBox"><small>ASK NOTIONAL</small><b id="obAskNotional">—</b></div>
+          <div class="vpBox"><small>DEPTH IMBALANCE</small><b id="obImbalance">—</b></div>
+          <div class="vpBox"><small>BOOK STATE</small><b id="obState">—</b></div>
+        </div>
+        <div class="vpContext">
+          <div class="vpBox"><small>NEAREST BID WALL</small><b id="obBidWall">—</b></div>
+          <div class="vpBox"><small>NEAREST ASK WALL</small><b id="obAskWall">—</b></div>
+          <div class="vpBox"><small>FLOW / BOOK</small><b id="obFlowBook">—</b></div>
+        </div>
+        <div class="liqFibNote" id="obNote">Live Binance Spot order-book depth. Walls are liquidity concentrations inside the displayed top levels; they are not guaranteed to remain and do not create or override a Market Validation entry.</div>
+      </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
           <span class="liqFibTitle">Fibonacci 75% · Support / Resistance</span>
@@ -672,7 +694,8 @@ const state={
   snapshots:JSON.parse(localStorage.getItem('cspSnapshots')||'[]'),
   lastSnapshotKey:null,
   scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0},
-  orderFlow:{trades:[],loaded:false,lastId:null,ws:null,wsTimer:null,source:'WAIT',lastFetch:0}
+  orderFlow:{trades:[],loaded:false,lastId:null,ws:null,wsTimer:null,source:'WAIT',lastFetch:0},
+  orderBook:{bids:new Map(),asks:new Map(),lastUpdateId:null,ws:null,wsTimer:null,buffer:[],ready:false,source:'WAIT',snapshotBusy:false,lastUpdate:0}
 };
 
 const $=id=>document.getElementById(id);
@@ -2621,6 +2644,114 @@ function resetOrderFlow(){
   state.orderFlow.trades=[];state.orderFlow.lastId=null;state.orderFlow.loaded=false;state.orderFlow.source='WAIT';renderOrderFlow();
 }
 
+function getOrderBookSummary(){
+  const ob=state.orderBook;
+  if(!ob||!ob.ready||!ob.bids?.size||!ob.asks?.size)return null;
+  const bids=[...ob.bids.entries()].map(([p,q])=>[Number(p),Number(q)]).filter(x=>Number.isFinite(x[0])&&x[1]>0).sort((a,b)=>b[0]-a[0]);
+  const asks=[...ob.asks.entries()].map(([p,q])=>[Number(p),Number(q)]).filter(x=>Number.isFinite(x[0])&&x[1]>0).sort((a,b)=>a[0]-b[0]);
+  if(!bids.length||!asks.length)return null;
+  const bestBid=bids[0][0],bestAsk=asks[0][0],mid=(bestBid+bestAsk)/2;
+  const spread=bestAsk-bestBid,spreadPct=mid?spread/mid*100:0;
+  const n=20,bb=bids.slice(0,n),aa=asks.slice(0,n);
+  const bidNotional=bb.reduce((a,[p,q])=>a+p*q,0),askNotional=aa.reduce((a,[p,q])=>a+p*q,0),total=bidNotional+askNotional;
+  const imbalance=total?(bidNotional-askNotional)/total*100:0;
+  const wallData=arr=>{
+    if(!arr.length)return null;
+    const vals=arr.map(([p,q])=>p*q).sort((a,b)=>a-b),med=vals[Math.floor(vals.length/2)]||0;
+    const candidates=arr.map(([p,q])=>({p,q,n:p*q,multiple:med? p*q/med:0})).filter(x=>x.multiple>=3).sort((a,b)=>b.n-a.n);
+    return candidates[0]||null;
+  };
+  const bidWall=wallData(bb),askWall=wallData(aa);
+  const wallDist=x=>x&&mid?Math.abs(x.p-mid)/mid*100:null;
+  const flow=getOrderFlowSummary();
+  let flowBook='OPEN / BALANCED';
+  if(flow?.imbalance==='BUY DOMINANCE'&&askWall&&wallDist(askWall)<=0.50)flowBook='BUY FLOW → ASK WALL';
+  else if(flow?.imbalance==='SELL DOMINANCE'&&bidWall&&wallDist(bidWall)<=0.50)flowBook='SELL FLOW → BID WALL';
+  else if(flow?.imbalance==='BUY DOMINANCE'&&imbalance>8)flowBook='BUY FLOW + BID DEPTH';
+  else if(flow?.imbalance==='SELL DOMINANCE'&&imbalance<-8)flowBook='SELL FLOW + ASK DEPTH';
+  else if(flow?.imbalance==='BUY DOMINANCE')flowBook='BUY FLOW / BOOK MIXED';
+  else if(flow?.imbalance==='SELL DOMINANCE')flowBook='SELL FLOW / BOOK MIXED';
+  let bookState='BALANCED';
+  if(imbalance>=12)bookState='BID DOMINANCE';
+  else if(imbalance<=-12)bookState='ASK DOMINANCE';
+  return {bestBid,bestAsk,mid,spread,spreadPct,bidNotional,askNotional,imbalance,bidWall,askWall,bidWallDist:wallDist(bidWall),askWallDist:wallDist(askWall),flowBook,bookState,countBid:bids.length,countAsk:asks.length};
+}
+function renderOrderBook(){
+  const panel=$('orderBookPanel');if(!panel)return;
+  const m=getOrderBookSummary();
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  if(!m){
+    ['obBestBid','obBestAsk','obSpread','obDepth','obBidNotional','obAskNotional','obImbalance','obState','obBidWall','obAskWall','obFlowBook'].forEach(id=>set(id,'—'));
+    set('obDepth','WAITING FOR BOOK');set('obBadge','WAIT');return;
+  }
+  set('obBestBid',fmt(m.bestBid));set('obBestAsk',fmt(m.bestAsk));
+  set('obSpread',`${fmt(m.spread)} · ${m.spreadPct.toFixed(3)}%`);
+  set('obDepth',`TOP 20 · ${m.countBid}/${m.countAsk} levels`);
+  set('obBidNotional',formatFlowQuote(m.bidNotional));set('obAskNotional',formatFlowQuote(m.askNotional));
+  set('obImbalance',(m.imbalance>=0?'+':'')+m.imbalance.toFixed(1)+'%');set('obState',m.bookState);
+  set('obBidWall',m.bidWall?`${fmt(m.bidWall.p)} · ${m.bidWallDist.toFixed(2)}% · ${m.bidWall.multiple.toFixed(1)}× median`:'NONE');
+  set('obAskWall',m.askWall?`${fmt(m.askWall.p)} · ${m.askWallDist.toFixed(2)}% · ${m.askWall.multiple.toFixed(1)}× median`:'NONE');
+  set('obFlowBook',m.flowBook);
+  const badge=$('obBadge');if(badge){badge.textContent=m.bookState;badge.className='liqFibBadge '+(m.bookState==='BID DOMINANCE'?'confluence':m.bookState==='ASK DOMINANCE'?'resistance':'separate');}
+}
+function applyOrderBookUpdate(ev){
+  const ob=state.orderBook;if(!ev||!Number.isFinite(Number(ev.u)))return false;
+  const U=Number(ev.U),u=Number(ev.u),last=Number(ob.lastUpdateId);
+  if(!ob.ready)return false;
+  if(u<=last)return true;
+  if(U>last+1){ob.ready=false;ob.source='RESYNC';ob.buffer=[];loadOrderBookSnapshot();return false;}
+  for(const [p,q] of (ev.b||[])){const price=Number(p),qty=Number(q);if(!Number.isFinite(price))continue;if(qty===0)ob.bids.delete(price);else ob.bids.set(price,qty);}
+  for(const [p,q] of (ev.a||[])){const price=Number(p),qty=Number(q);if(!Number.isFinite(price))continue;if(qty===0)ob.asks.delete(price);else ob.asks.set(price,qty);}
+  ob.lastUpdateId=u;ob.lastUpdate=Date.now();ob.source='LIVE';renderOrderBook();return true;
+}
+async function loadOrderBookSnapshot(){
+  const ob=state.orderBook;if(ob.snapshotBusy)return;
+  ob.snapshotBusy=true;
+  try{
+    const r=await timeoutFetch(`${API}/depth?symbol=${encodeURIComponent(state.symbol)}&limit=1000`,9000);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();const S=Number(j.lastUpdateId);
+    if(!Number.isFinite(S)||!Array.isArray(j.bids)||!Array.isArray(j.asks))throw new Error('Invalid order book snapshot');
+    const nextB=new Map(),nextA=new Map();
+    for(const [p,q] of j.bids){const price=Number(p),qty=Number(q);if(price>0&&qty>0)nextB.set(price,qty);}
+    for(const [p,q] of j.asks){const price=Number(p),qty=Number(q);if(price>0&&qty>0)nextA.set(price,qty);}
+    ob.bids=nextB;ob.asks=nextA;ob.lastUpdateId=S;ob.ready=true;ob.source='SNAPSHOT';
+    const buffered=ob.buffer.slice();ob.buffer=[];
+    let started=false;
+    for(const ev of buffered){
+      const U=Number(ev.U),u=Number(ev.u);
+      if(u<=S)continue;
+      if(!started){
+        if(!(U<=S+1&&S+1<=u)){ob.ready=false;ob.source='RESYNC';loadOrderBookSnapshot();return;}
+        started=true;
+      }
+      applyOrderBookUpdate(ev);
+      if(!ob.ready)return;
+    }
+    ob.source='LIVE';ob.lastUpdate=Date.now();renderOrderBook();
+  }catch(e){ob.ready=false;ob.source='UNAVAILABLE';renderOrderBook();}
+  finally{ob.snapshotBusy=false;}
+}
+function startOrderBookWS(){
+  const ob=state.orderBook;
+  if(ob.wsTimer)clearTimeout(ob.wsTimer);
+  if(ob.ws){try{ob.ws.close()}catch(e){}ob.ws=null;}
+  ob.ready=false;ob.buffer=[];ob.lastUpdateId=null;ob.source='CONNECTING';renderOrderBook();
+  const stream=`wss://stream.binance.com:9443/ws/${state.symbol.toLowerCase()}@depth@100ms`;
+  try{
+    ob.ws=new WebSocket(stream);
+    ob.ws.onopen=()=>{ob.source='BUFFERING';renderOrderBook();loadOrderBookSnapshot();};
+    ob.ws.onmessage=ev=>{try{const d=JSON.parse(ev.data);if(!ob.ready){if(Number.isFinite(Number(d.u))) {ob.buffer.push(d);if(ob.buffer.length>1500)ob.buffer.shift();}}else applyOrderBookUpdate(d);}catch(e){}};
+    ob.ws.onerror=()=>{};
+    ob.ws.onclose=()=>{ob.wsTimer=setTimeout(startOrderBookWS,5000);};
+  }catch(e){ob.wsTimer=setTimeout(startOrderBookWS,5000);}
+}
+function resetOrderBook(){
+  const ob=state.orderBook;if(ob.ws){try{ob.ws.close()}catch(e){}}
+  if(ob.wsTimer)clearTimeout(ob.wsTimer);
+  ob.bids=new Map();ob.asks=new Map();ob.lastUpdateId=null;ob.buffer=[];ob.ready=false;ob.source='WAIT';ob.snapshotBusy=false;renderOrderBook();
+}
+
 function renderVolumeProfileVWAP(){
   const panel=$('volumeProfilePanel'); if(!panel)return;
   const m=getVolumeProfileVWAP();
@@ -2694,6 +2825,7 @@ function renderIntradayEntryMap(){
   if(badge){const s=m.long?.status==='DEVELOPING'||m.short?.status==='DEVELOPING'?'DEVELOPING':m.long?.status==='WATCH'||m.short?.status==='WATCH'?'WATCH':'WAIT';badge.textContent=s;}
   renderIntradayContextEngine();
   renderOrderFlow();
+  renderOrderBook();
   if($('intradayMapNote'))$('intradayMapNote').textContent=`1H Intraday State Engine · Monday ${m.monday?.label||'—'} UTC · current 1H price ${fmt(m.price)}. Market sequence: reversal = deviation outside range → close back inside → sweep → displacement → MSS; continuation = breakout/close beyond boundary → retest → old boundary flips into support/resistance → hold → displacement → MSS. Fib 0.75 and Key S/R are location/confluence only and never create an entry by themselves. A failed reclaim/breakout marks the setup INVALID; the engine then waits for a new market cycle. Invalidation follows the active range state, not Fib 0.75.`;
 }
 
@@ -3591,9 +3723,11 @@ $('symbol').onchange=async e=>{
   state.symbol=e.target.value;
   state.mtf={};state.macro={'1w':null,'1M':null};state.lastAlertKey=null;
   resetOrderFlow();
+  resetOrderBook();
   startMonitorWS();
   connectWS();await loadAll();
   await loadOrderFlow();
+  startOrderBookWS();
   startOrderFlowWS();
 };
 
@@ -3654,6 +3788,7 @@ renderScanner();
     $('symbol').value=state.symbol;
     await loadAll();
     await loadOrderFlow();
+    startOrderBookWS();
     connectWS();
     startMonitorWS();
     startOrderFlowWS();
