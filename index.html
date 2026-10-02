@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.61 Market Validation Engine 2.0</title>
+<title>Crypto Structure Pro v8.62 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -199,13 +199,23 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
 .riskScenarioPanel{border-color:#8a6a16}.intradayEntryMap{border-color:#315d8c}.intradayEntryMap.hidden{display:none}.intradayMapHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.intradayMapTitle{font-weight:800}.intradayMapBadge{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid #3b4d6b;color:#9fb7da;background:#0d1728}.intradayMapGrid{margin-top:8px}.intradayCandidate{border:1px solid #263758;border-radius:10px;padding:10px;background:#0b1322}.intradayCandidate.long{border-color:#245b45}.intradayCandidate.short{border-color:#63313a}.intradayCandidate h4{margin:0 0 8px;font-size:14px}.intradayCandidate .mapLine{display:flex;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}.intradayCandidate .mapLine span{color:#93a0b8}.intradayCandidate .mapLine b{text-align:right}.intradayMapActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.intradayMapActions .btn{flex:1;min-width:120px}.intradayMapNote{margin-top:9px;font-size:12px;line-height:1.45;color:#9aa7bf}.intradayMapStatus{font-weight:800}.intradayMapStatus.ready{color:var(--green)}.intradayMapStatus.wait{color:var(--yellow)}.intradayMapStatus.counter{color:#f0a45d}@media(max-width:560px){.intradayCandidate .mapLine{flex-direction:column;gap:2px}.intradayCandidate .mapLine b{text-align:left}.intradayMapActions .btn{min-width:100%}.intradayMapHead{align-items:flex-start}}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
+
+.vpPanel{margin-top:14px;}
+.vpGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.vpBox{border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:11px;background:rgba(15,23,42,.42);min-width:0;}
+.vpBox small{display:block;color:#94a3b8;font-size:10px;letter-spacing:.08em;margin-bottom:5px;}
+.vpBox b{display:block;font-size:15px;line-height:1.25;}
+.vpContext{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px;}
+.vpContext .vpBox{min-height:62px;}
+.vpBadge{font-size:11px;font-weight:800;letter-spacing:.05em;}
+@media(max-width:700px){.vpGrid{grid-template-columns:repeat(2,minmax(0,1fr));}.vpContext{grid-template-columns:1fr 1fr;}.vpBox b{font-size:14px;}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.61 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v8.62 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -493,6 +503,29 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           </div>
         </div>
         <div class="liqFibNote" id="intradayMapNote">Intraday engine hierarchy: 1H Key S/R Zone first → Monday Range relationship → Liquidity → Fib 0.75 confluence → setup-specific confirmation. Zones are locations, not entries. Reference Entry is informational until the confirmation path reaches READY/CONFIRMED.</div>
+      </div>
+
+      <div class="liqFibPanel vpPanel" id="volumeProfilePanel">
+        <div class="liqFibHead">
+          <span class="liqFibTitle">Volume Profile & VWAP Engine</span>
+          <span class="liqFibBadge separate vpBadge" id="vpBadge">WAIT</span>
+        </div>
+        <div class="vpGrid">
+          <div class="vpBox"><small>POC</small><b id="vpPOC">—</b></div>
+          <div class="vpBox"><small>VAH · 70% VALUE AREA</small><b id="vpVAH">—</b></div>
+          <div class="vpBox"><small>VAL · 70% VALUE AREA</small><b id="vpVAL">—</b></div>
+          <div class="vpBox"><small>VWAP · SESSION</small><b id="vpVWAP">—</b></div>
+          <div class="vpBox"><small>HVN</small><b id="vpHVN">—</b></div>
+          <div class="vpBox"><small>LVN</small><b id="vpLVN">—</b></div>
+          <div class="vpBox"><small>PRICE LOCATION</small><b id="vpLocation">—</b></div>
+          <div class="vpBox"><small>PROFILE WINDOW</small><b id="vpWindow">—</b></div>
+        </div>
+        <div class="vpContext">
+          <div class="vpBox"><small>POC RELATION</small><b id="vpPOCRelation">—</b></div>
+          <div class="vpBox"><small>VALUE AREA RELATION</small><b id="vpVARelation">—</b></div>
+          <div class="vpBox"><small>VWAP RELATION</small><b id="vpVWAPRelation">—</b></div>
+        </div>
+        <div class="liqFibNote" id="vpNote">Volume Profile and VWAP provide auction/location context only. They do not create an entry by themselves and do not override Market Validation.</div>
       </div>
       <div class="liqFibPanel fib75Panel">
         <div class="liqFibHead">
@@ -2430,7 +2463,65 @@ function getIntradayEntryMap(){
   return {price,monday,fib,zoneEngine,long:build('LONG'),short:build('SHORT'),rangePosition,rangePct:(price-monday.low)/Math.max(monday.high-monday.low,1)};
 }
 
+
+function getVolumeProfileVWAP(){
+  const raw=state.rawMtf?.['1h'];
+  if(!Array.isArray(raw)||raw.length<40)return null;
+  const all=raw.slice(0,-1).filter(c=>Number.isFinite(Number(c?.h))&&Number.isFinite(Number(c?.l))&&Number.isFinite(Number(c?.c))&&Number.isFinite(Number(c?.v)));
+  const candles=all.slice(-120);
+  if(candles.length<30)return null;
+  const lows=candles.map(c=>Number(c.l)), highs=candles.map(c=>Number(c.h));
+  const lo=Math.min(...lows), hi=Math.max(...highs);
+  if(!(hi>lo))return null;
+  const bins=48, step=(hi-lo)/bins, vol=new Array(bins).fill(0);
+  candles.forEach(c=>{
+    const h=Number(c.h),l=Number(c.l),v=Number(c.v),typ=(h+l+Number(c.c))/3;
+    let i=Math.floor((typ-lo)/step); if(i<0)i=0;if(i>=bins)i=bins-1; vol[i]+=v;
+  });
+  const total=vol.reduce((a,b)=>a+b,0);
+  let pocI=vol.indexOf(Math.max(...vol));
+  let left=pocI,right=pocI,covered=vol[pocI]||0,target=total*.70;
+  while(covered<target&&(left>0||right<bins-1)){
+    const lv=left>0?vol[left-1]:-1,rv=right<bins-1?vol[right+1]:-1;
+    if(rv>=lv){right++;covered+=Math.max(0,rv);}else{left--;covered+=Math.max(0,lv);}
+  }
+  const center=i=>lo+(i+.5)*step;
+  const poc=center(pocI),val=lo+left*step,vah=lo+(right+1)*step;
+  const hvnCandidates=[]; const lvnCandidates=[];
+  for(let i=1;i<bins-1;i++){
+    if(vol[i]>=vol[i-1]&&vol[i]>=vol[i+1]&&vol[i]>0)hvnCandidates.push(i);
+    if(vol[i]<=vol[i-1]&&vol[i]<=vol[i+1])lvnCandidates.push(i);
+  }
+  hvnCandidates.sort((a,b)=>vol[b]-vol[a]);
+  lvnCandidates.sort((a,b)=>vol[a]-vol[b]);
+  const hvn=hvnCandidates.slice(0,3).map(i=>center(i));
+  const lvn=lvnCandidates.slice(0,3).map(i=>center(i));
+  const price=Number(raw.at(-1)?.c);
+  const dayStart=new Date(new Date(raw.at(-1)?.t||Date.now()).setUTCHours(0,0,0,0)).getTime();
+  const session=all.filter(c=>Number(c.t)>=dayStart);
+  const vwapSrc=session.length?session:all.slice(-24);
+  let pv=0,sv=0;
+  vwapSrc.forEach(c=>{const h=Number(c.h),l=Number(c.l),v=Number(c.v),typ=(h+l+Number(c.c))/3;pv+=typ*v;sv+=v;});
+  const vwap=sv?pv/sv:NaN;
+  const rel=(x)=>Math.abs(price-x)/Math.max(price,1)<=.002?'AT':price>x?'ABOVE':'BELOW';
+  let location='INSIDE VALUE'; if(price>vah)location='ABOVE VALUE'; else if(price<val)location='BELOW VALUE';
+  const nearest=(arr)=>arr.length?arr.reduce((best,x)=>Math.abs(price-x)<Math.abs(price-best)?x:best,arr[0]):NaN;
+  return {price,lo,hi,poc,vah,val,vwap,hvn,lvn,location,pocRelation:rel(poc),vaRelation:location,vwapRelation:Number.isFinite(vwap)?rel(vwap):'—',window:candles.length};
+}
+
+function renderVolumeProfileVWAP(){
+  const panel=$('volumeProfilePanel'); if(!panel)return;
+  const m=getVolumeProfileVWAP();
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  if(!m){['vpPOC','vpVAH','vpVAL','vpVWAP','vpHVN','vpLVN','vpLocation','vpWindow','vpPOCRelation','vpVARelation','vpVWAPRelation'].forEach(id=>set(id,'—'));set('vpBadge','WAIT');return;}
+  set('vpPOC',fmt(m.poc)); set('vpVAH',fmt(m.vah)); set('vpVAL',fmt(m.val)); set('vpVWAP',Number.isFinite(m.vwap)?fmt(m.vwap):'—');
+  set('vpHVN',m.hvn.length?m.hvn.map(fmt).join(' · '):'—'); set('vpLVN',m.lvn.length?m.lvn.map(fmt).join(' · '):'—');
+  set('vpLocation',`${m.location} · ${fmt(m.price)}`); set('vpWindow',`${m.window} closed 1H candles`); set('vpPOCRelation',m.pocRelation); set('vpVARelation',m.vaRelation); set('vpVWAPRelation',m.vwapRelation);
+  const badge=$('vpBadge'); if(badge){badge.textContent=m.location;badge.className='liqFibBadge '+(m.location==='INSIDE VALUE'?'separate':m.location==='ABOVE VALUE'?'confluence':'resistance');}
+}
+
 function renderIntradayContextEngine(){
+  renderVolumeProfileVWAP();
   const panel=$('intradayContextEngine'); if(!panel)return;
   const intraday=$('scenarioMode')?.value==='INTRADAY'; panel.classList.toggle('hidden',!intraday); if(!intraday)return;
   const a=state.rawMtf?.['1h']; const m=getIntradayEntryMap(); const z=m?.zoneEngine;
