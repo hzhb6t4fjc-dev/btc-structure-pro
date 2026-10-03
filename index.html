@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.0.3 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v9.0.6 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -50,7 +50,16 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .signalBadge{font-size:11px;font-weight:850;padding:6px 9px;border-radius:999px;border:1px solid var(--line)}
 .foot{padding:11px 14px;border-top:1px solid var(--line);color:#7f8ba2;font-size:10px;line-height:1.5}
 .errorBox{margin:0 11px 11px;padding:9px;border:1px solid #6b3340;border-radius:9px;color:#ff9aaa;background:#24131a;display:none;font-size:11px}
-.scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
+.scoreHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}.scoreSub{font-size:10px;color:var(--muted);margin-top:3px}
+.decisionMatrix{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
+.decisionCell{border:1px solid var(--line);border-radius:10px;background:#0c1321;padding:8px 9px;min-width:0}
+.decisionCell small{display:block;color:var(--muted);font-size:9px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.decisionCell b{display:block;font-size:11px;line-height:1.25;white-space:normal}
+.decisionCell.final{border-color:#31578d;background:linear-gradient(180deg,#0c1729,#0a1220)}
+.decisionNote{margin-top:8px;font-size:10px;color:var(--muted);line-height:1.45}
+@media(max-width:700px){.decisionMatrix{grid-template-columns:1fr 1fr}}
+
+.scoreCircle{min-width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a101c}.scoreCircle span{font-size:20px;font-weight:850}.scoreCircle small{font-size:9px;color:var(--muted)}.decisionLine{display:flex;align-items:center;gap:8px;margin-bottom:9px}.decisionLine .signalBadge{font-size:11px}
  .roadmapStatus{font-size:10px;color:#aebbd1;margin-top:7px;line-height:1.45}.roadmapStatus b{color:#e7edf8}.roadmap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.roadmapHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.roadmapTitle{font-size:11px;font-weight:800}.roadmapNext{font-size:11px;font-weight:800}.roadmapBar{height:6px;background:#202a3e;border-radius:9px;overflow:hidden;margin-top:8px}.roadmapBar i{display:block;height:100%;width:0;background:var(--blue)}.roadmapSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.rstep{font-size:9px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.rstep.done{color:var(--green);border-color:#285a4b}.rstep.wait{color:var(--yellow);border-color:#5b4d24}.rstep.gate{color:var(--blue);border-color:#31578d}@media(max-width:560px){.roadmapSteps{grid-template-columns:1fr 1fr}}.confirmation{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#090f1a}.confirmationSteps{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.cstep{font-size:9px;padding:6px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#0c1321}.cstep.done{color:var(--green);border-color:#285a4b}.cstep.current{color:var(--yellow);border-color:#5b4d24}.cstep.locked{opacity:.62}.cstep small{display:block;font-size:8px;margin-top:2px;color:inherit}@media(max-width:560px){.confirmationSteps{grid-template-columns:1fr 1fr}}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.chartbox{height:430px}}
 @media(max-width:560px){.chartLegend{font-size:8px}.chartLegend .tag{padding:3px 5px}.chartLegend .legendRight{gap:4px}.wrap{padding:9px}.metrics{grid-template-columns:1fr 1fr}.scanner{grid-template-columns:1fr 1fr}.levels{grid-template-columns:1fr 1fr}.chartbox{height:350px}.select,.input{width:100%}.top{align-items:flex-start}.top>div:first-child{min-width:0;flex:1}.brand{font-size:19px;gap:6px}.brand .pill{font-size:9px;padding:3px 6px}.status{padding:7px 9px}}
@@ -252,6 +261,13 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       <div class="setup">
         <div class="scoreHead"><div><h2 style="margin:0">Signal quality</h2><div class="scoreSub">Rule-based confluence</div></div><div class="scoreCircle"><span id="confluenceScore">—</span><small>/100</small></div></div>
         <div class="decisionLine"><span id="biasBadge" class="signalBadge">WAIT</span><span id="biasText" class="reason">Waiting for multi-timeframe data…</span></div>
+        <div class="decisionMatrix">
+          <div class="decisionCell"><small>Market bias</small><b id="decisionBias">WAIT</b></div>
+          <div class="decisionCell"><small>Location</small><b id="decisionLocation">WAIT</b></div>
+          <div class="decisionCell"><small>Trigger</small><b id="decisionTrigger">WAIT</b></div>
+          <div class="decisionCell final"><small>Final decision</small><b id="decisionFinal">WAIT</b></div>
+        </div>
+        <div class="decisionNote" id="decisionNote">Bias, location and trigger are separated. Final decision requires the Entry Confirmation Engine.</div>
         <div class="reason" id="qualityText">Waiting for data…</div>
         <div class="checks" id="qualityChecks"></div>
         <div class="breakdown" id="confluenceBreakdown"></div>
@@ -289,7 +305,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.3</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.6</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -3243,7 +3259,7 @@ function updateUI(d){
   $('pairTitle').textContent=state.symbol.replace('USDT',' / USDT');$('price').textContent='$'+fmt(snapshotPrice);
   $('sh').textContent='$'+fmt(s.p.hi.length?s.p.hi[s.p.hi.length-1].p:null);$('sl').textContent='$'+fmt(s.p.lo.length?s.p.lo[s.p.lo.length-1].p:null);
   const chartStructure=structureState(s);
-  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?'Consolidation':chartStructure.state==='TRANSITION'?'Transition':'Mixed';
+  $('structure').textContent=chartStructure.state==='BULLISH'?'Bullish':chartStructure.state==='BEARISH'?'Bearish':chartStructure.state==='CONSOLIDATION'?`Consolidation · ${(chartStructure.detail||'MID-RANGE').replace(/^CONSOLIDATION · /,'')}`:chartStructure.state==='TRANSITION'?'Transition':'Mixed';
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull} · 12H ${d.s12.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear} · 12H ${d.s12.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`${d.main4.state} · L ${d.s4.bull} / S ${d.s4.bear}`;$('s12').textContent=`${d.major12.state} · L ${d.s12.bull} / S ${d.s12.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
@@ -3311,6 +3327,7 @@ function updateUI(d){
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
 
 
+  // v9.0.6: initialize Entry Confirmation before any UI block reads it.
   const entryConf=getEntryConfirmation(d,r75,ext,conf);
   const ecBadge=$('entryConfirmBadge');
   if(ecBadge){
@@ -3363,6 +3380,7 @@ function updateUI(d){
       ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${zoneText}`
       : 'The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
   }
+  // v9.0.6: separate bias, location, trigger and final decision.
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
@@ -3387,24 +3405,58 @@ function updateUI(d){
         ? `12H ${major12Dir} and 4H ${fourHourDir}: partial major/main structure alignment.`
         : `12H ${major12Dir} and 4H ${fourHourDir} are aligned. 1H remains the setup timeframe and 15m the trigger.`;
   }
-  $('qualityText').textContent=`TOTAL CONFLUENCE ${conf.score}/100 · DIRECTION ${conf.direction} · LONG ${d.longScore}/100 · SHORT ${d.shortScore}/100 · MTF ${mtfScore}/15 · ${mtfStatus} · TRIGGER ${trigger}.`;
-  $('qualityChecks').innerHTML=['1M macro regime','1W macro structure','12H major structure','4H main structure','1H setup','15m trigger','HTF liquidity','Liquidity / sweep','Displacement','MSS','FVG','Volume','Fibonacci'].map(x=>`<span class="check">${x}</span>`).join('');
+  const displayBias=entryConf.major||conf.direction||'WAIT';
+  const locationState=chartStructure?.state==='CONSOLIDATION'
+    ? `CONSOLIDATION · ${chartStructure?.detail?.replace(/^CONSOLIDATION · /,'')||'MID-RANGE'}`
+    : (chartStructure?.detail||chartStructure?.state||'WAIT');
+  const finalStatus=entryConf.status==='CONFIRMED'
+    ? `CONFIRMED ${entryConf.side}`
+    : entryConf.hierarchy==='COUNTER-TREND'
+      ? `WAIT · COUNTER-TREND`
+      : entryConf.status==='READY'
+        ? `READY ${entryConf.side}`
+        : entryConf.status==='DEVELOPING'
+          ? `WATCH ${entryConf.side}`
+          : `WAIT${displayBias!=='WAIT'?' · '+displayBias:''}`;
 
-  const bd=[['Structure','structure',15],['Liquidity','liquidity',15],['Displacement','displacement',15],['MSS','mss',10],['FVG','fvg',10],['Volume','volume',10],['Fibonacci','fibonacci',10],[`MTF Alignment · ${mtfStatus}`,'mtf',15]];
-  $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{const v=conf.breakdown[key]||0;return `<div class="bd"><span>${label}</span><i><em style="width:${v/max*100}%"></em></i><b>${v}/${max}</b></div>`}).join('');
+  $('qualityText').textContent=`CONFLUENCE ${conf.score}/100 · BIAS ${displayBias} · LOCATION ${locationState} · TRIGGER ${entryConf.next||'NONE'} · FINAL ${finalStatus}.`;
+
+  if($('decisionBias'))$('decisionBias').textContent=displayBias;
+  if($('decisionLocation'))$('decisionLocation').textContent=locationState;
+  if($('decisionTrigger'))$('decisionTrigger').textContent=entryConf.next?`WAIT · ${entryConf.next}`:(entryConf.status==='CONFIRMED'?'CONFIRMED':'WAIT');
+  if($('decisionFinal'))$('decisionFinal').textContent=finalStatus;
+  if($('decisionNote'))$('decisionNote').textContent=
+    entryConf.status==='CONFIRMED'
+      ? `All ${entryConf.done}/7 confirmation gates are satisfied. Final decision is confirmation-based, not bias-based.`
+      : `Bias ${displayBias} · location ${locationState} · ${entryConf.done}/7 gates passed · next: ${entryConf.next||'confirmation sequence'}. No entry is confirmed yet.`;
 
   const badge=$('biasBadge');
-  badge.textContent=d.side?d.side:(conf.direction==='WAIT'?'WAIT':'BIAS '+conf.direction);
-  badge.className='signalBadge '+(d.side==='LONG'||conf.direction==='LONG'?'green':d.side==='SHORT'||conf.direction==='SHORT'?'red':'yellow');
+  badge.textContent=entryConf.status==='CONFIRMED'?entryConf.side:(displayBias==='WAIT'?'WAIT':'BIAS '+displayBias);
+  badge.className='signalBadge '+(entryConf.status==='CONFIRMED'&&entryConf.side==='LONG'?'green':entryConf.status==='CONFIRMED'&&entryConf.side==='SHORT'?'red':displayBias==='LONG'?'green':displayBias==='SHORT'?'red':'yellow');
 
-  $('biasText').textContent=d.side
-    ? `Confirmed ${d.side} MTF setup.`
-    : conf.direction==='WAIT'
+  $('biasText').textContent=entryConf.status==='CONFIRMED'
+    ? `Confirmed ${entryConf.side} — Entry Confirmation ${entryConf.done}/7.`
+    : displayBias==='WAIT'
       ? 'No dominant directional bias.'
-      : `Directional bias: ${conf.direction}, but the full trigger is not confirmed.`;
+      : `Directional bias: ${displayBias}; final entry status: ${finalStatus}.`;
 
   $('triggerBadge').textContent=trigger;
   $('triggerBadge').className='signalBadge '+(d.side==='LONG'?'green':d.side==='SHORT'?'red':trigger==='TRIGGER WATCH'?'yellow':'');
+
+  const bd=[
+    ['Structure','structure',15],
+    ['Liquidity','liquidity',15],
+    ['Displacement','displacement',15],
+    ['MSS','mss',10],
+    ['FVG','fvg',10],
+    ['Volume','volume',10],
+    ['Fibonacci','fibonacci',10],
+    [`MTF Alignment · ${mtfStatus}`,'mtf',15]
+  ];
+  $('confluenceBreakdown').innerHTML=bd.map(([label,key,max])=>{
+    const value=conf.breakdown[key]||0;
+    return `<div class="bd"><span>${label}</span><i><em style="width:${value/max*100}%"></em></i><b>${value}/${max}</b></div>`;
+  }).join('');
 
   const missing=[];
   for(const [k,label,max] of bd){
