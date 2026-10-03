@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v11.0 Final Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v11.2 Final Roadmap · Long-Term Regime + Volatility + Relative Strength + Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -256,7 +256,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .vpBadge{font-size:11px;font-weight:800;letter-spacing:.05em;}
 @media(max-width:700px){.vpGrid{grid-template-columns:repeat(2,minmax(0,1fr));}.vpContext{grid-template-columns:1fr 1fr;}.vpBox b{font-size:14px;}}
 
-/* v11.0 Final Validation */
+/* v11.2 Final Roadmap */
 .finalRelease{border:1px solid #31466b;background:linear-gradient(180deg,#0f192b,#0b1220);border-radius:18px;padding:18px;margin-top:16px}
 .finalRelease h3{margin:0 0 6px;font-size:20px}.finalRelease .subnote{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:14px}
 .releaseGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -269,13 +269,22 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .releaseTable{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}.releaseTable th,.releaseTable td{padding:8px;border-bottom:1px solid var(--line);text-align:left}.releaseTable th{color:var(--muted);font-weight:600}
 @media(max-width:800px){.releaseGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+.goodPill{color:var(--green)!important;border-color:#285a4b!important}.badPill{color:var(--red)!important;border-color:#6b3340!important}.releaseChecks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.releaseChecks .pill{font-size:10px}
+
+/* v11.2 Final Roadmap research layer */
+.researchPanel{border-color:#31578d}.researchPanel .liqFibTitle{color:#72a9ff}
+.researchActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.researchActions .btn{min-width:160px}
+.researchMini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:8px}.researchMini .pillBox{border:1px solid var(--line);border-radius:9px;padding:8px;background:#0c1321}.researchMini small{display:block;color:var(--muted);font-size:9px}.researchMini b{display:block;margin-top:3px;font-size:11px}
+.researchTableWrap{margin-top:9px;overflow:auto;border:1px solid var(--line);border-radius:10px}.researchTable{width:100%;border-collapse:collapse;font-size:10px;min-width:620px}.researchTable th,.researchTable td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.researchTable th{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em}.researchTable tr:last-child td{border-bottom:0}.researchGood{color:var(--green)}.researchBad{color:var(--red)}.researchNeutral{color:var(--muted)}
+.roadmapNote{font-size:10px;line-height:1.45;color:var(--muted);margin-top:8px}.roadmapStatus{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;border:1px solid var(--line);font-size:9px}
+@media(max-width:700px){.researchMini{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v9.0 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v11.2 Final Roadmap</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -356,7 +365,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v11.0</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v11.2</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -374,6 +383,33 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="ltNote">Long-term regime is context only. It combines multi-timeframe trend alignment, time-series momentum, volatility and drawdown. It does not create an entry and does not override Market Validation.</div>
       </div>
+      <div class="liqFibPanel researchPanel" id="researchRoadmapPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Research &amp; Regime Layer · Final Roadmap</span><span class="liqFibBadge separate" id="researchBadge">READY</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>MARKET REGIME</small><b id="researchMarketRegime">WAIT</b></div>
+          <div class="liqFibBox"><small>VOLATILITY REGIME</small><b id="researchVolRegime">WAIT</b></div>
+          <div class="liqFibBox"><small>VOLATILITY STATE</small><b id="researchVolState">WAIT</b></div>
+          <div class="liqFibBox"><small>RISK MULTIPLIER</small><b id="researchRiskMultiplier">UNCALIBRATED</b></div>
+          <div class="liqFibBox"><small>30D / 90D MOMENTUM</small><b id="researchMomentum">—</b></div>
+          <div class="liqFibBox"><small>365D MOMENTUM</small><b id="research365">—</b></div>
+          <div class="liqFibBox"><small>DRAWdown · 1Y</small><b id="researchDrawdown">—</b></div>
+          <div class="liqFibBox"><small>SEASONAL BIAS</small><b id="researchSeasonalBias">NOT LOADED</b></div>
+          <div class="liqFibBox"><small>SEASONAL CONFIDENCE</small><b id="researchSeasonalConfidence">LOW</b></div>
+          <div class="liqFibBox"><small>ON-CHAIN / FUNDAMENTAL</small><b id="researchOnchain">NOT CONNECTED</b></div>
+          <div class="liqFibBox"><small>DATA COVERAGE</small><b id="researchCoverage">—</b></div>
+          <div class="liqFibBox"><small>RESEARCH STATE</small><b id="researchState">PRICE-ONLY</b></div>
+        </div>
+        <div class="researchMini">
+          <div class="pillBox"><small>TREND / RANGE</small><b id="researchTrendRange">—</b></div>
+          <div class="pillBox"><small>ACCUMULATION / DISTRIBUTION</small><b id="researchAccumDist">—</b></div>
+          <div class="pillBox"><small>TAIL / CRASH STATE</small><b id="researchTailState">—</b></div>
+          <div class="pillBox"><small>LONG-TERM CONTEXT</small><b id="researchLongContext">—</b></div>
+        </div>
+        <div class="researchActions"><button class="btn" type="button" id="runResearchBtn">Run roadmap research</button><button class="btn" type="button" id="runRelativeBtn">Refresh crypto relative strength</button></div>
+        <div class="researchTableWrap" id="relativeStrengthWrap"><table class="researchTable"><thead><tr><th>Asset</th><th>30D</th><th>90D</th><th>180D</th><th>365D</th><th>Volatility</th><th>Liquidity proxy</th></tr></thead><tbody id="relativeStrengthBody"><tr><td colspan="7">Relative strength research has not been run.</td></tr></tbody></table></div>
+        <div class="roadmapNote" id="researchNote">This layer adds long-horizon momentum, volatility regime, market-regime classification, crypto relative strength and seasonality as context. It does not replace the 12H → 4H → 1H → 15m confirmation engine. Risk multipliers remain uncalibrated until they are estimated from out-of-sample validation.</div>
+      </div>
+
       <div class="liqFibPanel macroPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Macro Regime Engine</span><span class="liqFibBadge separate" id="macroBadge">WAIT</span></div>
         <div class="liqFibGrid">
@@ -490,7 +526,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="liqFibNote" id="riskNote">Risk sizing is blocked until hierarchy is aligned and a valid Trade Plan provides entry + invalidation. Enter account equity to calculate the maximum loss and position size.</div>
       </div>
       <div class="liqFibPanel finalValidationPanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Final Market Validation Engine · v11.0</span><span class="liqFibBadge wait" id="finalValidationBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Final Market Validation Engine · v11.2</span><span class="liqFibBadge wait" id="finalValidationBadge">WAIT</span></div>
         <div class="validationGrid">
           <div class="validationMetric"><small>12H AUTHORITY</small><b id="finalAuthority">WAIT</b></div>
           <div class="validationMetric"><small>MTF HIERARCHY</small><b id="finalHierarchy">WAIT</b></div>
@@ -514,7 +550,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
       </div>
       <div class="liqFibPanel riskScenarioPanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Trading Planner Engine</span><span class="liqFibBadge separate" id="scenarioBadge">PLANNER</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Trading Planner Engine</span><span class="liqFibBadge separate" id="plannerBadge">PLANNER</span></div>
         <div class="scenarioNote"><b>MANUAL PLANNER:</b> LONG / SHORT, Entry, Stop and Targets are always editable. Live hierarchy may block a live trade, but it never locks this planner. Daily planning and what-if calculator for scalping, intraday, swing and daily setups. It remains independent from the live Risk Management Engine and never overrides a live trade decision.</div>
         <div class="liqFibGrid scenarioGrid">
           <div class="liqFibBox"><small>TRADING MODE</small><select class="riskInput" id="scenarioMode"><option value="SCALPING">SCALPING · 15m</option><option value="INTRADAY" selected>INTRADAY · 15m/1H</option><option value="SWING">SWING · 4H/12H</option><option value="DAILY">DAILY · 1D</option></select></div>
@@ -822,7 +858,8 @@ const state={
   scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0},
   orderFlow:{trades:[],loaded:false,lastId:null,ws:null,wsTimer:null,source:'WAIT',lastFetch:0},
   orderBook:{bids:new Map(),asks:new Map(),lastUpdateId:null,ws:null,wsTimer:null,buffer:[],ready:false,source:'WAIT',snapshotBusy:false,lastUpdate:0,samples:[],sampleTimer:null,lastSummary:null},
-  longTerm:{last:null,updated:0}
+  longTerm:{last:null,updated:0},
+  research:{daily:[],relative:[],seasonality:null,loading:false,updated:0}
 };
 
 const $=id=>document.getElementById(id);
@@ -856,14 +893,15 @@ function saveAlerts(){
 function renderAlerts(){
   const a=state.alerts.slice(0,15);
   $('alertLog').innerHTML=a.length
-    ? a.map(x=>`<div class="alertItem"><b class="${x.side==='LONG'?'green':'red'}">${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.time}<br>${x.reason}</div>`).join('')
+    ? a.map(x=>`<div class="alertItem"><b class="${x.side==='LONG'?'green':'red'}">${x.side}</b> · ${x.symbol.replace('USDT','/USDT')} · ${x.time}${x.eventId?` <span class="small">· ${x.eventId}</span>`:''}<br>${x.reason}</div>`).join('')
     : 'No alerts yet.';
 }
 
 function saveAlertEvents(){
   const keys=Object.keys(state.alertEvents);
+  const stamp=v=>typeof v==='number'?v:(v&&Number.isFinite(v.ts)?v.ts:0);
   if(keys.length>300){
-    keys.sort((a,b)=>(state.alertEvents[a]||0)-(state.alertEvents[b]||0));
+    keys.sort((a,b)=>stamp(state.alertEvents[a])-stamp(state.alertEvents[b]));
     for(const k of keys.slice(0,keys.length-300)) delete state.alertEvents[k];
   }
   localStorage.setItem('cspAlertEvents',JSON.stringify(state.alertEvents));
@@ -878,16 +916,22 @@ function renderAlertEngine(){
   const permission=('Notification' in window)?Notification.permission:'unsupported';
   meta.innerHTML=`<span class="pill">EVENT DEDUPE ON</span><span class="pill">BROWSER ${permission.toUpperCase()}</span>${state.lastEngineAlert?`<span class="pill">LAST ${state.lastEngineAlert.time}</span>`:''}`;
 }
+function v11Hash(str){
+  let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(16).padStart(8,'0').toUpperCase();
+}
 function emitEngineAlert(side,label,type,reason,opts={}){
   if(!side||!label||!type)return false;
   const candle=opts.candle||state.lastCandleTs||0;
   const key=`${state.symbol}|${side}|${label}|${type}|${candle}`;
   if(state.alertEvents[key]) return false;
-  state.alertEvents[key]=Date.now();
+  const eventId=`EV-${v11Hash(key)}`;
+  state.alertEvents[key]={ts:Date.now(),eventId};
   saveAlertEvents();
   const time=new Date().toLocaleTimeString();
-  state.lastEngineAlert={side,label,type,time};
-  state.alerts.unshift({side,symbol:state.symbol,time,reason:reason||`${label} · ${type}`});
+  state.lastEngineAlert={side,label,type,time,eventId};
+  state.alerts.unshift({eventId,side,symbol:state.symbol,time,reason:reason||`${label} · ${type}`});
   saveAlerts();
   renderAlertEngine();
   if('Notification' in window && Notification.permission==='granted') {
@@ -3167,13 +3211,14 @@ function renderIntradayContextEngine(){
   const intraday=$('scenarioMode')?.value==='INTRADAY'; panel.classList.toggle('hidden',!intraday); if(!intraday)return;
   const a=state.rawMtf?.['1h']; const m=getIntradayEntryMap(); const z=m?.zoneEngine;
   const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  const setHTML=(id,v)=>{const e=$(id);if(e)e.innerHTML=v};
   if(!z){['intradayContextLocation','intradayContextSession','intradayContextVolatility','intradayContextRangeCondition','intradayContextMajor','intradayContextMain','intradayNearestSupport','intradayNearestResistance'].forEach(id=>set(id,'—'));set('intradaySupportZones','—');set('intradayResistanceZones','—');set('intradayNoTradeReason','Waiting for enough 1H data.');return;}
   set('intradayContextLocation',`${z.rangeCondition} · ${fmt(z.price)}`); set('intradayContextSession',z.session); set('intradayContextVolatility',`${z.volatility} · ATR ${fmt(z.atr14)} · ${z.ratio.toFixed(2)}× baseline`); set('intradayContextRangeCondition',`${fmt(z.monday.low)} – ${fmt(z.monday.high)}`); set('intradayContextMajor',z.d12); set('intradayContextMain',z.d4);
   set('intradayNearestSupport',z.nearestSupport?`${fmt(z.nearestSupport.low)} – ${fmt(z.nearestSupport.high)} · ${z.nearestSupport.strength}/100`:'None nearby');
   set('intradayNearestResistance',z.nearestResistance?`${fmt(z.nearestResistance.low)} – ${fmt(z.nearestResistance.high)} · ${z.nearestResistance.strength}/100`:'None nearby');
   const row=x=>`<div class="intradayZoneRow"><span>${fmt(x.low)} – ${fmt(x.high)} · ${x.touches} touch${x.touches===1?'':'es'}${x.fibConfluence?' · Fib':''}${x.mondayConfluence?' · Monday':''}</span><b class="strength">${x.strength}/100</b></div>`;
-  set('intradaySupportZones',z.supports.length?z.supports.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed support zone inside Monday range</span><b>—</b></div>');
-  set('intradayResistanceZones',z.resistances.length?z.resistances.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed resistance zone inside Monday range</span><b>—</b></div>');
+  setHTML('intradaySupportZones',z.supports.length?z.supports.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed support zone inside Monday range</span><b>—</b></div>');
+  setHTML('intradayResistanceZones',z.resistances.length?z.resistances.map(row).join(''):'<div class="intradayZoneRow"><span>No confirmed resistance zone inside Monday range</span><b>—</b></div>');
   const box=$('intradayNoTradeBox'),title=$('intradayNoTradeTitle'),reason=$('intradayNoTradeReason');
   if(box){box.classList.toggle('ok',!z.noTrade); title.textContent=z.noTrade?'NO-TRADE FILTER ACTIVE':'NO-TRADE FILTER CLEAR'; reason.textContent=z.noTrade?z.reasons.join(' · '):`Context is tradable, but an entry still requires the setup-specific confirmation sequence.`;}
   const badge=$('intradayContextBadge'); if(badge){badge.textContent=z.noTrade?'NO TRADE':`${z.bias} CONTEXT`; badge.className='liqFibBadge '+(z.noTrade?'near':'separate');}
@@ -3608,6 +3653,82 @@ async function runHistoricalTriggerReplay(){
   }
 }
 
+/* v11.2 research engines: transparent price-only context; no synthetic on-chain data. */
+function researchReturns(a){
+  const r=[]; for(let i=1;i<a.length;i++){const p=Number(a[i-1].c),c=Number(a[i].c);if(p>0&&c>0)r.push(Math.log(c/p));} return r;
+}
+function researchPercentile(v,arr){
+  const x=arr.filter(Number.isFinite).sort((a,b)=>a-b); if(!x.length||!Number.isFinite(v))return null;
+  let n=0; for(const q of x)if(q<=v)n++; return n/x.length*100;
+}
+function researchSlope(a,n=60){
+  const x=a.slice(-n).map(q=>Number(q.c)); if(x.length<10)return null;
+  const m=x.reduce((s,v)=>s+v,0)/x.length; let num=0,den=0;
+  for(let i=0;i<x.length;i++){num+=(i-(x.length-1)/2)*(x[i]-m);den+=(i-(x.length-1)/2)**2;}
+  return den?num/den:0;
+}
+function classifyResearchRegime(a){
+  if(!a||a.length<120)return {market:'WAIT',vol:'WAIT',volState:'WAIT',trendRange:'WAIT',accum:'WAIT',tail:'WAIT',risk:'UNCALIBRATED',coverage:a?.length||0};
+  const x=a.slice(0,-1), c=x.map(q=>+q.c), r=researchReturns(x), last=c.at(-1), r30=pctChange(x,30),r90=pctChange(x,90),r180=pctChange(x,180),r365=pctChange(x,365);
+  const vol20=stdDev(r.slice(-20))*Math.sqrt(365)*100;
+  const volHist=[]; for(let i=60;i<r.length;i++)volHist.push(stdDev(r.slice(i-20,i))*Math.sqrt(365)*100);
+  const volPct=researchPercentile(vol20,volHist);
+  const slope=researchSlope(x,60), slopePct=slope/Math.max(last,1)*100;
+  const range60=x.slice(-60),hi=Math.max(...range60.map(q=>q.h)),lo=Math.min(...range60.map(q=>q.l)),pos=(last-lo)/Math.max(hi-lo,1);
+  const avgVol20=sma(x.slice(-60).map(q=>q.v),20)||0,avgVol5=sma(x.slice(-10).map(q=>q.v),5)||0;
+  let vol='NORMAL'; if((volPct??50)>=90)vol='EXTREME'; else if((volPct??50)>=75)vol='HIGH'; else if((volPct??50)<=20)vol='LOW';
+  const volState=(volPct??50)>=75?'EXPANSION':(volPct??50)<=20?'COMPRESSION':'NORMAL';
+  let market='TRANSITION';
+  if(vol==='EXTREME' && (r30??0)<-15)market='CAPITULATION';
+  else if(vol==='EXTREME' && (r30??0)>15)market='HIGH-VOL TREND';
+  else if(Math.abs(slopePct)<0.045 && Math.abs(r30??0)<8)market='RANGE';
+  else if((r30??0)>0&&(r90??0)>0&&slopePct>0)market='TRENDING BULL';
+  else if((r30??0)<0&&(r90??0)<0&&slopePct<0)market='TRENDING BEAR';
+  else if((r30??0)>0&&pos<.45&&avgVol5>avgVol20*1.1)market='RECOVERY';
+  let accum='NEUTRAL';
+  if(pos<.35&&avgVol5>avgVol20*1.1&&(r30??0)>=-6)accum='ACCUMULATION PROXY';
+  else if(pos>.65&&avgVol5>avgVol20*1.1&&(r30??0)<=6)accum='DISTRIBUTION PROXY';
+  let tail='NORMAL'; if((volPct??50)>=90&&Math.abs(r30??0)>=15)tail=(r30??0)<0?'DOWNSIDE TAIL':'UPSIDE TAIL';
+  const dd1=(last/Math.max(...c.slice(-365))-1)*100;
+  const context=(r365??0)>0?'POSITIVE LONG-TERM':(r365??0)<0?'NEGATIVE LONG-TERM':'NEUTRAL LONG-TERM';
+  return {market,vol,volState,trendRange:market.includes('TREND')?'TREND':market==='RANGE'?'RANGE':'TRANSITION',accum,tail,risk:'UNCALIBRATED',coverage:x.length,vol20,volPct,r30,r90,r180,r365,dd1,context};
+}
+function seasonalityFromDaily(a){
+  const buckets=Array.from({length:12},()=>[]);
+  for(let i=1;i<a.length;i++){
+    const d=new Date(a[i].t),p=+a[i-1].c,c=+a[i].c; if(p>0&&c>0)buckets[d.getUTCMonth()].push((c/p-1)*100);
+  }
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rows=buckets.map((v,i)=>({month:months[i],n:v.length,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:NaN,pos:v.length?v.filter(x=>x>0).length/v.length*100:NaN}));
+  const cur=new Date().getUTCMonth(),q=rows[cur],conf=q?.n>=3?'MEDIUM':q?.n>=2?'LOW':'VERY LOW';
+  return {rows,current:q,confidence:conf};
+}
+async function runRoadmapResearch(){
+  const btn=$('runResearchBtn'); if(btn){btn.disabled=true;btn.textContent='Running research…';}
+  state.research.loading=true;
+  try{
+    const a=await v11FetchKlines(state.symbol,'1d',1200); state.research.daily=a;
+    const x=classifyResearchRegime(a), season=seasonalityFromDaily(a); state.research.seasonality=season;state.research.updated=Date.now();
+    const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+    set('researchMarketRegime',x.market);set('researchVolRegime',x.vol);set('researchVolState',x.volState);set('researchRiskMultiplier','UNCALIBRATED');
+    set('researchMomentum',`${Number.isFinite(x.r30)?(x.r30>=0?'+':'')+x.r30.toFixed(1):'—'}% / ${Number.isFinite(x.r90)?(x.r90>=0?'+':'')+x.r90.toFixed(1):'—'}%`);
+    set('research365',Number.isFinite(x.r365)?`${x.r365>=0?'+':''}${x.r365.toFixed(1)}%`:'—');set('researchDrawdown',Number.isFinite(x.dd1)?`${x.dd1.toFixed(1)}%`:'—');
+    set('researchSeasonalBias',season.current?`${season.current.avg>=0?'+':''}${season.current.avg.toFixed(2)}% avg · ${season.current.pos.toFixed(0)}% positive`:'—');set('researchSeasonalConfidence',season.confidence);set('researchCoverage',`${a.length} daily candles`);set('researchTrendRange',x.trendRange);set('researchAccumDist',x.accum);set('researchTailState',x.tail);set('researchLongContext',x.context);set('researchOnchain','NOT CONNECTED');set('researchState','PRICE-ONLY');
+    const badge=$('researchBadge'); if(badge){badge.textContent=x.market==='WAIT'?'WAIT':'RESEARCH READY';badge.className='liqFibBadge '+(x.market.includes('BULL')||x.market==='RECOVERY'?'confluence':x.market.includes('BEAR')||x.market==='CAPITULATION'?'resistance':'separate');}
+    const note=$('researchNote');if(note)note.textContent=`${state.symbol} · ${a.length} closed daily candles. Seasonality is descriptive only; current month sample=${season.current?.n||0}. On-chain/fundamental metrics are intentionally not fabricated and are not used in the live trigger. Risk multipliers remain UNCALIBRATED until an out-of-sample test estimates them.`;
+  }catch(e){const n=$('researchNote');if(n)n.textContent=`Research unavailable: ${e.message}. Live trading engine is unaffected.`;}
+  finally{state.research.loading=false;if(btn){btn.disabled=false;btn.textContent='Run roadmap research';}}
+}
+async function runRelativeStrengthResearch(){
+  const btn=$('runRelativeBtn');if(btn){btn.disabled=true;btn.textContent='Refreshing relative strength…';}
+  try{
+    const list=SCAN_WATCHLIST.slice(0,12), rows=await Promise.all(list.map(async sym=>{try{const a=await v11FetchKlines(sym,'1d',420);const r30=pctChange(a,30),r90=pctChange(a,90),r180=pctChange(a,180),r365=pctChange(a,365),rets=researchReturns(a.slice(-90)),vol=stdDev(rets)*Math.sqrt(365)*100;const qv=a.slice(-20).reduce((s,x)=>s+(+x.c)*(+x.v),0)/20;return {sym,r30,r90,r180,r365,vol,qv};}catch(e){return {sym,error:e.message};}}));
+    state.research.relative=rows; const body=$('relativeStrengthBody');if(body)body.innerHTML=rows.map(x=>x.error?`<tr><td>${x.sym.replace('USDT','/USDT')}</td><td colspan="6">Unavailable</td></tr>`:`<tr><td><b>${x.sym.replace('USDT','/USDT')}</b></td><td class="${x.r30>=0?'researchGood':'researchBad'}">${x.r30>=0?'+':''}${x.r30.toFixed(1)}%</td><td class="${x.r90>=0?'researchGood':'researchBad'}">${x.r90>=0?'+':''}${x.r90.toFixed(1)}%</td><td class="${x.r180>=0?'researchGood':'researchBad'}">${x.r180>=0?'+':''}${x.r180.toFixed(1)}%</td><td class="${x.r365>=0?'researchGood':'researchBad'}">${x.r365>=0?'+':''}${x.r365.toFixed(1)}%</td><td>${x.vol.toFixed(1)}%</td><td>${fmt(x.qv)}</td></tr>`).join('');
+    const n=$('researchNote');if(n)n.textContent=`Relative strength compares the current watchlist using 30D/90D/180D/365D returns, realized volatility and average daily quote-volume as a liquidity proxy. It is asset-selection context, not an entry trigger.`;
+  }catch(e){const n=$('researchNote');if(n)n.textContent=`Relative strength unavailable: ${e.message}`;}
+  finally{if(btn){btn.disabled=false;btn.textContent='Refresh crypto relative strength';}}
+}
+
 function updateUI(d){
   const s=state.mtf[state.tf]||d.s1,last=s.last;
   const snapshotPrice=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):last.c;
@@ -3892,13 +4013,14 @@ function updateUI(d){
 const SCAN_WATCHLIST=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','TRXUSDT'];
 function scannerState(d){
   if(!d)return {name:'WAIT',cls:'wait',rank:0};
-  if(d.side)return {name:'CONFIRMED',cls:'confirmed',rank:4};
-  const side=d.watchSide;
+  const side=d.side||d.watchSide;
   if(side!=='LONG'&&side!=='SHORT')return {name:'WAIT',cls:'wait',rank:0};
   const roadmap=buildRoadmap(d,side);
-  const done=roadmap.filter(x=>x[1]).length;
-  if(done>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
-  if(done>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
+  const first=roadmap.findIndex(x=>!x[1]);
+  const sequenceDone=first<0?roadmap.length:Math.max(0,first);
+  if(sequenceDone>=7)return {name:'CONFIRMED',cls:'confirmed',rank:4};
+  if(sequenceDone>=5)return {name:'TRIGGERED',cls:'triggered',rank:3};
+  if(sequenceDone>=1)return {name:'DEVELOPING',cls:'developing',rank:2};
   return {name:'WATCH',cls:'watch',rank:1};
 }
 function scannerNext(d){
@@ -4397,161 +4519,171 @@ renderScanner();
   }
 })();
 
-/* v11.0: final closed-candle walk-forward validation */
+/* v11.2: closed-candle walk-forward validation. The validator uses the same scan/MTF/sequence model as live analysis. */
 function v11BucketStart(ts,mins){
-  const d=new Date(ts);
   const ms=mins*60000;
-  return Math.floor(d.getTime()/ms)*ms;
+  return Math.floor(Number(ts)/ms)*ms;
 }
 function v11Resample(a,mins){
-  const map=new Map();
+  if(!Array.isArray(a)||!a.length)return [];
+  const map=new Map(),ms=mins*60000;
   for(const c of a){
     const k=v11BucketStart(c.t,mins);
     let x=map.get(k);
-    if(!x){x={t:k,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,closed:true};map.set(k,x);}
+    if(!x)x={t:k,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,closed:false,count:0};
     else{x.h=Math.max(x.h,c.h);x.l=Math.min(x.l,c.l);x.c=c.c;x.v+=c.v;}
+    x.count++;
+    map.set(k,x);
   }
-  return [...map.values()].sort((x,y)=>x.t-y.t);
+  const lastT=Number(a.at(-1).t);
+  return [...map.values()].sort((x,y)=>x.t-y.t).filter(x=>x.t+ms<=lastT+15*60000).map(x=>({...x,closed:true}));
 }
 function v11ScanClosed(a){
   if(!a||a.length<70)return null;
-  const last=a.at(-1);
-  const s=scan([...a,last]);
-  return s;
+  // Live scan() is designed around an array whose final element is the current
+  // (not-yet-used) candle. For historical validation, duplicate the final CLOSED
+  // candle as that synthetic tail so the exact same scan logic evaluates it.
+  return scan([...a,a.at(-1)]);
 }
 function v11SideCompatible(side,s15,s1,s4,s12){
   if(side==='LONG') return s1.bull>=s1.bear && s4.bull>=s4.bear && s12.bull>=s12.bear;
   if(side==='SHORT') return s1.bear>=s1.bull && s4.bear>=s4.bull && s12.bear>=s12.bull;
   return false;
 }
+function v11ModelAt(hist){
+  const h1=v11Resample(hist,4),h4=v11Resample(hist,16),h12=v11Resample(hist,48),d1=v11Resample(hist,96);
+  const s15=v11ScanClosed(hist),s1=v11ScanClosed(h1),s4=v11ScanClosed(h4),s12=v11ScanClosed(h12),sd=v11ScanClosed(d1);
+  if(!s15||!s1||!s4||!s12||!sd)return null;
+  const oldMtf=state.mtf;
+  try{
+    state.mtf={'15m':s15,'1h':s1,'4h':s4,'12h':s12,'1d':sd};
+    const d=mtfDecision();
+    if(!d)return null;
+    const longGates=buildRoadmap(d,'LONG');
+    const shortGates=buildRoadmap(d,'SHORT');
+    const longSeq=longGates.findIndex(x=>!x[1]);
+    const shortSeq=shortGates.findIndex(x=>!x[1]);
+    const longDone=longSeq<0?7:Math.max(0,longSeq);
+    const shortDone=shortSeq<0?7:Math.max(0,shortSeq);
+    const side=d.side || (longDone>shortDone?'LONG':shortDone>longDone?'SHORT':null);
+    const sequence=side==='LONG'?longDone:side==='SHORT'?shortDone:0;
+    return {d,s15,s1,s4,s12,sd,side,sequence,longDone,shortDone,regime:s12.bull>s12.bear?'LONG':s12.bear>s12.bull?'SHORT':'NEUTRAL'};
+  }finally{state.mtf=oldMtf;}
+}
 async function v11FetchKlines(symbol,interval,total=4000){
-  const out=[];
-  let end=Date.now();
+  const out=[];let end=Date.now();
   while(out.length<total){
     const limit=Math.min(1000,total-out.length);
     const url=`${API}/klines?symbol=${encodeURIComponent(symbol)}&interval=${interval}&limit=${limit}&endTime=${end}`;
     const r=await timeoutFetch(url,15000);
     if(!r.ok)throw new Error(`HTTP ${r.status}`);
-    const raw=await r.json();
-    if(!raw.length)break;
-    const batch=raw.map(x=>({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
-    out.unshift(...batch);
-    const oldest=batch[0].t;
-    end=oldest-1;
+    const raw=await r.json();if(!raw.length)break;
+    const now=Date.now();
+    const batch=raw.filter(x=>Number(x[6])<=now).map(x=>({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
+    if(!batch.length){end=Number(raw[0][0])-1;continue;}
+    out.unshift(...batch);end=Number(batch[0].t)-1;
     if(batch.length<limit)break;
-    if(out.length>=total)break;
   }
-  const uniq=[...new Map(out.map(x=>[x.t,x])).values()].sort((a,b)=>a.t-b.t);
-  return uniq.slice(-total);
+  return [...new Map(out.map(x=>[x.t,x])).values()].sort((a,b)=>a.t-b.t).slice(-total);
+}
+function v11ValidationIntegrity(a){
+  const times=a.map(x=>x.t),unique=new Set(times).size===times.length;
+  const ordered=times.every((t,i)=>i===0||t>times[i-1]);
+  const maxGap=times.slice(1).reduce((m,t,i)=>Math.max(m,t-times[i]),0);
+  const intervalOk=times.slice(1).every((t,i)=>t-times[i]===15*60000);
+  const closed=a.every(x=>x.closed===true);
+  const noFuture=a.every(x=>x.t+15*60000<=Date.now());
+  return {unique,ordered,intervalOk,closed,maxGap,noFuture};
 }
 async function runV11WalkForward(){
-  const btn=$('runWalkForwardBtn');
-  const log=$('releaseLog');
+  const btn=$('runWalkForwardBtn'),log=$('releaseLog');
   if(btn){btn.disabled=true;btn.textContent='Running validation…';}
   try{
     const a=await v11FetchKlines(state.symbol,'15m',4000);
     if(a.length<500)throw new Error(`Only ${a.length} closed 15m candles available; at least 500 are required.`);
-    let trades=[],skipped=0;
-    const step=4; // evaluate once per closed 1H boundary
-    const horizon=32; // 8 hours on 15m
+    const integrity=v11ValidationIntegrity(a);
+    const checks=[integrity.unique,integrity.ordered,integrity.intervalOk,integrity.closed,integrity.noFuture];
+    if(!checks.every(Boolean))throw new Error('Historical data integrity check failed: duplicate, out-of-order, gapped, incomplete or future-dated candles detected.');
+
+    const trades=[],setupStats={detected:0,invalidated:0,noTrade:0,unresolved:0};
+    const step=4,horizon=32;
+    let nextAvailable=160;
     for(let i=160;i<a.length-horizon-1;i+=step){
-      const hist=a.slice(0,i+1);
-      const s15=v11ScanClosed(hist);
-      if(!s15)continue;
-      const h1=v11Resample(hist,4), h4=v11Resample(hist,16), h12=v11Resample(hist,48), d1=v11Resample(hist,96);
-      const s1=v11ScanClosed(h1), s4=v11ScanClosed(h4), s12=v11ScanClosed(h12), sd=v11ScanClosed(d1);
-      if(!s1||!s4||!s12||!sd)continue;
-      let side=null;
-      if(s15.bull>=70 && s15.bull>s15.bear && v11SideCompatible('LONG',s15,s1,s4,s12))side='LONG';
-      if(s15.bear>=70 && s15.bear>s15.bull && v11SideCompatible('SHORT',s15,s1,s4,s12))side='SHORT';
-      if(!side){skipped++;continue;}
+      if(i<nextAvailable)continue;
+      const hist=a.slice(0,i+1),model=v11ModelAt(hist);
+      if(!model)continue;
+      const {d,side,sequence}=model;
+      if(!side){setupStats.noTrade++;continue;}
+      setupStats.detected++;
+      // Only the complete ordered 7/7 sequence can open a validation trade.
+      if(sequence<7 || !d.side){setupStats.invalidated++;continue;}
+
       const entry=a[i+1].o;
       const look=hist.slice(-20);
       const stop=side==='LONG'?Math.min(...look.map(x=>x.l)):Math.max(...look.map(x=>x.h));
       const risk=Math.abs(entry-stop);
-      if(!Number.isFinite(risk)||risk<=0){skipped++;continue;}
+      if(!Number.isFinite(risk)||risk<=0){setupStats.unresolved++;continue;}
       const target=side==='LONG'?entry+2*risk:entry-2*risk;
-      let outcome='UNRESOLVED',r=0,exitIndex=null;
+      let outcome='UNRESOLVED',r=0,exitIndex=null,mfeR=0,maeR=0;
       for(let j=i+1;j<=i+horizon&&j<a.length;j++){
-        const c=a[j];
-        const stopHit=side==='LONG'?c.l<=stop:c.h>=stop;
-        const targetHit=side==='LONG'?c.h>=target:c.l<=target;
-        if(stopHit&&targetHit){outcome='AMBIGUOUS';r=0;exitIndex=j;break;}
+        const c=a[j],mfe=side==='LONG'?(c.h-entry)/risk:(entry-c.l)/risk,mae=side==='LONG'?(c.l-entry)/risk:(entry-c.h)/risk;
+        mfeR=Math.max(mfeR,mfe);maeR=Math.min(maeR,mae);
+        const stopHit=side==='LONG'?c.l<=stop:c.h>=stop,targetHit=side==='LONG'?c.h>=target:c.l<=target;
+        if(stopHit&&targetHit){outcome='UNRESOLVED';exitIndex=j;break;}
         if(targetHit){outcome='WIN';r=2;exitIndex=j;break;}
         if(stopHit){outcome='LOSS';r=-1;exitIndex=j;break;}
       }
-      trades.push({t:a[i+1].t,side,outcome,r,score:Math.max(s15.bull,s15.bear),authority:Math.max(s12.bull,s12.bear),regime:s12.bull>s12.bear?'LONG':s12.bear>s12.bull?'SHORT':'NEUTRAL'});
+      if(outcome==='UNRESOLVED')setupStats.unresolved++;
+      trades.push({t:a[i+1].t,side,outcome,r,mfeR,maeR,score:side==='LONG'?d.longScore:d.shortScore,sequence,regime:model.regime,entry,stop,target,exitIndex});
+      if(exitIndex!=null)nextAvailable=exitIndex+1;
     }
+
     const resolved=trades.filter(x=>x.outcome==='WIN'||x.outcome==='LOSS');
-    const wins=resolved.filter(x=>x.outcome==='WIN').length;
-    const losses=resolved.filter(x=>x.outcome==='LOSS').length;
-    const unresolved=trades.length-resolved.length;
-    const netR=trades.reduce((s,x)=>s+x.r,0);
-    const grossWin=resolved.filter(x=>x.r>0).reduce((s,x)=>s+x.r,0);
-    const grossLoss=Math.abs(resolved.filter(x=>x.r<0).reduce((s,x)=>s+x.r,0));
-    const pf=grossLoss?grossWin/grossLoss:(grossWin?Infinity:0);
-    let eq=0,peak=0,maxDD=0;
+    const wins=resolved.filter(x=>x.outcome==='WIN').length,losses=resolved.filter(x=>x.outcome==='LOSS').length;
+    const unresolved=trades.length-resolved.length,netR=trades.reduce((s,x)=>s+x.r,0);
+    const grossWin=resolved.filter(x=>x.r>0).reduce((s,x)=>s+x.r,0),grossLoss=Math.abs(resolved.filter(x=>x.r<0).reduce((s,x)=>s+x.r,0));
+    const pf=grossLoss?grossWin/grossLoss:(grossWin?Infinity:0);let eq=0,peak=0,maxDD=0;
     for(const x of trades){eq+=x.r;peak=Math.max(peak,eq);maxDD=Math.max(maxDD,peak-eq);}
-    const expectancy=trades.length?netR/trades.length:0;
-    const wr=resolved.length?wins/resolved.length:0;
+    const expectancy=resolved.length?resolved.reduce((s,x)=>s+x.r,0)/resolved.length:0,wr=resolved.length?wins/resolved.length:0;
+    const rs=resolved.map(x=>x.r).sort((a,b)=>a-b),median=rs.length?(rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2):null;
+    const mfe=resolved.map(x=>x.mfeR).sort((a,b)=>a-b),mae=resolved.map(x=>x.maeR).sort((a,b)=>a-b);
+    const med=(arr)=>arr.length?(arr.length%2?arr[(arr.length-1)/2]:(arr[arr.length/2-1]+arr[arr.length/2])/2):null;
+    const z=1.96,n=resolved.length; let lo=null,hiCI=null;
+    if(n){const den=1+z*z/n,ctr=(wr+z*z/(2*n))/den,rad=z*Math.sqrt((wr*(1-wr)+z*z/(4*n))/n)/den;lo=Math.max(0,ctr-rad);hiCI=Math.min(1,ctr+rad);}
     const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
-    set('relSamples',trades.length);
-    set('relWinRate',resolved.length?(wr*100).toFixed(1)+'%':'—');
-    set('relExpectancy',trades.length?expectancy.toFixed(3)+'R':'—');
-    set('relNetR',trades.length?(netR>=0?'+':'')+netR.toFixed(1)+'R':'—');
-    set('relDD',maxDD.toFixed(1)+'R');
-    set('relPF',pf===Infinity?'∞':pf.toFixed(2));
-    set('relUnresolved',unresolved);
+    set('relSamples',trades.length);set('relWinRate',resolved.length?(wr*100).toFixed(1)+'%':'—');set('relExpectancy',resolved.length?expectancy.toFixed(3)+'R':'—');
+    set('relMedianR',median==null?'—':median.toFixed(2)+'R');set('relAvgR',expectancy==null?'—':expectancy.toFixed(2)+'R');set('relWRCI',n?`${(lo*100).toFixed(1)}–${(hiCI*100).toFixed(1)}%`:'—');set('relMFE',med(mfe)==null?'—':med(mfe).toFixed(2)+'R');set('relMAE',med(mae)==null?'—':med(mae).toFixed(2)+'R');
+    set('relNetR',trades.length?(netR>=0?'+':'')+netR.toFixed(1)+'R':'—');set('relDD',trades.length?maxDD.toFixed(1)+'R':'—');set('relPF',pf===Infinity?'∞':(resolved.length?pf.toFixed(2):'—'));set('relUnresolved',unresolved);
+    set('relSetups',setupStats.detected);set('relInvalidated',setupStats.invalidated);set('relNoTrade',setupStats.noTrade);set('relResolved',resolved.length);
+    const checksEl=$('relIntegrity');if(checksEl)checksEl.innerHTML=[['Data order',integrity.ordered],['15m spacing',integrity.intervalOk],['Closed candles',integrity.closed],['No future data',integrity.noFuture],['Unique timestamps',integrity.unique]].map(([k,v])=>`<span class="pill ${v?'goodPill':'badPill'}">${v?'✓':'✕'} ${k}</span>`).join('');
     const stateEl=$('relState'),box=$('relStateBox');
-    const verified=trades.length>=20;
-    if(stateEl)stateEl.textContent=verified?'VALIDATED — RESEARCH':'INSUFFICIENT SAMPLE';
+    const verified=resolved.length>=30 && checks.every(Boolean);
+    if(stateEl)stateEl.textContent=verified?'VALIDATED — RESEARCH':'NOT VERIFIED';
     if(box)box.className='releaseMetric '+(verified?'good':'warn');
-    const byReg={};
-    for(const x of trades){
-      const k=x.regime;
-      byReg[k]??={n:0,w:0,l:0,r:0};
-      byReg[k].n++;byReg[k].r+=x.r;if(x.outcome==='WIN')byReg[k].w++;if(x.outcome==='LOSS')byReg[k].l++;
-    }
+    const byReg={};for(const x of trades){const k=x.regime;byReg[k]??={n:0,w:0,l:0,r:0};byReg[k].n++;byReg[k].r+=x.r;if(x.outcome==='WIN')byReg[k].w++;if(x.outcome==='LOSS')byReg[k].l++;}
     let table=`<table class="releaseTable"><thead><tr><th>12H regime</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Net R</th></tr></thead><tbody>`;
     for(const [k,v] of Object.entries(byReg))table+=`<tr><td>${k}</td><td>${v.n}</td><td>${v.w}</td><td>${v.l}</td><td>${v.r>=0?'+':''}${v.r.toFixed(1)}R</td></tr>`;
-    table+=`</tbody></table>`;
-    const bd=$('releaseBreakdown');if(bd)bd.innerHTML=table;
-    if(log)log.textContent=`Walk-forward completed on ${a.length} closed 15m candles for ${state.symbol}. Evaluated ${trades.length} MTF-compatible trigger events; ${wins} wins (+2R), ${losses} losses (-1R), ${unresolved} unresolved/ambiguous. Net ${netR>=0?'+':''}${netR.toFixed(1)}R; max drawdown ${maxDD.toFixed(1)}R. This is a rule-diagnostic backtest with fixed assumptions and is NOT a guarantee of future performance.`;
-  }catch(e){
-    if(log)log.textContent=`Validation unavailable: ${e.message}. Live analysis is unaffected.`;
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='Run full walk-forward validation';}
-  }
+    table+=`</tbody></table>`;const bd=$('releaseBreakdown');if(bd)bd.innerHTML=table;
+    if(log)log.textContent=`Walk-forward completed on ${a.length} closed 15m candles for ${state.symbol}. ${trades.length} confirmed sequence events were evaluated with one active trade at a time; ${wins} wins (+2R), ${losses} losses (-1R), ${unresolved} unresolved. ${setupStats.invalidated} directional setups were blocked before 7/7 confirmation. This remains a rule-diagnostic research test, not a guarantee of future performance.`;
+  }catch(e){if(log)log.textContent=`Validation unavailable: ${e.message}. Live analysis is unaffected.`;}
+  finally{if(btn){btn.disabled=false;btn.textContent='Run full walk-forward validation';}}
 }
 function createV11PaperSnapshot(){
   const d=mtfDecision();
   const conf=d?getConfluenceScore(d):null;
-  const v=d?finalValidationState(d):null;
-  const payload={
-    createdAt:new Date().toISOString(),
-    symbol:state.symbol,
-    price:state.livePrice,
-    timeframe:state.tf,
-    finalState:v?.state||'WAIT',
-    direction:v?.entryConf?.side||conf?.direction||'WAIT',
-    sequence:v?`${v.sequence}/7`:null,
-    blockers:v?.blockers||[],
-    note:'Paper-validation snapshot. No live order is created.'
-  };
-  try{
-    const key='cspPaperSnapshots_v11';
-    const arr=JSON.parse(localStorage.getItem(key)||'[]');arr.push(payload);localStorage.setItem(key,JSON.stringify(arr.slice(-100)));
-    $('releaseLog').textContent=`Paper snapshot saved locally at ${new Date(payload.createdAt).toLocaleString()}. State: ${payload.finalState}. No order was created.`;
-  }catch(e){$('releaseLog').textContent=`Could not save paper snapshot: ${e.message}`;}
+  const payload={createdAt:new Date().toISOString(),symbol:state.symbol,price:state.livePrice,timeframe:state.tf,finalState:d?.side?'CONFIRMED':(d?.watchSide||'WAIT'),direction:d?.side||conf?.direction||'WAIT',sequence:d?`${Math.max(scannerGates(d).sequenceDone,0)}/7`:'0/7',blockers:d?.side?[]:(d?.missingLong||d?.missingShort||[]),note:'Paper-validation snapshot. No live order is created.'};
+  try{const key='cspPaperSnapshots_v11';const arr=JSON.parse(localStorage.getItem(key)||'[]');arr.push(payload);localStorage.setItem(key,JSON.stringify(arr.slice(-100)));$('releaseLog').textContent=`Paper snapshot saved locally at ${new Date(payload.createdAt).toLocaleString()}. State: ${payload.finalState}. No order was created.`;}catch(e){$('releaseLog').textContent=`Could not save paper snapshot: ${e.message}`;}
 }
 $('runWalkForwardBtn')?.addEventListener('click',runV11WalkForward);
+$('runResearchBtn')?.addEventListener('click',runRoadmapResearch);
+$('runRelativeBtn')?.addEventListener('click',runRelativeStrengthResearch);
 $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
 
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
 
 <section class="finalRelease" id="finalRelease">
-  <h3>Final Validation &amp; Walk-Forward Engine · v11.0</h3>
+  <h3>Final Validation &amp; Walk-Forward Engine · v11.2</h3>
   <div class="subnote">
     This is the final research/validation layer. It resamples closed 15m candles into 1H/4H/12H/1D,
     applies the current structure/trigger rules without future data, and evaluates the next-candle trade path.
@@ -4559,22 +4691,28 @@ $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
   </div>
   <div class="releaseGrid">
     <div class="releaseMetric" id="relStateBox"><span>Release state</span><b id="relState">NOT VERIFIED</b></div>
-    <div class="releaseMetric"><span>Samples</span><b id="relSamples">—</b></div>
+    <div class="releaseMetric"><span>Confirmed trades</span><b id="relSamples">—</b></div>
     <div class="releaseMetric"><span>Win rate</span><b id="relWinRate">—</b></div>
     <div class="releaseMetric"><span>Expectancy</span><b id="relExpectancy">—</b></div>
     <div class="releaseMetric"><span>Net R</span><b id="relNetR">—</b></div>
     <div class="releaseMetric"><span>Max drawdown</span><b id="relDD">—</b></div>
+    <div class="releaseMetric"><span>Median R</span><b id="relMedianR">—</b></div>
+    <div class="releaseMetric"><span>Average R</span><b id="relAvgR">—</b></div>
+    <div class="releaseMetric"><span>95% Win-rate CI</span><b id="relWRCI">—</b></div>
+    <div class="releaseMetric"><span>Median MFE</span><b id="relMFE">—</b></div>
+    <div class="releaseMetric"><span>Median MAE</span><b id="relMAE">—</b></div>
     <div class="releaseMetric"><span>Profit factor</span><b id="relPF">—</b></div>
     <div class="releaseMetric"><span>Unresolved</span><b id="relUnresolved">—</b></div>
+    <div class="releaseMetric"><span>Setups detected</span><b id="relSetups">—</b></div>
+    <div class="releaseMetric"><span>Blocked before 7/7</span><b id="relInvalidated">—</b></div>
+    <div class="releaseMetric"><span>No-trade states</span><b id="relNoTrade">—</b></div>
+    <div class="releaseMetric"><span>Resolved trades</span><b id="relResolved">—</b></div>
   </div>
-  <div class="releaseActions">
-    <button id="runWalkForwardBtn">Run full walk-forward validation</button>
-    <button id="runPaperSnapshotBtn">Create paper-validation snapshot</button>
-  </div>
+  <div class="releaseChecks" id="relIntegrity"><span class="pill">Data integrity checks not run</span></div>
   <div class="releaseLog" id="releaseLog">Validation has not been run. The model remains NOT VERIFIED until a closed-candle walk-forward test is completed.</div>
   <div id="releaseBreakdown"></div>
 </section>
 
-<!-- v11.0: Final Market Validation Engine + historical trigger replay. -->
+<!-- v11.2: Final Roadmap research/validation layer. -->
 </body>
 </html>
