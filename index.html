@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v11.2 Final Roadmap · Long-Term Regime + Volatility + Relative Strength + Validation + Order Flow</title>
+<title>Crypto Structure Pro v11.3 Calibration & Regime Validation · Long-Term Regime + Volatility + Relative Strength + Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -257,7 +257,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 @media(max-width:700px){.vpGrid{grid-template-columns:repeat(2,minmax(0,1fr));}.vpContext{grid-template-columns:1fr 1fr;}.vpBox b{font-size:14px;}}
 
 /* v11.2 Final Roadmap */
-.finalRelease{border:1px solid #31466b;background:linear-gradient(180deg,#0f192b,#0b1220);border-radius:18px;padding:18px;margin-top:16px}
+.finalRelease{border:1px solid #31466b;background:linear-gradient(180deg,#0f192b,#0b1220);border-radius:18px;padding:18px;margin-top:16px}.calibrationPanel{border:1px solid #355b7e;background:linear-gradient(180deg,#101d2d,#0b1420);border-radius:16px;padding:16px;margin-top:14px}.calibrationPanel .subnote{color:var(--muted);font-size:12px;line-height:1.5;margin:8px 0 14px}.calibrationTable{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}.calibrationTable th,.calibrationTable td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.calibrationTable th{color:#a9c5e6}.calibrationTable .num{text-align:right}.calibrationStateGood{color:#6ee7a0}.calibrationStateWarn{color:#f6c76b}.calibrationHint{color:var(--muted);font-size:11px;margin-top:8px;line-height:1.45}
 .finalRelease h3{margin:0 0 6px;font-size:20px}.finalRelease .subnote{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:14px}
 .releaseGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .releaseMetric{border:1px solid var(--line);border-radius:14px;padding:13px;background:#0b1322}
@@ -284,7 +284,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v11.2 Final Roadmap</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v11.3 Calibration &amp; Regime Validation</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -526,7 +526,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="liqFibNote" id="riskNote">Risk sizing is blocked until hierarchy is aligned and a valid Trade Plan provides entry + invalidation. Enter account equity to calculate the maximum loss and position size.</div>
       </div>
       <div class="liqFibPanel finalValidationPanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Final Market Validation Engine · v11.2</span><span class="liqFibBadge wait" id="finalValidationBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Final Market Validation Engine · v11.3</span><span class="liqFibBadge wait" id="finalValidationBadge">WAIT</span></div>
         <div class="validationGrid">
           <div class="validationMetric"><small>12H AUTHORITY</small><b id="finalAuthority">WAIT</b></div>
           <div class="validationMetric"><small>MTF HIERARCHY</small><b id="finalHierarchy">WAIT</b></div>
@@ -4668,6 +4668,61 @@ async function runV11WalkForward(){
   }catch(e){if(log)log.textContent=`Validation unavailable: ${e.message}. Live analysis is unaffected.`;}
   finally{if(btn){btn.disabled=false;btn.textContent='Run full walk-forward validation';}}
 }
+function v11Pearson(xs,ys){
+  const n=Math.min(xs.length,ys.length); if(n<3)return null;
+  let sx=0,sy=0;for(let i=0;i<n;i++){sx+=xs[i];sy+=ys[i];}
+  const mx=sx/n,my=sy/n;let num=0,dx=0,dy=0;
+  for(let i=0;i<n;i++){const a=xs[i]-mx,b=ys[i]-my;num+=a*b;dx+=a*a;dy+=b*b;}
+  return dx&&dy?num/Math.sqrt(dx*dy):0;
+}
+function v11CalibrationTrade(hist,a,i,horizon=32){
+  const model=v11ModelAt(hist); if(!model||!model.side||model.sequence<7)return null;
+  const side=model.side,entry=a[i+1]?.o;if(!Number.isFinite(entry))return null;
+  const look=hist.slice(-20),stop=side==='LONG'?Math.min(...look.map(x=>x.l)):Math.max(...look.map(x=>x.h));
+  const risk=Math.abs(entry-stop);if(!Number.isFinite(risk)||risk<=0)return null;
+  const target=side==='LONG'?entry+2*risk:entry-2*risk;
+  let outcome='UNRESOLVED',r=0;
+  for(let j=i+1;j<=Math.min(i+horizon,a.length-1);j++){
+    const c=a[j],stopHit=side==='LONG'?c.l<=stop:c.h>=stop,targetHit=side==='LONG'?c.h>=target:c.l<=target;
+    if(stopHit&&targetHit){outcome='UNRESOLVED';break;}
+    if(targetHit){outcome='WIN';r=2;break;}
+    if(stopHit){outcome='LOSS';r=-1;break;}
+  }
+  const score=side==='LONG'?model.d.longScore:model.d.shortScore;
+  return {score:Number(score)||0,outcome,r,regime:model.regime,side};
+}
+async function runCalibrationEngine(){
+  const btn=$('runCalibrationBtn');if(btn){btn.disabled=true;btn.textContent='Running calibration…';}
+  try{
+    const a=await v11FetchKlines(state.symbol,'15m',4000);
+    if(a.length<700)throw new Error(`Only ${a.length} closed 15m candles available; at least 700 are required.`);
+    const integrity=v11ValidationIntegrity(a);
+    if(![integrity.unique,integrity.ordered,integrity.intervalOk,integrity.closed,integrity.noFuture].every(Boolean))throw new Error('Historical data integrity failed.');
+    const rows=[],step=4,horizon=32;let nextAvailable=160;
+    for(let i=160;i<a.length-horizon-1;i+=step){
+      if(i<nextAvailable)continue;
+      const row=v11CalibrationTrade(a.slice(0,i+1),a,i,horizon);
+      if(!row)continue;
+      rows.push(row);
+      // Keep the same one-active-trade discipline as walk-forward.
+      nextAvailable=i+horizon+1;
+    }
+    const resolved=rows.filter(x=>x.outcome!=='UNRESOLVED'),scores=resolved.map(x=>x.score),ys=resolved.map(x=>x.outcome==='WIN'?1:0);
+    const corr=v11Pearson(scores,ys);
+    const bands=[['<50',-Infinity,49],['50–59',50,59],['60–69',60,69],['70–79',70,79],['80–89',80,89],['90–100',90,100]];
+    const stats=bands.map(([label,lo,hi])=>{const r=resolved.filter(x=>x.score>=lo&&x.score<=hi),w=r.filter(x=>x.outcome==='WIN').length;return {label,n:r.length,w,l:r.length-w,wr:r.length?w/r.length:null,exp:r.length?r.reduce((s,x)=>s+x.r,0)/r.length: null};});
+    const supported=stats.filter(x=>x.n>=10).sort((a,b)=>(b.exp??-Infinity)-(a.exp??-Infinity))[0]||null;
+    const byReg={};for(const x of resolved){const k=x.regime||'UNKNOWN';byReg[k]??={n:0,w:0,r:0};byReg[k].n++;if(x.outcome==='WIN')byReg[k].w++;byReg[k].r+=x.r;}
+    const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+    set('calSamples',resolved.length);set('calCorr',corr==null?'—':corr.toFixed(3));set('calBand',supported?supported.label:'—');set('calBandWR',supported&&supported.wr!=null?(supported.wr*100).toFixed(1)+'%':'—');set('calBandExp',supported&&supported.exp!=null?supported.exp.toFixed(3)+'R':'—');
+    const verified=resolved.length>=30;set('calState',verified?'RESEARCH-READY':'NOT VERIFIED');const cs=$('calState');if(cs)cs.className=verified?'calibrationStateGood':'calibrationStateWarn';
+    const bt=$('calibrationBands');if(bt){let h='<table class="calibrationTable"><thead><tr><th>Score band</th><th class="num">N</th><th class="num">Wins</th><th class="num">Losses</th><th class="num">Win rate</th><th class="num">Expectancy</th></tr></thead><tbody>';for(const x of stats)h+=`<tr><td>${x.label}</td><td class="num">${x.n}</td><td class="num">${x.w}</td><td class="num">${x.l}</td><td class="num">${x.wr==null?'—':(x.wr*100).toFixed(1)+'%'}</td><td class="num">${x.exp==null?'—':x.exp.toFixed(3)+'R'}</td></tr>`;h+='</tbody></table><div class="calibrationHint">Bands with small samples are descriptive only. The engine must not promote a band to a live probability or risk multiplier without out-of-sample confirmation.</div>';bt.innerHTML=h;}
+    const rg=$('calibrationRegimes');if(rg){let h='<table class="calibrationTable"><thead><tr><th>12H regime</th><th class="num">N</th><th class="num">Win rate</th><th class="num">Net R</th></tr></thead><tbody>';for(const [k,v] of Object.entries(byReg))h+=`<tr><td>${k}</td><td class="num">${v.n}</td><td class="num">${(v.w/v.n*100).toFixed(1)}%</td><td class="num">${v.r>=0?'+':''}${v.r.toFixed(1)}R</td></tr>`;h+='</tbody></table>';rg.innerHTML=h;}
+    const note=$('calibrationNote');if(note)note.textContent=`Calibration completed on ${a.length} closed 15m candles for ${state.symbol}. ${resolved.length} resolved events were evaluated. Correlation is descriptive only; no score-to-probability mapping or live risk multiplier was changed.`;
+  }catch(e){const note=$('calibrationNote');if(note)note.textContent=`Calibration unavailable: ${e.message}. Live analysis remains unaffected.`;}
+  finally{if(btn){btn.disabled=false;btn.textContent='Run calibration';}}
+}
+
 function createV11PaperSnapshot(){
   const d=mtfDecision();
   const conf=d?getConfluenceScore(d):null;
@@ -4675,6 +4730,7 @@ function createV11PaperSnapshot(){
   try{const key='cspPaperSnapshots_v11';const arr=JSON.parse(localStorage.getItem(key)||'[]');arr.push(payload);localStorage.setItem(key,JSON.stringify(arr.slice(-100)));$('releaseLog').textContent=`Paper snapshot saved locally at ${new Date(payload.createdAt).toLocaleString()}. State: ${payload.finalState}. No order was created.`;}catch(e){$('releaseLog').textContent=`Could not save paper snapshot: ${e.message}`;}
 }
 $('runWalkForwardBtn')?.addEventListener('click',runV11WalkForward);
+$('runCalibrationBtn')?.addEventListener('click',runCalibrationEngine);
 $('runResearchBtn')?.addEventListener('click',runRoadmapResearch);
 $('runRelativeBtn')?.addEventListener('click',runRelativeStrengthResearch);
 $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
@@ -4683,7 +4739,7 @@ $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
 </script>
 
 <section class="finalRelease" id="finalRelease">
-  <h3>Final Validation &amp; Walk-Forward Engine · v11.2</h3>
+  <h3>Final Validation, Calibration &amp; Walk-Forward Engine · v11.3</h3>
   <div class="subnote">
     This is the final research/validation layer. It resamples closed 15m candles into 1H/4H/12H/1D,
     applies the current structure/trigger rules without future data, and evaluates the next-candle trade path.
@@ -4711,6 +4767,28 @@ $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
   <div class="releaseChecks" id="relIntegrity"><span class="pill">Data integrity checks not run</span></div>
   <div class="releaseLog" id="releaseLog">Validation has not been run. The model remains NOT VERIFIED until a closed-candle walk-forward test is completed.</div>
   <div id="releaseBreakdown"></div>
+
+  <section class="calibrationPanel" id="calibrationPanel">
+    <div class="validationLabHead">
+      <span class="validationLabTitle">Score Calibration &amp; Regime Validation · v11.3</span>
+      <button class="btn" type="button" id="runCalibrationBtn">Run calibration</button>
+    </div>
+    <div class="subnote">
+      Calibration is research-only. It measures how the current setup score and 12H regime behaved on closed historical candles.
+      It does not convert a score into a guaranteed probability and it does not alter live trade decisions until independently validated.
+    </div>
+    <div class="releaseGrid">
+      <div class="releaseMetric"><span>Calibrated samples</span><b id="calSamples">—</b></div>
+      <div class="releaseMetric"><span>Score / outcome correlation</span><b id="calCorr">—</b></div>
+      <div class="releaseMetric"><span>Best-supported score band</span><b id="calBand">—</b></div>
+      <div class="releaseMetric"><span>Band win rate</span><b id="calBandWR">—</b></div>
+      <div class="releaseMetric"><span>Band expectancy</span><b id="calBandExp">—</b></div>
+      <div class="releaseMetric"><span>Calibration state</span><b id="calState">NOT VERIFIED</b></div>
+    </div>
+    <div id="calibrationBands"></div>
+    <div id="calibrationRegimes"></div>
+    <div class="validationNote" id="calibrationNote">No calibration has been run. A score is only a ranking feature until its historical relationship with outcomes is demonstrated out-of-sample.</div>
+  </section>
 </section>
 
 <!-- v11.2: Final Roadmap research/validation layer. -->
