@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.0.1 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v9.0.3 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -289,7 +289,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.1</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.3</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -301,10 +301,11 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>VOLATILITY REGIME</small><b id="ltVolRegime">—</b></div>
           <div class="liqFibBox"><small>DRAWDOWN · FROM 2Y HIGH</small><b id="ltDrawdown">—</b></div>
           <div class="liqFibBox"><small>RISK REGIME</small><b id="ltRiskRegime">—</b></div>
-          <div class="liqFibBox"><small>REGIME SCORE</small><b id="ltScore">—</b></div>
+          <div class="liqFibBox"><small>DIRECTIONAL SCORE</small><b id="ltScore">—</b></div>
+          <div class="liqFibBox"><small>DATA COVERAGE</small><b id="ltCoverage">—</b></div>
           <div class="liqFibBox"><small>MODEL STATE</small><b id="ltState">WAIT</b></div>
         </div>
-        <div class="liqFibNote" id="ltNote">Long-term regime is context only. It uses extended daily history for 30D/90D/180D/365D momentum and 2Y drawdown, plus 1W/1M/12H alignment. It does not create an entry and does not override Market Validation. It does not create an entry and does not override Market Validation.</div>
+        <div class="liqFibNote" id="ltNote">Long-term regime is context only. It combines multi-timeframe trend alignment, time-series momentum, volatility and drawdown. It does not create an entry and does not override Market Validation.</div>
       </div>
       <div class="liqFibPanel macroPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Macro Regime Engine</span><span class="liqFibBadge separate" id="macroBadge">WAIT</span></div>
@@ -823,7 +824,7 @@ async function loadTF(tf,limit=240){
   const r=await timeoutFetch(`${API}/klines?symbol=${encodeURIComponent(state.symbol)}&interval=${tf}&limit=${limit}`,9000);
   if(!r.ok)throw new Error(`HTTP ${r.status} · ${state.symbol} · ${tf}`);
   const raw=await r.json();
-  if(!Array.isArray(raw)||raw.length<50)throw new Error(`Insufficient data · ${state.symbol} · ${tf}`);
+  if(!Array.isArray(raw)||raw.length<50)throw new Error(`Insufficient data · ${state.symbol} · ${tf} (${raw?.length||0} bars returned)`);
   return raw.map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
 }
 
@@ -1093,7 +1094,8 @@ function getLongTermRegime(){
   else if(Math.abs(score)>=25)ltState='DIRECTIONAL TRANSITION';
   else if(volRegime==='EXTREME')ltState='RISK TRANSITION';
   const badge=regime==='BULL TREND'?'BULLISH':regime==='BEAR TREND'?'BEARISH':regime==='HIGH VOLATILITY'?'HIGH RISK':'NEUTRAL';
-  return {regime,badge,alignment,score,momentum:{m30,m90,m180,m365,w4,w13,w26,w52,m6,m12},vol:weeklyVol,volRegime,drawdown,risk,state:ltState,ma:{ma6,ma12,wma26,wma52},macro:{mState,wState,h12:h12State.state}};
+  const coverage=`${ds.length}D / ${ws.length}W / ${ms.length}M`;
+  return {regime,badge,alignment,score,momentum:{m30,m90,m180,m365,w4,w13,w26,w52,m6,m12},vol:weeklyVol,volRegime,drawdown,risk,state:ltState,coverage,ma:{ma6,ma12,wma26,wma52},macro:{mState,wState,h12:h12State.state}};
 }
 function renderLongTermRegime(){
   const x=getLongTermRegime(); state.longTerm={last:x,updated:Date.now()};
@@ -1105,11 +1107,11 @@ function renderLongTermRegime(){
   set('lt180d',Number.isFinite(x.momentum?.m180)?`${x.momentum.m180>=0?'+':''}${x.momentum.m180.toFixed(1)}%`:'—');
   set('lt365d',Number.isFinite(x.momentum?.m365)?`${x.momentum.m365>=0?'+':''}${x.momentum.m365.toFixed(1)}%`:'—');
   set('ltVolatility',Number.isFinite(x.vol)?`${x.vol.toFixed(1)}% ann.`:'—'); set('ltVolRegime',x.volRegime);
-  set('ltDrawdown',Number.isFinite(x.drawdown)?`${x.drawdown.toFixed(1)}%`:'—'); set('ltRiskRegime',x.risk); set('ltScore',Number.isFinite(x.score)?`${x.score>0?'+':''}${x.score}/100`:'—'); set('ltState',x.state);
+  set('ltDrawdown',Number.isFinite(x.drawdown)?`${x.drawdown.toFixed(1)}%`:'—'); set('ltRiskRegime',x.risk); set('ltScore',Number.isFinite(x.score)?`${x.score>0?'+':''}${x.score}/100`:'—'); set('ltCoverage',x.coverage||'—'); set('ltState',x.state);
   const b=$('ltRegimeBadge'); if(b){b.textContent=x.badge;b.className='liqFibBadge '+(x.badge==='BULLISH'?'confluence':x.badge==='BEARISH'||x.badge==='HIGH RISK'?'resistance':'separate');}
   const re=$('ltRegime'); if(re)re.className=cls(x.badge);
   const rr=$('ltRiskRegime'); if(rr)rr.className=x.risk==='EXTREME'||x.risk==='HIGH'?'macroBad':x.risk==='LOW'?'macroGood':'macroMuted';
-  const note=$('ltNote'); if(note){note.textContent=`${x.regime} · ${x.alignment} · 30D ${Number.isFinite(x.momentum?.m30)?x.momentum.m30.toFixed(1):'—'}% · 90D ${Number.isFinite(x.momentum?.m90)?x.momentum.m90.toFixed(1):'—'}% · 180D ${Number.isFinite(x.momentum?.m180)?x.momentum.m180.toFixed(1):'—'}% · 365D ${Number.isFinite(x.momentum?.m365)?x.momentum.m365.toFixed(1):'—'}%. Weekly volatility and drawdown are risk context; the engine is not an entry signal and does not override Market Validation.`;}
+  const note=$('ltNote'); if(note){note.textContent=`${x.regime} · ${x.alignment} · coverage ${x.coverage||'—'} · 30D ${Number.isFinite(x.momentum?.m30)?x.momentum.m30.toFixed(1):'—'}% · 90D ${Number.isFinite(x.momentum?.m90)?x.momentum.m90.toFixed(1):'—'}% · 180D ${Number.isFinite(x.momentum?.m180)?x.momentum.m180.toFixed(1):'—'}% · 365D ${Number.isFinite(x.momentum?.m365)?x.momentum.m365.toFixed(1):'—'}%. Weekly volatility and drawdown are risk context; the engine is not an entry signal and does not override Market Validation.`;}
 }
 
 function getMacroSummary(){
@@ -3549,16 +3551,16 @@ async function loadAll(){
 
   try{
     const allTfs=[...tfs,'1w','1M'];
-    const results=await Promise.all(allTfs.map(tf=>loadTF(tf)));
+    const limits={
+      '15m':240,'1h':240,'4h':240,'12h':240,
+      '1d':500,'1w':160,'1M':60
+    };
+    const results=await Promise.all(allTfs.map(tf=>loadTF(tf,limits[tf]||240)));
     for(let i=0;i<tfs.length;i++){state.mtf[tfs[i]]=scan(results[i]);state.rawMtf[tfs[i]]=results[i];}
     state.macro['1w']=results[allTfs.indexOf('1w')];
     state.macro['1M']=results[allTfs.indexOf('1M')];
 
-    // Long-term engine needs extended daily history for 365D momentum and 2Y drawdown.
-    const longTermDaily=await loadTF('1d',1000);
-    state.rawMtf['1d']=longTermDaily;
-
-    state.data=state.tf==='1d' ? longTermDaily : results[tfs.indexOf(state.tf)];
+    state.data=results[tfs.indexOf(state.tf)];
     state.livePrice=state.data.at(-1)?.c??null;
     state.liveCandleTs=state.data.at(-1)?.t??null;
     draw();
