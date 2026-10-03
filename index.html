@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.1.1 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v11.0 Final Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -190,6 +190,24 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .dynamicZonePath{margin-top:7px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#0c1321;color:#aab7ce;font-size:10px;line-height:1.45}
 .dynamicZonePath b{color:#eef3ff}
 
+
+.finalValidationPanel{border-color:#31578d;background:linear-gradient(180deg,#0b1525,#090f1a)}
+.finalValidationPanel .liqFibTitle{color:#9ec2ff}
+.validationGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.validationMetric{border:1px solid var(--line);border-radius:10px;background:#0c1321;padding:9px}
+.validationMetric small{display:block;color:var(--muted);font-size:9px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.validationMetric b{display:block;font-size:12px;line-height:1.25}
+.validationMetric.final{border-color:#31578d}
+.validationLab{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0c1321}
+.validationLabHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.validationLabTitle{font-weight:800;color:#eef3ff}
+.validationResults{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:8px}
+.validationResults .pillBox{border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center}
+.validationResults small{display:block;color:var(--muted);font-size:9px}
+.validationResults b{display:block;margin-top:3px}
+.validationNote{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.45}
+@media(max-width:700px){.validationGrid{grid-template-columns:1fr 1fr}.validationResults{grid-template-columns:1fr 1fr}}
+
 .reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
 .extensionPanel{border-color:#6b4a91}.extensionPanel .liqFibTitle{color:#c29cff}.extTarget{color:#c29cff}.extTarget.active{color:#39d99a}.extTarget.passed{color:#8f9bb3}.extBadge.long{color:var(--green);border-color:#285a4b}.extBadge.short{color:var(--red);border-color:#6b3340}.extBadge.wait{color:var(--muted)}
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
@@ -218,7 +236,15 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .consensusBlockers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .consensusBlocker{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #5b4d24;color:var(--yellow);background:#15120a}
 @media(max-width:560px){.consensusMini{grid-template-columns:1fr}}
-.riskScenarioPanel{border-color:#8a6a16}.intradayEntryMap{border-color:#315d8c}.intradayEntryMap.hidden{display:none}.intradayMapHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.intradayMapTitle{font-weight:800}.intradayMapBadge{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid #3b4d6b;color:#9fb7da;background:#0d1728}.intradayMapGrid{margin-top:8px}.intradayCandidate{border:1px solid #263758;border-radius:10px;padding:10px;background:#0b1322}.intradayCandidate.long{border-color:#245b45}.intradayCandidate.short{border-color:#63313a}.intradayCandidate h4{margin:0 0 8px;font-size:14px}.intradayCandidate .mapLine{display:flex;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}.intradayCandidate .mapLine span{color:#93a0b8}.intradayCandidate .mapLine b{text-align:right}.intradayMapActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.intradayMapActions .btn{flex:1;min-width:120px}.intradayMapNote{margin-top:9px;font-size:12px;line-height:1.45;color:#9aa7bf}.intradayMapStatus{font-weight:800}.intradayMapStatus.ready{color:var(--green)}.intradayMapStatus.wait{color:var(--yellow)}.intradayMapStatus.counter{color:#f0a45d}@media(max-width:560px){.intradayCandidate .mapLine{flex-direction:column;gap:2px}.intradayCandidate .mapLine b{text-align:left}.intradayMapActions .btn{min-width:100%}.intradayMapHead{align-items:flex-start}}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
+.riskScenarioPanel{border-color:#8a6a16}.intradayEntryMap{border-color:#315d8c}.intradayEntryMap.hidden{display:none}.intradayMapHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.intradayMapTitle{font-weight:800}.intradayMapBadge{font-size:10px;padding:5px 7px;border-radius:999px;border:1px solid #3b4d6b;color:#9fb7da;background:#0d1728}.intradayMapGrid{margin-top:8px}.intradayCandidate{border:1px solid #263758;border-radius:10px;padding:10px;background:#0b1322}.intradayCandidate.long{border-color:#245b45}.intradayCandidate.short{border-color:#63313a}.intradayCandidate h4{margin:0 0 8px;font-size:14px}.intradayCandidate .mapLine{display:flex;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}.intradayCandidate .mapLine span{color:#93a0b8}.intradayCandidate .mapLine b{text-align:right}.intradayMapActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.intradayMapActions .btn{flex:1;min-width:120px}.intradayMapNote{margin-top:9px;font-size:12px;line-height:1.45;color:#9aa7bf}
+.intradayCandidate h4{line-height:1.2}
+.intradayCandidate.invalidated,.intradayCandidate.long.invalidated,.intradayCandidate.short.invalidated{border-color:#7a3d4a !important}
+.intradayMapStatus.invalidated{color:#ff7185}
+.intradayMapStatus.ready{color:#48e0a4}
+.intradayMapStatus.counter{color:#ffbf45}
+.intradayMapStatus.wait{color:#9aa8bf}
+
+.intradayMapStatus{font-weight:800}.intradayMapStatus.ready{color:var(--green)}.intradayMapStatus.wait{color:var(--yellow)}.intradayMapStatus.counter{color:#f0a45d}@media(max-width:560px){.intradayCandidate .mapLine{flex-direction:column;gap:2px}.intradayCandidate .mapLine b{text-align:left}.intradayMapActions .btn{min-width:100%}.intradayMapHead{align-items:flex-start}}.scenarioNote{font-size:13px;line-height:1.5;color:#9aa7bf;margin:-2px 0 12px}.scenarioGrid,.scenarioResults{margin-top:8px}.scenarioManualSide{display:flex;gap:10px;margin-top:10px}.scenarioManualSide .btn{flex:1}.scenarioManualSide .btn.planner-selected{border-color:#72a9ff !important;background:#182b4f !important;box-shadow:0 0 0 1px rgba(114,169,255,.25) inset}.scenarioActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.scenarioActions .btn{min-height:42px}.riskScenarioPanel select.riskInput{appearance:auto;background:#0b1425;color:#eef3ff}.riskScenarioPanel .liqFibBox b{word-break:break-word}.scenarioResults{border-top:1px solid #263758;padding-top:8px}
 
 .vpPanel{margin-top:14px;}
 .vpGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
@@ -229,6 +255,20 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 .vpContext .vpBox{min-height:62px;}
 .vpBadge{font-size:11px;font-weight:800;letter-spacing:.05em;}
 @media(max-width:700px){.vpGrid{grid-template-columns:repeat(2,minmax(0,1fr));}.vpContext{grid-template-columns:1fr 1fr;}.vpBox b{font-size:14px;}}
+
+/* v11.0 Final Validation */
+.finalRelease{border:1px solid #31466b;background:linear-gradient(180deg,#0f192b,#0b1220);border-radius:18px;padding:18px;margin-top:16px}
+.finalRelease h3{margin:0 0 6px;font-size:20px}.finalRelease .subnote{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:14px}
+.releaseGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.releaseMetric{border:1px solid var(--line);border-radius:14px;padding:13px;background:#0b1322}
+.releaseMetric span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.releaseMetric b{display:block;font-size:19px;margin-top:6px}
+.releaseMetric.good b{color:var(--green)}.releaseMetric.warn b{color:var(--yellow)}.releaseMetric.bad b{color:var(--red)}
+.releaseActions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.releaseActions button{border:1px solid #31466b;background:#111c30;color:var(--text);border-radius:11px;padding:10px 13px;font-weight:700}
+.releaseActions button:disabled{opacity:.5}
+.releaseLog{border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--muted);font-size:12px;line-height:1.55;white-space:pre-wrap}
+.releaseTable{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}.releaseTable th,.releaseTable td{padding:8px;border-bottom:1px solid var(--line);text-align:left}.releaseTable th{color:var(--muted);font-weight:600}
+@media(max-width:800px){.releaseGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -316,7 +356,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.1.1</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v11.0</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -449,6 +489,30 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibNote" id="riskNote">Risk sizing is blocked until hierarchy is aligned and a valid Trade Plan provides entry + invalidation. Enter account equity to calculate the maximum loss and position size.</div>
       </div>
+      <div class="liqFibPanel finalValidationPanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Final Market Validation Engine · v11.0</span><span class="liqFibBadge wait" id="finalValidationBadge">WAIT</span></div>
+        <div class="validationGrid">
+          <div class="validationMetric"><small>12H AUTHORITY</small><b id="finalAuthority">WAIT</b></div>
+          <div class="validationMetric"><small>MTF HIERARCHY</small><b id="finalHierarchy">WAIT</b></div>
+          <div class="validationMetric"><small>LOCATION</small><b id="finalLocation">WAIT</b></div>
+          <div class="validationMetric"><small>EVENT</small><b id="finalEvent">WAIT</b></div>
+          <div class="validationMetric"><small>SEQUENCE</small><b id="finalSequence">0/7</b></div>
+          <div class="validationMetric"><small>ENTRY STATE</small><b id="finalEntryState">WAIT</b></div>
+          <div class="validationMetric"><small>TRADE PLAN</small><b id="finalTradePlan">WAIT</b></div>
+          <div class="validationMetric final"><small>FINAL MODEL STATE</small><b id="finalModelState">WAIT</b></div>
+        </div>
+        <div class="validationLab">
+          <div class="validationLabHead"><span class="validationLabTitle">Historical Trigger Replay</span><button class="btn" type="button" id="runValidationBtn">Run replay</button></div>
+          <div class="validationResults">
+            <div class="pillBox"><small>SIGNALS</small><b id="valSignals">—</b></div>
+            <div class="pillBox"><small>WINS · 2R</small><b id="valWins">—</b></div>
+            <div class="pillBox"><small>LOSSES · 1R</small><b id="valLosses">—</b></div>
+            <div class="pillBox"><small>UNRESOLVED</small><b id="valUnresolved">—</b></div>
+            <div class="pillBox"><small>NET R</small><b id="valNetR">—</b></div>
+          </div>
+          <div class="validationNote" id="finalValidationNote">Final validation is hierarchical: 12H authority → MTF alignment → location → event → ordered confirmation → trade plan → risk. Fibonacci remains context/target mapping only. Historical replay is a rule-based research diagnostic on closed candles; it is not a guarantee of future performance.</div>
+        </div>
+      </div>
       <div class="liqFibPanel riskScenarioPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Trading Planner Engine</span><span class="liqFibBadge separate" id="scenarioBadge">PLANNER</span></div>
         <div class="scenarioNote"><b>MANUAL PLANNER:</b> LONG / SHORT, Entry, Stop and Targets are always editable. Live hierarchy may block a live trade, but it never locks this planner. Daily planning and what-if calculator for scalping, intraday, swing and daily setups. It remains independent from the live Risk Management Engine and never overrides a live trade decision.</div>
@@ -525,7 +589,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         </div>
         <div class="liqFibGrid intradayMapGrid">
           <div class="intradayCandidate long">
-            <h4>LONG · POTENTIAL ENTRY</h4>
+            <h4>LONG · SETUP WATCH</h4>
             <div class="mapLine"><span>Primary Zone</span><b id="intradayLongZone">—</b></div>
             <div class="mapLine"><span>Reference Entry</span><b id="intradayLongEntry">—</b></div>
             <div class="mapLine"><span>Zone Confluence</span><b id="intradayLongConfluence">—</b></div>
@@ -537,13 +601,13 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
             <div class="mapLine"><span>Liquidity Sweep</span><b id="intradayLongSweep">—</b></div>
             <div class="mapLine"><span>Displacement / MSS</span><b id="intradayLongDMss">—</b></div>
             <div class="mapLine"><span>FVG / Volume</span><b id="intradayLongFvgVol">—</b></div>
-            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayLongStatus">WAIT</b></div>
+            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayLongStatus">WAIT</b></div><div class="mapLine"><span>Final Gate</span><b id="intradayLongFinalGate">WAIT</b></div>
             <div class="mapLine"><span>Invalidation</span><b id="intradayLongInvalidation">—</b></div>
             <div class="mapLine"><span>Context</span><b id="intradayLongContext">—</b></div>
             <div class="intradayMapActions"><button class="btn" type="button" id="intradayLongApply">USE LONG PLAN</button></div>
           </div>
           <div class="intradayCandidate short">
-            <h4>SHORT · POTENTIAL ENTRY</h4>
+            <h4>SHORT · SETUP WATCH</h4>
             <div class="mapLine"><span>Primary Zone</span><b id="intradayShortZone">—</b></div>
             <div class="mapLine"><span>Reference Entry</span><b id="intradayShortEntry">—</b></div>
             <div class="mapLine"><span>Zone Confluence</span><b id="intradayShortConfluence">—</b></div>
@@ -555,13 +619,13 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
             <div class="mapLine"><span>Liquidity Sweep</span><b id="intradayShortSweep">—</b></div>
             <div class="mapLine"><span>Displacement / MSS</span><b id="intradayShortDMss">—</b></div>
             <div class="mapLine"><span>FVG / Volume</span><b id="intradayShortFvgVol">—</b></div>
-            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayShortStatus">WAIT</b></div>
+            <div class="mapLine"><span>Status</span><b class="intradayMapStatus" id="intradayShortStatus">WAIT</b></div><div class="mapLine"><span>Final Gate</span><b id="intradayShortFinalGate">WAIT</b></div>
             <div class="mapLine"><span>Invalidation</span><b id="intradayShortInvalidation">—</b></div>
             <div class="mapLine"><span>Context</span><b id="intradayShortContext">—</b></div>
             <div class="intradayMapActions"><button class="btn" type="button" id="intradayShortApply">USE SHORT PLAN</button></div>
           </div>
         </div>
-        <div class="liqFibNote" id="intradayMapNote">Intraday engine hierarchy: 1H Key S/R Zone first → Monday Range relationship → Liquidity → Fib 0.75 confluence → setup-specific confirmation. Zones are locations, not entries. Reference Entry is informational until the confirmation path reaches READY/CONFIRMED.</div>
+        <div class="liqFibNote" id="intradayMapNote">Intraday engine hierarchy: 1H Key S/R Zone first → Monday Range relationship → Liquidity → Fib 0.75 confluence → setup-specific confirmation. Zones are locations, not entries. Reference Entry is informational. The plan button remains blocked until the Global Final Gate reaches READY/VALIDATED for the same direction.</div>
       </div>
 
       <div class="liqFibPanel vpPanel" id="volumeProfilePanel">
@@ -1420,9 +1484,16 @@ function getFib75Reaction(a){
   const breakDown=prev.c>=fib75-tol&&last.c<fib75-tol;
 
   let reactionState='WAIT';
-  if(breakUp||breakDown)reactionState='BREAK';
-  else if(rejection)reactionState='REJECTION';
-  else if(inZone)reactionState='WAIT';
+  let reactionDirection=null;
+  if(breakUp){
+    reactionState='BREAK UP';
+    reactionDirection='LONG';
+  }else if(breakDown){
+    reactionState='BREAK DOWN';
+    reactionDirection='SHORT';
+  }else if(rejection){
+    reactionState='REJECTION';
+  }else if(inZone)reactionState='WAIT';
 
   const p15=state.mtf['15m'];
   let structure='WAIT';
@@ -1431,24 +1502,31 @@ function getFib75Reaction(a){
     structure=ss.bullish?'BULLISH':ss.bearish?'BEARISH':ss.state||'MIXED';
   }
 
-  if(reactionState==='BREAK'){
-    if((breakUp&&structure==='BULLISH')||(breakDown&&structure==='BEARISH')){
-      reactionState='RECLAIM';
-    }
+  if(reactionState==='BREAK UP' && structure==='BULLISH'){
+    reactionState='RECLAIM UP';
+    reactionDirection='LONG';
+  }else if(reactionState==='BREAK DOWN' && structure==='BEARISH'){
+    reactionState='RECLAIM DOWN';
+    reactionDirection='SHORT';
   }
 
   const note=reactionState==='REJECTION'
     ? 'Price reacted at the 75% Fibonacci retracement. Wait for MSS + displacement before confirmation.'
-    : reactionState==='BREAK'
-      ? '75% retracement was broken. Wait for displacement and follow-through.'
-      : reactionState==='RECLAIM'
-        ? '75% retracement was reclaimed with directional structure. Still require MSS/confirmation.'
-        : inZone
-          ? 'Price is inside the 75% Fibonacci retracement zone. Waiting for a clear reaction.'
-          : 'Price is away from the 75% Fibonacci retracement zone.';
+    : reactionState==='BREAK UP'
+      ? '75% retracement broke upward. Treat as directional information only; wait for retest/hold + displacement/MSS.'
+      : reactionState==='BREAK DOWN'
+        ? '75% retracement broke downward. Treat as directional information only; wait for retest/hold + displacement/MSS.'
+        : reactionState==='RECLAIM UP'
+          ? '75% retracement was reclaimed upward with bullish structure. Still require retest/MSS/confirmation.'
+          : reactionState==='RECLAIM DOWN'
+            ? '75% retracement was reclaimed downward with bearish structure. Still require retest/MSS/confirmation.'
+            : inZone
+              ? 'Price is inside the 75% Fibonacci retracement zone. Waiting for a clear reaction.'
+              : 'Price is away from the 75% Fibonacci retracement zone.';
 
   return {
     state:reactionState,
+    direction:reactionDirection,
     structure,
     displacement:displacement?'YES':'NO',
     volume:volume?'EXPANSION':'NORMAL',
@@ -1630,6 +1708,10 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
   if(primary!=='LONG'&&primary!=='SHORT') primary='WAIT';
   if(reactionState==='REJECTION'){
     primary='WAIT';
+  }else if(reactionState==='BREAK UP' || reactionState==='RECLAIM UP'){
+    primary = primary==='SHORT' ? 'WAIT' : 'LONG';
+  }else if(reactionState==='BREAK DOWN' || reactionState==='RECLAIM DOWN'){
+    primary = primary==='LONG' ? 'WAIT' : 'SHORT';
   }
 
   const scenarioLabel = primary==='LONG' ? 'LONG WATCH'
@@ -1639,6 +1721,14 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
   let event='WAIT FOR PRICE REACTION';
   if(reactionState==='REJECTION'){
     event='REJECTION OBSERVED → WAIT FOR MSS / DISPLACEMENT';
+  }else if(reactionState==='BREAK UP'){
+    event='BREAK UP → RETEST / HOLD → BULLISH DISPLACEMENT';
+  }else if(reactionState==='BREAK DOWN'){
+    event='BREAK DOWN → RETEST / HOLD → BEARISH DISPLACEMENT';
+  }else if(reactionState==='RECLAIM UP'){
+    event='RECLAIM UP → RETEST → MSS UP';
+  }else if(reactionState==='RECLAIM DOWN'){
+    event='RECLAIM DOWN → RETEST → MSS DOWN';
   }else if(position==='ABOVE ZONE'){
     event=primary==='SHORT'?'SWEEP HIGH → BEARISH DISPLACEMENT':
       primary==='LONG'?'RECLAIM ZONE → RETEST':'WAIT FOR REACTION';
@@ -1666,24 +1756,38 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
   const fvg=!!m15 && primary ? (primary==='LONG'
     ? m15.L.includes('bullish FVG')
     : m15.S.includes('bearish FVG')) : false;
-  const reaction=(r75.state==='REJECTION'||r75.state==='RECLAIM') && primary!=='WAIT';
+  const reaction=(r75.state==='REJECTION'||r75.state==='BREAK UP'||r75.state==='BREAK DOWN'||r75.state==='RECLAIM UP'||r75.state==='RECLAIM DOWN') && primary!=='WAIT';
 
   const gates=[inZone,reaction,sweep,displacement,mss||fvg];
   const done=gates.filter(Boolean).length;
 
   let invalid='Outside setup zone';
-  if(primary==='LONG') invalid=`Loss of zone / swing low ${sr75?.swing?.low?.p?fmt(sr75.swing.low.p):'—'}`;
-  if(primary==='SHORT') invalid=`Loss of zone / swing high ${sr75?.swing?.high?.p?fmt(sr75.swing.high.p):'—'}`;
+  if(primary==='LONG'){
+    if(reactionState==='BREAK UP'||reactionState==='RECLAIM UP') invalid=`Failed breakout: close back below 75% zone ${fmt(zoneLow)} / loss of swing low ${sr75?.swing?.low?.p?fmt(sr75.swing.low.p):'—'}`;
+    else invalid=`Loss of zone / swing low ${sr75?.swing?.low?.p?fmt(sr75.swing.low.p):'—'}`;
+  }
+  if(primary==='SHORT'){
+    if(reactionState==='BREAK DOWN'||reactionState==='RECLAIM DOWN') invalid=`Failed breakdown: close back above 75% zone ${fmt(zoneHigh)} / loss of swing high ${sr75?.swing?.high?.p?fmt(sr75.swing.high.p):'—'}`;
+    else invalid=`Loss of zone / swing high ${sr75?.swing?.high?.p?fmt(sr75.swing.high.p):'—'}`;
+  }
 
-  const path=primary==='LONG'
-    ? 'LOW LIQUIDITY SWEEP → BULLISH DISPLACEMENT → MSS UP → FVG/RETEST → CONFIRMATION'
-    : primary==='SHORT'
-      ? 'HIGH LIQUIDITY SWEEP → BEARISH DISPLACEMENT → MSS DOWN → FVG/RETEST → CONFIRMATION'
-      : 'LIQUIDITY SWEEP → DISPLACEMENT → MSS → FVG/RETEST → CONFIRMATION';
+  let path='LIQUIDITY EVENT → DISPLACEMENT → MSS → FVG/RETEST → CONFIRMATION';
+  if(reactionState==='BREAK UP'||reactionState==='RECLAIM UP') path='BREAK UP → RETEST / HOLD → BULLISH DISPLACEMENT → MSS UP → FVG/RETEST → CONFIRMATION';
+  else if(reactionState==='BREAK DOWN'||reactionState==='RECLAIM DOWN') path='BREAK DOWN → RETEST / HOLD → BEARISH DISPLACEMENT → MSS DOWN → FVG/RETEST → CONFIRMATION';
+  else if(primary==='LONG') path='LOW LIQUIDITY SWEEP → BULLISH DISPLACEMENT → MSS UP → FVG/RETEST → CONFIRMATION';
+  else if(primary==='SHORT') path='HIGH LIQUIDITY SWEEP → BEARISH DISPLACEMENT → MSS DOWN → FVG/RETEST → CONFIRMATION';
 
   const action=reactionState==='REJECTION'
     ? `75% reaction = REJECTION · directional bias is suspended until displacement + MSS confirm the next side.`
-    : stateName==='ACTIVE'
+    : reactionState==='BREAK UP'
+      ? `75% reaction = BREAK UP · LONG remains a WATCH until retest/hold + displacement/MSS confirm it.`
+      : reactionState==='BREAK DOWN'
+        ? `75% reaction = BREAK DOWN · SHORT remains a WATCH until retest/hold + displacement/MSS confirm it.`
+        : reactionState==='RECLAIM UP'
+          ? `75% reaction = RECLAIM UP · still require retest/MSS confirmation.`
+          : reactionState==='RECLAIM DOWN'
+            ? `75% reaction = RECLAIM DOWN · still require retest/MSS confirmation.`
+            : stateName==='ACTIVE'
       ? `${primary==='WAIT'?'LOCATION ACTIVE':primary+' LOCATION ACTIVE'} · do not treat location alone as an entry.`
       : stateName==='APPROACHING'
         ? `Price is approaching the setup zone · ${primary!=='WAIT'?primary+' bias is only a WATCH until the event sequence confirms it.':'wait for the defined event sequence.'}`
@@ -3111,7 +3215,41 @@ function renderIntradayEntryMap(){
     set(prefix+'Invalidation',x?x.invalidation:'—');
     set(prefix+'Context',x?x.context:'—');
     const st=$(prefix+'Status');
-    if(st){st.textContent=x?.status||'WAIT';st.className='intradayMapStatus '+((x?.status==='READY'||x?.status==='CONFIRMED')?'ready':(x?.status==='DEVELOPING'||x?.status==='WATCH')?'counter':'wait')}
+    const header=$(prefix+'Header');
+    const sideName=prefix.toLowerCase().includes('long')?'LONG':'SHORT';
+    const effectiveStatus=x?.status||'WAIT';
+    const headerLabel=effectiveStatus==='INVALIDATED'
+      ? `${sideName} · INVALIDATED`
+      : effectiveStatus==='CONFIRMED'
+        ? `${sideName} · CONFIRMED`
+        : effectiveStatus==='READY'
+          ? `${sideName} · READY`
+          : effectiveStatus==='DEVELOPING'
+            ? `${sideName} · SETUP DEVELOPING`
+            : effectiveStatus==='WATCH'
+              ? `${sideName} · SETUP WATCH`
+              : `${sideName} · WAIT`;
+    if(header)header.textContent=headerLabel;
+    const candidate=header?.closest('.intradayCandidate');
+    if(candidate){
+      candidate.classList.toggle('invalidated',effectiveStatus==='INVALIDATED');
+      candidate.classList.toggle('ready',effectiveStatus==='READY'||effectiveStatus==='CONFIRMED');
+      candidate.classList.toggle('developing',effectiveStatus==='DEVELOPING'||effectiveStatus==='WATCH');
+    }
+    if(st){
+      st.textContent=effectiveStatus;
+      st.className='intradayMapStatus '+
+        (effectiveStatus==='INVALIDATED'?'invalidated':
+         (effectiveStatus==='READY'||effectiveStatus==='CONFIRMED')?'ready':
+         (effectiveStatus==='DEVELOPING'||effectiveStatus==='WATCH')?'counter':'wait');
+    }
+    const gate=$(prefix+'FinalGate');
+    const finalStatus=$('finalModelState')?.textContent||'WAIT';
+    const finalDecision=$('finalDecisionStatus')?.textContent||'WAIT';
+    const globallyAligned=(finalStatus==='READY'||finalStatus==='VALIDATED') && finalDecision.includes(side);
+    if(gate)gate.textContent=globallyAligned?'GLOBAL GATE PASS':'GLOBAL GATE BLOCKED';
+    const apply=$(prefix+'Apply');
+    if(apply){apply.disabled=!globallyAligned;apply.title=globallyAligned?'Global final gate permits plan loading.':'Blocked until the Final Validation / Decision Engine aligns.';}
   };
   renderSide(m.long,'intradayLong');
   renderSide(m.short,'intradayShort');
@@ -3382,6 +3520,94 @@ function updateFinalDecision(entryConf,consensus){
   const b=$('finalDecisionBadge'); if(b){b.textContent=status; b.className=`liqFibBadge finalDecisionBadge ${badge}`;}
 }
 
+
+function getFinalValidation(d,macro,r75,conf,entryConf,trigger,scenario,tradePlan,dynamicZone){
+  const authority=entryConf.major||'WAIT';
+  const hierarchy=entryConf.hierarchy||'WAIT';
+  const location=dynamicZone?.state==='ACTIVE'?'ACTIVE ZONE':dynamicZone?.state==='APPROACHING'?'APPROACHING':dynamicZone?.state==='AWAY'?'AWAY':'WAIT';
+  const event=r75?.state||'WAIT';
+  const sequence=entryConf?.done||0;
+  const entryState=entryConf?.status||'WAIT';
+  const plan=tradePlan?.status||'WAIT';
+  let state='WAIT';
+  if(entryState==='CONFIRMED' && hierarchy==='ALIGNED' && plan==='CONFIRMED') state='VALIDATED';
+  else if(entryState==='READY' && hierarchy==='ALIGNED') state='READY';
+  else if(sequence>0 || trigger?.state==='DEVELOPING' || scenario?.primaryStatus==='DEVELOPING') state='DEVELOPING';
+  else if(authority!=='WAIT' || location!=='WAIT') state='WATCH';
+  const blockers=[];
+  if(authority==='WAIT') blockers.push('12H authority');
+  if(hierarchy!=='ALIGNED') blockers.push('MTF hierarchy');
+  if(location==='WAIT'||location==='AWAY') blockers.push('location');
+  if(sequence<7) blockers.push(`confirmation ${sequence}/7`);
+  if(plan!=='CONFIRMED') blockers.push('trade plan');
+  return {authority,hierarchy,location,event,sequence,entryState,plan,state,blockers};
+}
+
+function updateFinalValidation(d,macro,r75,conf,entryConf,trigger,scenario,tradePlan,dynamicZone){
+  const v=getFinalValidation(d,macro,r75,conf,entryConf,trigger,scenario,tradePlan,dynamicZone);
+  const set=(id,x)=>{const e=$(id);if(e)e.textContent=x};
+  set('finalAuthority',v.authority);
+  set('finalHierarchy',v.hierarchy);
+  set('finalLocation',v.location);
+  set('finalEvent',v.event);
+  set('finalSequence',`${v.sequence}/7`);
+  set('finalEntryState',v.entryState);
+  set('finalTradePlan',v.plan);
+  set('finalModelState',v.state);
+  const b=$('finalValidationBadge');
+  if(b){b.textContent=v.state;b.className='liqFibBadge '+(v.state==='VALIDATED'?'confirmed':v.state==='READY'?'ready':v.state==='DEVELOPING'?'developing':v.state==='WATCH'?'near':'wait');}
+  const note=$('finalValidationNote');
+  if(note){
+    note.textContent=v.state==='VALIDATED'
+      ? `VALIDATED ${entryConf.side}: hierarchy, ordered confirmation and Trade Plan are aligned. Risk sizing remains account-dependent.`
+      : `Model state ${v.state}. Blocking conditions: ${v.blockers.join(' · ')||'none'}. No entry is confirmed until every required gate is satisfied.`;
+  }
+}
+
+async function runHistoricalTriggerReplay(){
+  const btn=$('runValidationBtn');
+  if(btn){btn.disabled=true;btn.textContent='Running…';}
+  try{
+    const r=await timeoutFetch(`${API}/klines?symbol=${encodeURIComponent(state.symbol)}&interval=15m&limit=1000`,12000);
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const raw=await r.json();
+    const a=raw.map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
+    let signals=0,wins=0,losses=0,unresolved=0,netR=0;
+    const horizon=12;
+    for(let i=140;i<a.length-horizon;i+=3){
+      const w=a.slice(0,i);
+      const d=scan(w);
+      let side=d.longTrigger&&d.longScore>=70?'LONG':d.shortTrigger&&d.shortScore>=70?'SHORT':null;
+      if(!side)continue;
+      signals++;
+      const entry=w.at(-1).c;
+      const look=w.slice(-20);
+      const stop=side==='LONG'?Math.min(...look.map(x=>x.l)):Math.max(...look.map(x=>x.h));
+      const risk=Math.abs(entry-stop);
+      if(!risk||!Number.isFinite(risk)){unresolved++;continue;}
+      const target=side==='LONG'?entry+2*risk:entry-2*risk;
+      let outcome='UNRESOLVED';
+      for(const c of a.slice(i,i+horizon)){
+        const hitStop=side==='LONG'?c.l<=stop:c.h>=stop;
+        const hitTarget=side==='LONG'?c.h>=target:c.l<=target;
+        if(hitStop&&hitTarget){outcome='UNRESOLVED';break;}
+        if(hitTarget){outcome='WIN';break;}
+        if(hitStop){outcome='LOSS';break;}
+      }
+      if(outcome==='WIN'){wins++;netR+=2;}else if(outcome==='LOSS'){losses++;netR-=1;}else unresolved++;
+    }
+    const set=(id,x)=>{const e=$(id);if(e)e.textContent=x};
+    set('valSignals',signals);set('valWins',wins);set('valLosses',losses);set('valUnresolved',unresolved);set('valNetR',`${netR>=0?'+':''}${netR.toFixed(1)}R`);
+    const note=$('finalValidationNote');
+    if(note)note.textContent=`Historical trigger replay: ${signals} closed-candle trigger events over ${a.length} 15m candles. ${wins} reached +2R first, ${losses} reached -1R first, ${unresolved} were unresolved/ambiguous. This is a research diagnostic of the current 15m trigger rules, not a full multi-timeframe backtest and not a guarantee.`;
+  }catch(e){
+    const note=$('finalValidationNote');
+    if(note)note.textContent=`Historical replay unavailable: ${e.message}. The live model remains unaffected.`;
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Run replay';}
+  }
+}
+
 function updateUI(d){
   const s=state.mtf[state.tf]||d.s1,last=s.last;
   const snapshotPrice=Number.isFinite(Number(state.livePrice))?Number(state.livePrice):last.c;
@@ -3431,7 +3657,7 @@ function updateUI(d){
   }
 
   const r75=getFib75Reaction(a);
-  if($('fib75ReactionBadge')){$('fib75ReactionBadge').textContent=r75.state;$('fib75ReactionBadge').className='liqFibBadge '+(r75.state==='REJECTION'?'rejection':r75.state==='BREAK'?'break':r75.state==='RECLAIM'?'reclaim':'wait');}
+  if($('fib75ReactionBadge')){$('fib75ReactionBadge').textContent=r75.state;$('fib75ReactionBadge').className='liqFibBadge '+(r75.state==='REJECTION'?'rejection':(r75.state==='BREAK UP'||r75.state==='BREAK DOWN')?'break':(r75.state==='RECLAIM UP'||r75.state==='RECLAIM DOWN')?'reclaim':'wait');}
   if($('fib75Reaction'))$('fib75Reaction').textContent=r75.state;
   if($('fib75ReactionStructure'))$('fib75ReactionStructure').textContent=r75.structure;
   if($('fib75ReactionDisp'))$('fib75ReactionDisp').textContent=r75.displacement;
@@ -3443,7 +3669,7 @@ function updateUI(d){
   const ext=getFibExtensionContext(a);
   const extBadge=$('fibExtBadge');
   if(extBadge){
-    extBadge.textContent=ext.direction==='WAIT'?'WAIT':`${ext.direction} · ${ext.passed||0}/4`;
+    extBadge.textContent=ext.direction==='WAIT'?'WAIT':`${ext.direction} MAP · ${ext.passed||0}/4`;
     extBadge.className='liqFibBadge extBadge '+(ext.direction==='LONG'?'long':ext.direction==='SHORT'?'short':'wait');
   }
   const extMap=[['fibExt1272',1.272],['fibExt1618',1.618],['fibExt2000',2],['fibExt2618',2.618]];
@@ -3456,7 +3682,7 @@ function updateUI(d){
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
 
 
-  // v9.1.1: initialize Entry Confirmation before any UI block reads it.
+  // v11.0: initialize Entry Confirmation before any UI block reads it.
   const entryConf=getEntryConfirmation(d,r75,ext,conf);
   const ecBadge=$('entryConfirmBadge');
   if(ecBadge){
@@ -3475,8 +3701,9 @@ function updateUI(d){
   updateFinalDecision(entryConf,consensusNow);
   const triggerState=getTriggerProximity(a,d,r75,entryConf);
   updateTriggerProximity(a,d,r75,entryConf);
+  const scenarioState=getScenarioPlan(d,entryConf,triggerState,ext,r75);
   updateScenarioEngine(d,entryConf,triggerState,ext,r75);
-  updateTradePlan(a,entryConf,getScenarioPlan(d,entryConf,triggerState,ext,r75),ext,r75,triggerState);
+  updateTradePlan(a,entryConf,scenarioState,ext,r75,triggerState);
 
   const sr75=getFib75SRContext(a);
   const fib75Badge=$('fib75Badge');
@@ -3520,6 +3747,7 @@ function updateUI(d){
   if($('dynamicZoneReadiness')) $('dynamicZoneReadiness').textContent=`${dynamicZone.done}/5`;
   if($('dynamicZonePath')) $('dynamicZonePath').innerHTML=`<b>Sequence:</b> ${dynamicZone.path}`;
   if($('dynamicZoneAction')) $('dynamicZoneAction').textContent=dynamicZone.action;
+  updateFinalValidation(d,macro,r75,conf,entryConf,triggerState,scenarioState,getTradePlan(a,entryConf,scenarioState,ext,r75,triggerState),dynamicZone);
 
   if($('fib75Note')){
     const r=sr75.resistance?`R ${fmt(sr75.resistance.p)}`:'R —';
@@ -3532,7 +3760,7 @@ function updateUI(d){
       ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${zoneText}`
       : 'The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
   }
-  // v9.1.1: separate bias, location, trigger and final decision.
+  // v11.0: separate bias, location, trigger and final decision.
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
@@ -4103,6 +4331,7 @@ $('scanShortBtn').onclick=()=>{state.scanner.side=state.scanner.side==='SHORT'?'
 $('scanSearch').oninput=e=>{state.scanner.query=e.target.value||'';renderScanner();};
 
 $('refresh').onclick=loadAll;
+if($('runValidationBtn'))$('runValidationBtn').onclick=runHistoricalTriggerReplay;
 
 $('notifyBtn').onclick=async()=>{
   if(!('Notification' in window)){showError('Notifications are not supported by this browser.');return}
@@ -4167,8 +4396,185 @@ renderScanner();
     showError('Startup failed. Reload the page once.');
   }
 })();
+
+/* v11.0: final closed-candle walk-forward validation */
+function v11BucketStart(ts,mins){
+  const d=new Date(ts);
+  const ms=mins*60000;
+  return Math.floor(d.getTime()/ms)*ms;
+}
+function v11Resample(a,mins){
+  const map=new Map();
+  for(const c of a){
+    const k=v11BucketStart(c.t,mins);
+    let x=map.get(k);
+    if(!x){x={t:k,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,closed:true};map.set(k,x);}
+    else{x.h=Math.max(x.h,c.h);x.l=Math.min(x.l,c.l);x.c=c.c;x.v+=c.v;}
+  }
+  return [...map.values()].sort((x,y)=>x.t-y.t);
+}
+function v11ScanClosed(a){
+  if(!a||a.length<70)return null;
+  const last=a.at(-1);
+  const s=scan([...a,last]);
+  return s;
+}
+function v11SideCompatible(side,s15,s1,s4,s12){
+  if(side==='LONG') return s1.bull>=s1.bear && s4.bull>=s4.bear && s12.bull>=s12.bear;
+  if(side==='SHORT') return s1.bear>=s1.bull && s4.bear>=s4.bull && s12.bear>=s12.bull;
+  return false;
+}
+async function v11FetchKlines(symbol,interval,total=4000){
+  const out=[];
+  let end=Date.now();
+  while(out.length<total){
+    const limit=Math.min(1000,total-out.length);
+    const url=`${API}/klines?symbol=${encodeURIComponent(symbol)}&interval=${interval}&limit=${limit}&endTime=${end}`;
+    const r=await timeoutFetch(url,15000);
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const raw=await r.json();
+    if(!raw.length)break;
+    const batch=raw.map(x=>({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5],closed:true}));
+    out.unshift(...batch);
+    const oldest=batch[0].t;
+    end=oldest-1;
+    if(batch.length<limit)break;
+    if(out.length>=total)break;
+  }
+  const uniq=[...new Map(out.map(x=>[x.t,x])).values()].sort((a,b)=>a.t-b.t);
+  return uniq.slice(-total);
+}
+async function runV11WalkForward(){
+  const btn=$('runWalkForwardBtn');
+  const log=$('releaseLog');
+  if(btn){btn.disabled=true;btn.textContent='Running validation…';}
+  try{
+    const a=await v11FetchKlines(state.symbol,'15m',4000);
+    if(a.length<500)throw new Error(`Only ${a.length} closed 15m candles available; at least 500 are required.`);
+    let trades=[],skipped=0;
+    const step=4; // evaluate once per closed 1H boundary
+    const horizon=32; // 8 hours on 15m
+    for(let i=160;i<a.length-horizon-1;i+=step){
+      const hist=a.slice(0,i+1);
+      const s15=v11ScanClosed(hist);
+      if(!s15)continue;
+      const h1=v11Resample(hist,4), h4=v11Resample(hist,16), h12=v11Resample(hist,48), d1=v11Resample(hist,96);
+      const s1=v11ScanClosed(h1), s4=v11ScanClosed(h4), s12=v11ScanClosed(h12), sd=v11ScanClosed(d1);
+      if(!s1||!s4||!s12||!sd)continue;
+      let side=null;
+      if(s15.bull>=70 && s15.bull>s15.bear && v11SideCompatible('LONG',s15,s1,s4,s12))side='LONG';
+      if(s15.bear>=70 && s15.bear>s15.bull && v11SideCompatible('SHORT',s15,s1,s4,s12))side='SHORT';
+      if(!side){skipped++;continue;}
+      const entry=a[i+1].o;
+      const look=hist.slice(-20);
+      const stop=side==='LONG'?Math.min(...look.map(x=>x.l)):Math.max(...look.map(x=>x.h));
+      const risk=Math.abs(entry-stop);
+      if(!Number.isFinite(risk)||risk<=0){skipped++;continue;}
+      const target=side==='LONG'?entry+2*risk:entry-2*risk;
+      let outcome='UNRESOLVED',r=0,exitIndex=null;
+      for(let j=i+1;j<=i+horizon&&j<a.length;j++){
+        const c=a[j];
+        const stopHit=side==='LONG'?c.l<=stop:c.h>=stop;
+        const targetHit=side==='LONG'?c.h>=target:c.l<=target;
+        if(stopHit&&targetHit){outcome='AMBIGUOUS';r=0;exitIndex=j;break;}
+        if(targetHit){outcome='WIN';r=2;exitIndex=j;break;}
+        if(stopHit){outcome='LOSS';r=-1;exitIndex=j;break;}
+      }
+      trades.push({t:a[i+1].t,side,outcome,r,score:Math.max(s15.bull,s15.bear),authority:Math.max(s12.bull,s12.bear),regime:s12.bull>s12.bear?'LONG':s12.bear>s12.bull?'SHORT':'NEUTRAL'});
+    }
+    const resolved=trades.filter(x=>x.outcome==='WIN'||x.outcome==='LOSS');
+    const wins=resolved.filter(x=>x.outcome==='WIN').length;
+    const losses=resolved.filter(x=>x.outcome==='LOSS').length;
+    const unresolved=trades.length-resolved.length;
+    const netR=trades.reduce((s,x)=>s+x.r,0);
+    const grossWin=resolved.filter(x=>x.r>0).reduce((s,x)=>s+x.r,0);
+    const grossLoss=Math.abs(resolved.filter(x=>x.r<0).reduce((s,x)=>s+x.r,0));
+    const pf=grossLoss?grossWin/grossLoss:(grossWin?Infinity:0);
+    let eq=0,peak=0,maxDD=0;
+    for(const x of trades){eq+=x.r;peak=Math.max(peak,eq);maxDD=Math.max(maxDD,peak-eq);}
+    const expectancy=trades.length?netR/trades.length:0;
+    const wr=resolved.length?wins/resolved.length:0;
+    const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+    set('relSamples',trades.length);
+    set('relWinRate',resolved.length?(wr*100).toFixed(1)+'%':'—');
+    set('relExpectancy',trades.length?expectancy.toFixed(3)+'R':'—');
+    set('relNetR',trades.length?(netR>=0?'+':'')+netR.toFixed(1)+'R':'—');
+    set('relDD',maxDD.toFixed(1)+'R');
+    set('relPF',pf===Infinity?'∞':pf.toFixed(2));
+    set('relUnresolved',unresolved);
+    const stateEl=$('relState'),box=$('relStateBox');
+    const verified=trades.length>=20;
+    if(stateEl)stateEl.textContent=verified?'VALIDATED — RESEARCH':'INSUFFICIENT SAMPLE';
+    if(box)box.className='releaseMetric '+(verified?'good':'warn');
+    const byReg={};
+    for(const x of trades){
+      const k=x.regime;
+      byReg[k]??={n:0,w:0,l:0,r:0};
+      byReg[k].n++;byReg[k].r+=x.r;if(x.outcome==='WIN')byReg[k].w++;if(x.outcome==='LOSS')byReg[k].l++;
+    }
+    let table=`<table class="releaseTable"><thead><tr><th>12H regime</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Net R</th></tr></thead><tbody>`;
+    for(const [k,v] of Object.entries(byReg))table+=`<tr><td>${k}</td><td>${v.n}</td><td>${v.w}</td><td>${v.l}</td><td>${v.r>=0?'+':''}${v.r.toFixed(1)}R</td></tr>`;
+    table+=`</tbody></table>`;
+    const bd=$('releaseBreakdown');if(bd)bd.innerHTML=table;
+    if(log)log.textContent=`Walk-forward completed on ${a.length} closed 15m candles for ${state.symbol}. Evaluated ${trades.length} MTF-compatible trigger events; ${wins} wins (+2R), ${losses} losses (-1R), ${unresolved} unresolved/ambiguous. Net ${netR>=0?'+':''}${netR.toFixed(1)}R; max drawdown ${maxDD.toFixed(1)}R. This is a rule-diagnostic backtest with fixed assumptions and is NOT a guarantee of future performance.`;
+  }catch(e){
+    if(log)log.textContent=`Validation unavailable: ${e.message}. Live analysis is unaffected.`;
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Run full walk-forward validation';}
+  }
+}
+function createV11PaperSnapshot(){
+  const d=mtfDecision();
+  const conf=d?getConfluenceScore(d):null;
+  const v=d?finalValidationState(d):null;
+  const payload={
+    createdAt:new Date().toISOString(),
+    symbol:state.symbol,
+    price:state.livePrice,
+    timeframe:state.tf,
+    finalState:v?.state||'WAIT',
+    direction:v?.entryConf?.side||conf?.direction||'WAIT',
+    sequence:v?`${v.sequence}/7`:null,
+    blockers:v?.blockers||[],
+    note:'Paper-validation snapshot. No live order is created.'
+  };
+  try{
+    const key='cspPaperSnapshots_v11';
+    const arr=JSON.parse(localStorage.getItem(key)||'[]');arr.push(payload);localStorage.setItem(key,JSON.stringify(arr.slice(-100)));
+    $('releaseLog').textContent=`Paper snapshot saved locally at ${new Date(payload.createdAt).toLocaleString()}. State: ${payload.finalState}. No order was created.`;
+  }catch(e){$('releaseLog').textContent=`Could not save paper snapshot: ${e.message}`;}
+}
+$('runWalkForwardBtn')?.addEventListener('click',runV11WalkForward);
+$('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
+
 /* v8.4: trade-plan snapshot is locked to the ordered 7/7 confirmation sequence and records all confirmed gates. */
 </script>
-<!-- v8.37: Trade Plan Engine converts aligned scenario/confirmation state into a structured reference plan. -->
+
+<section class="finalRelease" id="finalRelease">
+  <h3>Final Validation &amp; Walk-Forward Engine · v11.0</h3>
+  <div class="subnote">
+    This is the final research/validation layer. It resamples closed 15m candles into 1H/4H/12H/1D,
+    applies the current structure/trigger rules without future data, and evaluates the next-candle trade path.
+    Results are diagnostics, not guarantees or financial advice.
+  </div>
+  <div class="releaseGrid">
+    <div class="releaseMetric" id="relStateBox"><span>Release state</span><b id="relState">NOT VERIFIED</b></div>
+    <div class="releaseMetric"><span>Samples</span><b id="relSamples">—</b></div>
+    <div class="releaseMetric"><span>Win rate</span><b id="relWinRate">—</b></div>
+    <div class="releaseMetric"><span>Expectancy</span><b id="relExpectancy">—</b></div>
+    <div class="releaseMetric"><span>Net R</span><b id="relNetR">—</b></div>
+    <div class="releaseMetric"><span>Max drawdown</span><b id="relDD">—</b></div>
+    <div class="releaseMetric"><span>Profit factor</span><b id="relPF">—</b></div>
+    <div class="releaseMetric"><span>Unresolved</span><b id="relUnresolved">—</b></div>
+  </div>
+  <div class="releaseActions">
+    <button id="runWalkForwardBtn">Run full walk-forward validation</button>
+    <button id="runPaperSnapshotBtn">Create paper-validation snapshot</button>
+  </div>
+  <div class="releaseLog" id="releaseLog">Validation has not been run. The model remains NOT VERIFIED until a closed-candle walk-forward test is completed.</div>
+  <div id="releaseBreakdown"></div>
+</section>
+
+<!-- v11.0: Final Market Validation Engine + historical trigger replay. -->
 </body>
 </html>
