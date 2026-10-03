@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.0.6 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v9.0.7 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -179,6 +179,17 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 
 
 .macroPanel{border-color:#405d86}.macroPanel .liqFibTitle{color:#8db9ff}.macroGood{color:var(--green)!important}.macroBad{color:var(--red)!important}.macroNeutral{color:var(--yellow)!important}.macroMuted{color:var(--muted)!important}.macroTarget{font-size:13px!important}.macroSmall{font-size:12px!important;line-height:1.35}
+
+.dynamicZonePanel{border-color:#4d5f86;background:linear-gradient(180deg,#0b1525,#090f1a)}
+.dynamicZonePanel .liqFibTitle{color:#9ec2ff}
+#dynamicZoneBadge.active{color:var(--yellow);border-color:#5b4d24}
+#dynamicZoneBadge.approaching{color:#72a9ff;border-color:#31578d}
+#dynamicZoneBadge.away{color:var(--muted);border-color:var(--line)}
+#dynamicZoneBadge.confirmed{color:var(--green);border-color:#285a4b}
+.dynamicZoneAction{font-weight:800;font-size:13px}
+.dynamicZonePath{margin-top:7px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#0c1321;color:#aab7ce;font-size:10px;line-height:1.45}
+.dynamicZonePath b{color:#eef3ff}
+
 .reaction75Panel{border-color:#31578d}.reaction75Panel .liqFibTitle{color:#72a9ff}#fib75ReactionBadge.rejection{color:var(--red);border-color:#6b3340}#fib75ReactionBadge.break{color:var(--yellow);border-color:#5b4d24}#fib75ReactionBadge.reclaim{color:var(--green);border-color:#285a4b}
 .extensionPanel{border-color:#6b4a91}.extensionPanel .liqFibTitle{color:#c29cff}.extTarget{color:#c29cff}.extTarget.active{color:#39d99a}.extTarget.passed{color:#8f9bb3}.extBadge.long{color:var(--green);border-color:#285a4b}.extBadge.short{color:var(--red);border-color:#6b3340}.extBadge.wait{color:var(--muted)}
 #fib75ReactionBadge.wait{color:var(--muted);border-color:#31578d}
@@ -305,7 +316,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.6</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.7</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -366,6 +377,19 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="liqFibNote" id="liqFibNote">Liquidity zones are derived from repeated swing highs/lows. Fibonacci uses the confirmed Swing Low → Swing High structure.</div>
       </div>
 
+      <div class="liqFibPanel dynamicZonePanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Dynamic Setup Zone · Liquidity × Fibonacci</span><span class="liqFibBadge" id="dynamicZoneBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>ZONE</small><b id="dynamicZoneRange">—</b></div>
+          <div class="liqFibBox"><small>PRICE POSITION</small><b id="dynamicZonePosition">—</b></div>
+          <div class="liqFibBox"><small>PRIMARY SCENARIO</small><b id="dynamicZonePrimary">WAIT</b></div>
+          <div class="liqFibBox"><small>EXPECTED EVENT</small><b id="dynamicZoneEvent">—</b></div>
+          <div class="liqFibBox"><small>INVALIDATION</small><b id="dynamicZoneInvalidation">—</b></div>
+          <div class="liqFibBox"><small>READINESS</small><b id="dynamicZoneReadiness">0/5</b></div>
+        </div>
+        <div class="dynamicZonePath" id="dynamicZonePath"><b>Sequence:</b> location → liquidity event → displacement → MSS/FVG → confirmation.</div>
+        <div class="liqFibNote dynamicZoneAction" id="dynamicZoneAction">Waiting for synchronized price, liquidity and Fibonacci location.</div>
+      </div>
       <div class="liqFibPanel reaction75Panel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Retracement 75% · Reaction Engine</span><span class="liqFibBadge separate" id="fib75ReactionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>REACTION</small><b id="fib75Reaction">—</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="fib75ReactionStructure">—</b></div><div class="liqFibBox"><small>DISPLACEMENT</small><b id="fib75ReactionDisp">—</b></div><div class="liqFibBox"><small>VOLUME</small><b id="fib75ReactionVolume">—</b></div></div><div class="liqFibNote" id="fib75ReactionNote">Waiting for price behavior at the 75% retracement. Touching 75% alone is not a signal.</div></div>
       <div class="liqFibPanel extensionPanel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Extension · Target Engine</span><span class="liqFibBadge extBadge wait" id="fibExtBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>TP1 · 1.272</small><b class="extTarget" id="fibExt1272">—</b></div><div class="liqFibBox"><small>TP2 · 1.618</small><b class="extTarget" id="fibExt1618">—</b></div><div class="liqFibBox"><small>TP3 · 2.000</small><b class="extTarget" id="fibExt2000">—</b></div><div class="liqFibBox"><small>TP4 · 2.618</small><b class="extTarget" id="fibExt2618">—</b></div><div class="liqFibBox"><small>NEXT TARGET</small><b id="fibExtNext">—</b></div><div class="liqFibBox"><small>DIRECTION</small><b id="fibExtDirection">—</b></div></div><div class="liqFibNote" id="fibExtNote">Fibonacci Extension projects target levels beyond the confirmed swing. Targets are reference zones, not guaranteed take-profit signals.</div></div>
 
@@ -1567,6 +1591,88 @@ function getFib75SRContext(a){
       : 'BELOW 75%';
 
   return {swing,fib75,resistance,support,relation,priceRelation,priceDistance};
+}
+
+
+function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
+  const price=Number(state.livePrice)||a?.at?.(-1)?.c||null;
+  if(!price || !r75?.fib75){
+    return {state:'WAIT',zoneLow:null,zoneHigh:null,position:'WAIT',primary:'WAIT',event:'WAIT',invalid:'—',done:0,path:'location → liquidity event → displacement → MSS/FVG → confirmation',action:'Waiting for synchronized price, liquidity and Fibonacci location.'};
+  }
+
+  const fib=r75.fib75;
+  const liq=lf?.liq?.p||null;
+  const candidates=[fib];
+  if(liq && Math.abs(liq-fib)/fib<=0.004)candidates.push(liq);
+
+  // The zone is intentionally compact: it expands only when liquidity and 75%
+  // are close enough to form a genuine location cluster.
+  let zoneLow=Math.min(...candidates), zoneHigh=Math.max(...candidates);
+  const pad=zoneLow===zoneHigh ? fib*0.0015 : Math.max((zoneHigh-zoneLow)*0.12,fib*0.0005);
+  zoneLow-=pad; zoneHigh+=pad;
+
+  const width=fib*.0015;
+  const inZone=price>=zoneLow&&price<=zoneHigh;
+  const distToZone=inZone?0:Math.min(Math.abs(price-zoneLow),Math.abs(price-zoneHigh))/price*100;
+  const stateName=inZone?'ACTIVE':distToZone<=0.60?'APPROACHING':'AWAY';
+  const position=inZone?'INSIDE ZONE':price>zoneHigh?'ABOVE ZONE':'BELOW ZONE';
+
+  const major=entryConf?.major||'WAIT';
+  const side=entryConf?.side || (conf?.direction==='LONG'||conf?.direction==='SHORT'?conf.direction:null);
+
+  // Primary scenario follows the established hierarchy when a side exists.
+  // With no side, the engine presents both possible reactions without choosing one.
+  let primary=side||major;
+  if(primary!=='LONG'&&primary!=='SHORT') primary='WAIT';
+
+  let event='WAIT FOR PRICE REACTION';
+  if(position==='ABOVE ZONE'){
+    event=primary==='SHORT'?'SWEEP HIGH → BEARISH DISPLACEMENT':'RECLAIM ZONE → RETEST';
+  }else if(position==='BELOW ZONE'){
+    event=primary==='LONG'?'SWEEP LOW → BULLISH DISPLACEMENT':'RECLAIM ZONE → RETEST';
+  }else{
+    event=primary==='SHORT'
+      ? 'SWEEP HIGH / REJECTION → MSS DOWN'
+      : primary==='LONG'
+        ? 'SWEEP LOW / RECLAIM → MSS UP'
+        : 'WAIT FOR SWEEP → DISPLACEMENT → MSS';
+  }
+
+  const m15=state.mtf['15m'];
+  const sweep=!!m15 && primary ? (primary==='LONG'
+    ? m15.L.some(x=>x.includes('sweep'))
+    : m15.S.some(x=>x.includes('sweep'))) : false;
+  const displacement=!!m15 && primary ? (primary==='LONG'
+    ? m15.L.includes('displacement')
+    : m15.S.includes('displacement')) : false;
+  const mss=!!m15 && primary ? (primary==='LONG'
+    ? m15.L.includes('MSS up')
+    : m15.S.includes('MSS down')) : false;
+  const fvg=!!m15 && primary ? (primary==='LONG'
+    ? m15.L.includes('bullish FVG')
+    : m15.S.includes('bearish FVG')) : false;
+  const reaction=r75.state==='REJECTION'||r75.state==='RECLAIM';
+
+  const gates=[inZone,reaction,sweep,displacement,mss||fvg];
+  const done=gates.filter(Boolean).length;
+
+  let invalid='Outside setup zone';
+  if(primary==='LONG') invalid=`Loss of zone / swing low ${sr75?.swing?.low?.p?fmt(sr75.swing.low.p):'—'}`;
+  if(primary==='SHORT') invalid=`Loss of zone / swing high ${sr75?.swing?.high?.p?fmt(sr75.swing.high.p):'—'}`;
+
+  const path=primary==='LONG'
+    ? 'LOW LIQUIDITY SWEEP → BULLISH DISPLACEMENT → MSS UP → FVG/RETEST → CONFIRMATION'
+    : primary==='SHORT'
+      ? 'HIGH LIQUIDITY SWEEP → BEARISH DISPLACEMENT → MSS DOWN → FVG/RETEST → CONFIRMATION'
+      : 'LIQUIDITY SWEEP → DISPLACEMENT → MSS → FVG/RETEST → CONFIRMATION';
+
+  const action=stateName==='ACTIVE'
+    ? `${primary==='WAIT'?'LOCATION ACTIVE':primary+' LOCATION ACTIVE'} · do not treat location alone as an entry.`
+    : stateName==='APPROACHING'
+      ? `Price is approaching the setup zone · wait for the defined event sequence.`
+      : `Price is away from the setup zone · no entry sequence is active.`;
+
+  return {state:stateName,zoneLow,zoneHigh,position,primary,event,invalid,done,path,action,fib,liq,distToZone,inZone};
 }
 
 function getConfluenceScore(a,hi,lo){
@@ -3327,7 +3433,7 @@ function updateUI(d){
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
 
 
-  // v9.0.6: initialize Entry Confirmation before any UI block reads it.
+  // v9.0.7: initialize Entry Confirmation before any UI block reads it.
   const entryConf=getEntryConfirmation(d,r75,ext,conf);
   const ecBadge=$('entryConfirmBadge');
   if(ecBadge){
@@ -3369,6 +3475,29 @@ function updateUI(d){
   if($('fib75PriceRelation')) $('fib75PriceRelation').textContent=sr75.fib75
     ? `${sr75.priceRelation} · ${sr75.priceDistance.toFixed(2)}%`
     : '—';
+  const dynamicZone=getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf);
+  if($('dynamicZoneBadge')){
+    $('dynamicZoneBadge').textContent=dynamicZone.state;
+    $('dynamicZoneBadge').className='liqFibBadge '+(
+      dynamicZone.state==='ACTIVE'?'active':
+      dynamicZone.state==='APPROACHING'?'approaching':
+      dynamicZone.state==='AWAY'?'away':'separate'
+    );
+  }
+  if($('dynamicZoneRange')) $('dynamicZoneRange').textContent=
+    dynamicZone.zoneLow&&dynamicZone.zoneHigh
+      ? `${fmt(dynamicZone.zoneLow)} → ${fmt(dynamicZone.zoneHigh)}`
+      : '—';
+  if($('dynamicZonePosition')) $('dynamicZonePosition').textContent=
+    dynamicZone.position + (Number.isFinite(dynamicZone.distToZone)&&dynamicZone.state!=='ACTIVE'
+      ? ` · ${dynamicZone.distToZone.toFixed(2)}% away` : '');
+  if($('dynamicZonePrimary')) $('dynamicZonePrimary').textContent=dynamicZone.primary;
+  if($('dynamicZoneEvent')) $('dynamicZoneEvent').textContent=dynamicZone.event;
+  if($('dynamicZoneInvalidation')) $('dynamicZoneInvalidation').textContent=dynamicZone.invalid;
+  if($('dynamicZoneReadiness')) $('dynamicZoneReadiness').textContent=`${dynamicZone.done}/5`;
+  if($('dynamicZonePath')) $('dynamicZonePath').innerHTML=`<b>Sequence:</b> ${dynamicZone.path}`;
+  if($('dynamicZoneAction')) $('dynamicZoneAction').textContent=dynamicZone.action;
+
   if($('fib75Note')){
     const r=sr75.resistance?`R ${fmt(sr75.resistance.p)}`:'R —';
     const s=sr75.support?`S ${fmt(sr75.support.p)}`:'S —';
@@ -3380,7 +3509,7 @@ function updateUI(d){
       ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${zoneText}`
       : 'The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
   }
-  // v9.0.6: separate bias, location, trigger and final decision.
+  // v9.0.7: separate bias, location, trigger and final decision.
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
