@@ -4989,7 +4989,7 @@ async function runRegimeValidation(){
 }
 
 
-/* v11.9: Diagnostic runtime fix. getConfluenceScore now receives candle arrays, never the model object. */
+/* v12.0: Diagnostic runtime/performance fix. getConfluenceScore now receives candle arrays, never the model object. */
 function v115FormatTs(ts){return new Date(ts).toLocaleString([], {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function v115LongGateSnapshot(model,hist){
   if(!model||!model.d)return null;
@@ -5043,23 +5043,30 @@ function v115LongGateSnapshot(model,hist){
 }
 async function runMissedLongDiagnostic(){
   const btn=$('runMissedLongBtn'),note=$('missedLongNote'),table=$('missedLongTable');
-  if(btn){btn.disabled=true;btn.textContent='Running BTC diagnostic v11.9…';}
+  if(btn){btn.disabled=true;btn.textContent='Running BTC diagnostic v12.0…';}
   try{
     const a=await v11FetchKlines('BTCUSDT','15m',12000);
     if(a.length<800)throw new Error(`Only ${a.length} closed 15m candles available; at least 800 are required.`);
     const integrity=v11ValidationIntegrity(a);
     if(![integrity.unique,integrity.ordered,integrity.intervalOk,integrity.closed,integrity.noFuture].every(Boolean))throw new Error('Historical BTC data integrity failed.');
 
+    // v12 runtime guard: locate the most recent qualifying move first, then
+    // replay only the necessary context + move window. The old implementation
+    // could replay thousands of candles from the beginning of a 12k-bar history,
+    // repeatedly resampling/scanning the entire history and freezing mobile Safari.
     let start=-1,end=-1;
-    for(let i=0;i<a.length;i++){
+    for(let i=a.length-1;i>=0;i--){
       if(a[i].l<=82400){
-        for(let j=i+1;j<a.length;j++){if(a[j].h>=87000){start=i;end=j;break;}}
+        for(let j=i+1;j<a.length;j++){
+          if(a[j].h>=87000){start=i;end=j;break;}
+        }
         if(start>=0)break;
       }
     }
     if(start<0||end<0)throw new Error('Could not locate a closed-candle BTC window containing <=82,400 followed by >=87,000 in the available history.');
 
     const contextStart=Math.max(0,start-650),window=a.slice(contextStart,end+1);
+    if(window.length>2200)throw new Error(`Target move was found, but its replay window is ${window.length.toLocaleString()} candles. Refusing to freeze the browser; a shorter qualifying window is required.`);
     const rows=[];
     let maxStrict=0,maxCore=0,maxLegacy=0,firstStrict7=null,firstCore6=null,firstLegacy7=null,firstLongSide=null;
     const blockerCounts={strict:{},core:{},legacy:{}};
@@ -5101,12 +5108,12 @@ async function runMissedLongDiagnostic(){
       const hierarchyOnly=maxCore>=5&&rows.some(x=>x.coreDone>=5&&x.hierarchyBlock);
       const likelyStrict=top(blockerCounts.strict)[0]?.[0]||'No repeated strict blocker';
       const likelyCore=top(blockerCounts.core)[0]?.[0]||'No repeated core blocker';
-      verdict.innerHTML=`<b>v11.9 diagnostic:</b> The BTC move reached ${fmt(a[end].h)} after starting at ${fmt(a[start].l)}. Strict ordered sequence max = <b>${maxStrict}/7</b>; core sequence excluding Fib-75 as a hard gate max = <b>${maxCore}/6</b>; legacy unordered-condition count max = <b>${maxLegacy}/7</b>. `+
+      verdict.innerHTML=`<b>v12.0 diagnostic:</b> The BTC move reached ${fmt(a[end].h)} after starting at ${fmt(a[start].l)}. Strict ordered sequence max = <b>${maxStrict}/7</b>; core sequence excluding Fib-75 as a hard gate max = <b>${maxCore}/6</b>; legacy unordered-condition count max = <b>${maxLegacy}/7</b>. `+
         (fibOnlyLikely?`<b>Important:</b> the core sequence completed while the strict sequence did not, which isolates Fibonacci-75 as a possible hard-gate blocker. `:'')+
         (hierarchyOnly?`The replay also contains periods where trigger conditions were present while MTF hierarchy remained blocking. `:'')+
         `Most frequent strict blocker: <b>${likelyStrict}</b>. Most frequent core blocker: <b>${likelyCore}</b>. This is a diagnostic result only; no live threshold or risk setting was changed.`;
     }
-    if(note)note.textContent=`v11.9 closed-candle replay completed using ${a.length.toLocaleString()} BTC 15m candles, from ${v115FormatTs(a[start].t)} through ${v115FormatTs(a[end].t)}. Strict sequence is ordered: later gates do not count when an earlier gate is missing. The core comparison removes only Fib-75 from the hard sequence for diagnosis; it does not change the live engine.`;
+    if(note)note.textContent=`v12.0 closed-candle replay completed using ${a.length.toLocaleString()} BTC 15m candles, from ${v115FormatTs(a[start].t)} through ${v115FormatTs(a[end].t)}. Strict sequence is ordered: later gates do not count when an earlier gate is missing. The core comparison removes only Fib-75 from the hard sequence for diagnosis; it does not change the live engine.`;
   }catch(e){if(note)note.textContent=`BTC missed-long diagnostic unavailable: ${e.message}. Live analysis remains unaffected.`;}
   finally{if(btn){btn.disabled=false;btn.textContent='Run BTC missed-long diagnostic';}}
 }
@@ -5198,8 +5205,8 @@ $('runPaperSnapshotBtn')?.addEventListener('click',createV11PaperSnapshot);
   </section>
 
   <section class="missedDiag" id="missedLongDiagnostic">
-    <div class="diagTitle">BTC Missed-Long Diagnostic · v11.9</div>
-    <div class="diagSub">Closed-candle replay of the BTC move from the first ≤82,400 area to the first later ≥87,000 area. v11.9 separates ordered sequence progress from simple condition counts and tests a diagnostic core sequence where Fibonacci 75% remains context-only.</div>
+    <div class="diagTitle">BTC Missed-Long Diagnostic · v12.0</div>
+    <div class="diagSub">Closed-candle replay of the BTC move from the first ≤82,400 area to the first later ≥87,000 area. v12.0 separates ordered sequence progress from simple condition counts and tests a diagnostic core sequence where Fibonacci 75% remains context-only.</div>
     <div style="margin-top:9px"><button class="btn" type="button" id="runMissedLongBtn">Run BTC missed-long diagnostic</button></div>
     <div class="diagGrid">
       <div class="diagMetric"><small>START</small><b id="diagStart">—</b></div>
