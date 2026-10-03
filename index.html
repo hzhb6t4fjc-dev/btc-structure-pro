@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.0.7 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v9.0.9 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -316,7 +316,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.7</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.9</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -387,7 +387,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>INVALIDATION</small><b id="dynamicZoneInvalidation">—</b></div>
           <div class="liqFibBox"><small>READINESS</small><b id="dynamicZoneReadiness">0/5</b></div>
         </div>
-        <div class="dynamicZonePath" id="dynamicZonePath"><b>Sequence:</b> location → liquidity event → displacement → MSS/FVG → confirmation.</div>
+        <div class="dynamicZonePath" id="dynamicZonePath"><b>Sequence:</b> location → liquidity event → displacement → MSS/FVG → confirmation. <span>Fib = location/confluence, not a trigger.</span></div>
         <div class="liqFibNote dynamicZoneAction" id="dynamicZoneAction">Waiting for synchronized price, liquidity and Fibonacci location.</div>
       </div>
       <div class="liqFibPanel reaction75Panel"><div class="liqFibHead"><span class="liqFibTitle">Fibonacci Retracement 75% · Reaction Engine</span><span class="liqFibBadge separate" id="fib75ReactionBadge">WAIT</span></div><div class="liqFibGrid"><div class="liqFibBox"><small>REACTION</small><b id="fib75Reaction">—</b></div><div class="liqFibBox"><small>STRUCTURE</small><b id="fib75ReactionStructure">—</b></div><div class="liqFibBox"><small>DISPLACEMENT</small><b id="fib75ReactionDisp">—</b></div><div class="liqFibBox"><small>VOLUME</small><b id="fib75ReactionVolume">—</b></div></div><div class="liqFibNote" id="fib75ReactionNote">Waiting for price behavior at the 75% retracement. Touching 75% alone is not a signal.</div></div>
@@ -1596,12 +1596,12 @@ function getFib75SRContext(a){
 
 function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
   const price=Number(state.livePrice)||a?.at?.(-1)?.c||null;
-  if(!price || !r75?.fib75){
+  const swing=sr75?.swing || getFibSwing(a);
+  const fib=swing ? swing.low.p + swing.range*.75 : null;
+  const liq=lf?.liq?.p || null;
+  if(!price || !Number.isFinite(fib)){
     return {state:'WAIT',zoneLow:null,zoneHigh:null,position:'WAIT',primary:'WAIT',event:'WAIT',invalid:'—',done:0,path:'location → liquidity event → displacement → MSS/FVG → confirmation',action:'Waiting for synchronized price, liquidity and Fibonacci location.'};
   }
-
-  const fib=r75.fib75;
-  const liq=lf?.liq?.p||null;
   const candidates=[fib];
   if(liq && Math.abs(liq-fib)/fib<=0.004)candidates.push(liq);
 
@@ -1747,9 +1747,15 @@ function getConfluenceScore(a,hi,lo){
     else breakdown.mtf=0;
   }
 
-  const score=Object.values(breakdown).reduce((s,v)=>s+v,0);
+  // Fibonacci is a LOCATION / CONFLUENCE indicator only.
+  // It must not increase the directional score by itself.
+  // The remaining directional components have a raw maximum of 90.
+  const rawScore=Object.entries(breakdown)
+    .filter(([key])=>key!=='fibonacci')
+    .reduce((s,[,v])=>s+v,0);
+  const score=Math.round((rawScore/90)*100);
   state.confluenceBreakdown=breakdown;
-  return {score,direction,breakdown};
+  return {score,direction,breakdown,rawScore};
 }
 function saveSnapshots(){
   state.snapshots=state.snapshots.slice(0,30);
@@ -3433,7 +3439,7 @@ function updateUI(d){
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
 
 
-  // v9.0.7: initialize Entry Confirmation before any UI block reads it.
+  // v9.0.9: initialize Entry Confirmation before any UI block reads it.
   const entryConf=getEntryConfirmation(d,r75,ext,conf);
   const ecBadge=$('entryConfirmBadge');
   if(ecBadge){
@@ -3509,7 +3515,7 @@ function updateUI(d){
       ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${zoneText}`
       : 'The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
   }
-  // v9.0.7: separate bias, location, trigger and final decision.
+  // v9.0.9: separate bias, location, trigger and final decision.
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
@@ -3548,7 +3554,7 @@ function updateUI(d){
           ? `WATCH ${entryConf.side}`
           : `WAIT${displayBias!=='WAIT'?' · '+displayBias:''}`;
 
-  $('qualityText').textContent=`CONFLUENCE ${conf.score}/100 · BIAS ${displayBias} · LOCATION ${locationState} · TRIGGER ${entryConf.next||'NONE'} · FINAL ${finalStatus}.`;
+  $('qualityText').textContent=`CONFLUENCE ${conf.score}/100 · BIAS ${displayBias} · LOCATION ${locationState} · TRIGGER ${entryConf.next||'NONE'} · FINAL ${finalStatus} · FIB = CONTEXT ONLY.`;
 
   if($('decisionBias'))$('decisionBias').textContent=displayBias;
   if($('decisionLocation'))$('decisionLocation').textContent=locationState;
