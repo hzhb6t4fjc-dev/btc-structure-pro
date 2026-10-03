@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v8.65 Professional · Market Validation Engine 2.0 + Volume Profile/VWAP + Order Flow + Order Book/Persistence + Order Book/Persistence</title>
+<title>Crypto Structure Pro v9.0.1 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -215,7 +215,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="brand">Crypto Structure Pro <span class="pill">v8.65 Professional</span></div>
+      <div class="brand">Crypto Structure Pro <span class="pill">v9.0 Professional</span></div>
       <div class="sub">Multi-crypto · MTF Structure · Liquidity · MSS · Displacement · FVG · Fibonacci</div>
     </div>
     <div class="status" id="status"><span class="dot"></span>Starting…</div>
@@ -288,6 +288,24 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
         <div class="mtfNote" id="mtfNote">12H defines the major structure. 4H confirms the main structure, 1H defines the setup, and 15m remains the trigger timeframe.</div>
       </div>
 
+      <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.1</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibGrid">
+          <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
+          <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
+          <div class="liqFibBox"><small>30D MOMENTUM</small><b id="lt30d">—</b></div>
+          <div class="liqFibBox"><small>90D MOMENTUM</small><b id="lt90d">—</b></div>
+          <div class="liqFibBox"><small>180D MOMENTUM</small><b id="lt180d">—</b></div>
+          <div class="liqFibBox"><small>365D MOMENTUM</small><b id="lt365d">—</b></div>
+          <div class="liqFibBox"><small>WEEKLY VOLATILITY · 20W</small><b id="ltVolatility">—</b></div>
+          <div class="liqFibBox"><small>VOLATILITY REGIME</small><b id="ltVolRegime">—</b></div>
+          <div class="liqFibBox"><small>DRAWDOWN · FROM 2Y HIGH</small><b id="ltDrawdown">—</b></div>
+          <div class="liqFibBox"><small>RISK REGIME</small><b id="ltRiskRegime">—</b></div>
+          <div class="liqFibBox"><small>REGIME SCORE</small><b id="ltScore">—</b></div>
+          <div class="liqFibBox"><small>MODEL STATE</small><b id="ltState">WAIT</b></div>
+        </div>
+        <div class="liqFibNote" id="ltNote">Long-term regime is context only. It combines multi-timeframe trend alignment, time-series momentum, volatility and drawdown. It does not create an entry and does not override Market Validation.</div>
+      </div>
       <div class="liqFibPanel macroPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Macro Regime Engine</span><span class="liqFibBadge separate" id="macroBadge">WAIT</span></div>
         <div class="liqFibGrid">
@@ -698,7 +716,8 @@ const state={
   lastSnapshotKey:null,
   scanner:{rows:[],filter:'all',side:'all',query:'',timer:null,busy:false,lastRun:0},
   orderFlow:{trades:[],loaded:false,lastId:null,ws:null,wsTimer:null,source:'WAIT',lastFetch:0},
-  orderBook:{bids:new Map(),asks:new Map(),lastUpdateId:null,ws:null,wsTimer:null,buffer:[],ready:false,source:'WAIT',snapshotBusy:false,lastUpdate:0,samples:[],sampleTimer:null,lastSummary:null}
+  orderBook:{bids:new Map(),asks:new Map(),lastUpdateId:null,ws:null,wsTimer:null,buffer:[],ready:false,source:'WAIT',snapshotBusy:false,lastUpdate:0,samples:[],sampleTimer:null,lastSummary:null},
+  longTerm:{last:null,updated:0}
 };
 
 const $=id=>document.getElementById(id);
@@ -1020,6 +1039,77 @@ function getMacroRegime(a){
   const p=pivots(x,3),hi=p.hi.at(-1)?.p||null,lo=p.lo.at(-1)?.p||null;
   const prev=x.at(-2)||null;
   return {regime,maAlignment,ma7,ma14,ma28,maSpread:spread,slope7,slope14,slope28,volumeRegime,last,prevHigh:prev?.h||null,prevLow:prev?.l||null,majorHigh:hi,majorLow:lo};
+}
+
+function pctChange(a, periods){
+  if(!Array.isArray(a)||a.length<=periods)return null;
+  const end=Number(a.at(-1)?.c), start=Number(a.at(-(periods+1))?.c);
+  if(!Number.isFinite(end)||!Number.isFinite(start)||start===0)return null;
+  return (end/start-1)*100;
+}
+function stdDev(vals){
+  if(!vals||vals.length<2)return null;
+  const m=vals.reduce((a,b)=>a+b,0)/vals.length;
+  return Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/vals.length);
+}
+function getLongTermRegime(){
+  const w=state.macro['1w']||[],m=state.macro['1M']||[],d=state.rawMtf['1d']||[],h12=state.rawMtf['12h']||[];
+  if(w.length<60||m.length<18||d.length<370||h12.length<35) return {regime:'WAIT',badge:'WAIT',alignment:'WAIT',score:null,momentum:{},vol:null,volRegime:'WAIT',drawdown:null,risk:'WAIT',state:'INSUFFICIENT DATA'};
+  const ws=w.slice(0,-1), ms=m.slice(0,-1), ds=d.slice(0,-1), hs=h12.slice(0,-1);
+  const wc=ws.map(x=>Number(x.c)), mc=ms.map(x=>Number(x.c)), dc=ds.map(x=>Number(x.c));
+  const m30=pctChange(ds,30),m90=pctChange(ds,90),m180=pctChange(ds,180),m365=pctChange(ds,365);
+  const w4=pctChange(ws,4),w13=pctChange(ws,13),w26=pctChange(ws,26),w52=pctChange(ws,52);
+  const m6=pctChange(ms,6),m12=pctChange(ms,12);
+  const lastD=dc.at(-1);
+  const ma12=sma(mc,12),ma6=sma(mc,6),wma26=sma(wc,26),wma52=sma(wc,52);
+  const h12State=structureState(scan(hs));
+  const mState=getMacroRegime(ms).regime;
+  const wState=getMacroRegime(ws).regime;
+  const bull1=mState==='BULLISH', bear1=mState==='BEARISH';
+  const bullW=wState==='BULLISH', bearW=wState==='BEARISH';
+  const bull12=h12State.bullish, bear12=h12State.bearish;
+  const bullAlign=(bull1?1:0)+(bullW?1:0)+(bull12?1:0);
+  const bearAlign=(bear1?1:0)+(bearW?1:0)+(bear12?1:0);
+  const alignment=bullAlign===3?'3/3 BULLISH':bearAlign===3?'3/3 BEARISH':bullAlign>bearAlign?`${bullAlign}/3 BULLISH`:bearAlign>bullAlign?`${bearAlign}/3 BEARISH`:'MIXED';
+  const momentumVals=[m30,m90,m180,m365].filter(Number.isFinite);
+  const momScore=momentumVals.length?momentumVals.reduce((a,v,i)=>a+Math.max(-1,Math.min(1,v/(i===0?8:i===1?18:i===2?35:60))),0)/momentumVals.length:0;
+  const trendScore=((bullAlign-bearAlign)/3)*45 + momScore*35 + ((m12||0)>0?8:(m12||0)<0?-8:0) + ((m6||0)>0?4:(m6||0)<0?-4:0);
+  const score=Math.max(-100,Math.min(100,Math.round(trendScore)));
+  const rets=[];
+  for(let i=Math.max(1,wc.length-20);i<wc.length;i++){ if(wc[i-1]>0&&wc[i]>0) rets.push(Math.log(wc[i]/wc[i-1])); }
+  const weeklyVol=stdDev(rets)*Math.sqrt(52)*100;
+  let volRegime='NORMAL';
+  if(weeklyVol>=90)volRegime='EXTREME'; else if(weeklyVol>=65)volRegime='HIGH'; else if(weeklyVol<=25)volRegime='LOW';
+  const twoY=wc.slice(-104),peak=Math.max(...twoY),drawdown=(lastD/peak-1)*100;
+  let risk='NORMAL';
+  if(volRegime==='EXTREME'||drawdown<=-55)risk='EXTREME'; else if(volRegime==='HIGH'||drawdown<=-35)risk='HIGH'; else if(volRegime==='LOW'&&drawdown>-15)risk='LOW';
+  let regime='TRANSITION';
+  if(score>=45&&volRegime!=='EXTREME')regime='BULL TREND';
+  else if(score<=-45&&volRegime!=='EXTREME')regime='BEAR TREND';
+  else if(Math.abs(score)<20&&Math.abs(m30||0)<8)regime='RANGE / NEUTRAL';
+  else if(volRegime==='EXTREME')regime='HIGH VOLATILITY';
+  let ltState='WATCH';
+  if((bullAlign===3||bearAlign===3)&&Math.abs(score)>=45)ltState='ALIGNED TREND';
+  else if(Math.abs(score)>=25)ltState='DIRECTIONAL TRANSITION';
+  else if(volRegime==='EXTREME')ltState='RISK TRANSITION';
+  const badge=regime==='BULL TREND'?'BULLISH':regime==='BEAR TREND'?'BEARISH':regime==='HIGH VOLATILITY'?'HIGH RISK':'NEUTRAL';
+  return {regime,badge,alignment,score,momentum:{m30,m90,m180,m365,w4,w13,w26,w52,m6,m12},vol:weeklyVol,volRegime,drawdown,risk,state:ltState,ma:{ma6,ma12,wma26,wma52},macro:{mState,wState,h12:h12State.state}};
+}
+function renderLongTermRegime(){
+  const x=getLongTermRegime(); state.longTerm={last:x,updated:Date.now()};
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  const cls=v=>v==='BULLISH'?'macroGood':v==='BEARISH'?'macroBad':v==='HIGH RISK'?'macroBad':'macroMuted';
+  set('ltRegime',x.regime); set('ltTrendAlignment',x.alignment);
+  set('lt30d',Number.isFinite(x.momentum?.m30)?`${x.momentum.m30>=0?'+':''}${x.momentum.m30.toFixed(1)}%`:'—');
+  set('lt90d',Number.isFinite(x.momentum?.m90)?`${x.momentum.m90>=0?'+':''}${x.momentum.m90.toFixed(1)}%`:'—');
+  set('lt180d',Number.isFinite(x.momentum?.m180)?`${x.momentum.m180>=0?'+':''}${x.momentum.m180.toFixed(1)}%`:'—');
+  set('lt365d',Number.isFinite(x.momentum?.m365)?`${x.momentum.m365>=0?'+':''}${x.momentum.m365.toFixed(1)}%`:'—');
+  set('ltVolatility',Number.isFinite(x.vol)?`${x.vol.toFixed(1)}% ann.`:'—'); set('ltVolRegime',x.volRegime);
+  set('ltDrawdown',Number.isFinite(x.drawdown)?`${x.drawdown.toFixed(1)}%`:'—'); set('ltRiskRegime',x.risk); set('ltScore',Number.isFinite(x.score)?`${x.score>0?'+':''}${x.score}/100`:'—'); set('ltState',x.state);
+  const b=$('ltRegimeBadge'); if(b){b.textContent=x.badge;b.className='liqFibBadge '+(x.badge==='BULLISH'?'confluence':x.badge==='BEARISH'||x.badge==='HIGH RISK'?'resistance':'separate');}
+  const re=$('ltRegime'); if(re)re.className=cls(x.badge);
+  const rr=$('ltRiskRegime'); if(rr)rr.className=x.risk==='EXTREME'||x.risk==='HIGH'?'macroBad':x.risk==='LOW'?'macroGood':'macroMuted';
+  const note=$('ltNote'); if(note){note.textContent=`${x.regime} · ${x.alignment} · 30D ${Number.isFinite(x.momentum?.m30)?x.momentum.m30.toFixed(1):'—'}% · 90D ${Number.isFinite(x.momentum?.m90)?x.momentum.m90.toFixed(1):'—'}% · 180D ${Number.isFinite(x.momentum?.m180)?x.momentum.m180.toFixed(1):'—'}% · 365D ${Number.isFinite(x.momentum?.m365)?x.momentum.m365.toFixed(1):'—'}%. Weekly volatility and drawdown are risk context; the engine is not an entry signal and does not override Market Validation.`;}
 }
 
 function getMacroSummary(){
@@ -3155,6 +3245,7 @@ function updateUI(d){
   $('longScore').textContent=d.longScore+'/100';$('shortScore').textContent=d.shortScore+'/100';$('longBar').style.width=d.longScore+'%';$('shortBar').style.width=d.shortScore+'%';
   $('longReason').textContent=`15m ${d.s15.bull} · 1H ${d.s1.bull} · 4H ${d.s4.bull} · 12H ${d.s12.bull}`;$('shortReason').textContent=`15m ${d.s15.bear} · 1H ${d.s1.bear} · 4H ${d.s4.bear} · 12H ${d.s12.bear}`;
   $('s15').textContent=`L ${d.s15.bull} / S ${d.s15.bear} · ${[...d.s15.L,...d.s15.S].slice(0,3).join(', ')||'—'}`;$('s1').textContent=`L ${d.s1.bull} / S ${d.s1.bear}`;$('s4').textContent=`${d.main4.state} · L ${d.s4.bull} / S ${d.s4.bear}`;$('s12').textContent=`${d.major12.state} · L ${d.s12.bull} / S ${d.s12.bear}`;$('sD').textContent=d.sd?`L ${d.sd.bull} / S ${d.sd.bear}`:'—';
+  renderLongTermRegime();
   const macro=getMacroSummary();
   const macroBadge=$('macroBadge');
   if(macroBadge){
