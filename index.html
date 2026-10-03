@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Structure Pro v9.0.9 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
+<title>Crypto Structure Pro v9.1.0 Professional · Long-Term Market Regime Engine + Market Validation + Order Flow</title>
 <style>
 :root{--bg:#070b14;--panel:#101726;--panel2:#0c1321;--line:#26334e;--text:#eef3ff;--muted:#8f9bb3;--green:#39d99a;--red:#ff6478;--yellow:#f4c451;--blue:#72a9ff}
 *{box-sizing:border-box}
@@ -316,7 +316,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
       </div>
 
       <div class="liqFibPanel macroPanel" id="longTermRegimePanel">
-        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.0.9</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
+        <div class="liqFibHead"><span class="liqFibTitle">Long-Term Market Regime Engine · v9.1.0</span><span class="liqFibBadge separate" id="ltRegimeBadge">WAIT</span></div>
         <div class="liqFibGrid">
           <div class="liqFibBox"><small>LONG-TERM REGIME</small><b id="ltRegime">WAIT</b></div>
           <div class="liqFibBox"><small>TREND ALIGNMENT · 1M / 1W / 12H</small><b id="ltTrendAlignment">—</b></div>
@@ -1622,14 +1622,25 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
 
   // Primary scenario follows the established hierarchy when a side exists.
   // With no side, the engine presents both possible reactions without choosing one.
+  // Reaction state has priority over a raw directional bias.
+  // A rejection at the zone is not a LONG trigger; it puts the setup into
+  // observation until direction is confirmed by the subsequent sequence.
+  const reactionState=r75?.state||'WAIT';
   let primary=side||major;
   if(primary!=='LONG'&&primary!=='SHORT') primary='WAIT';
+  if(reactionState==='REJECTION'){
+    primary='WAIT';
+  }
 
   let event='WAIT FOR PRICE REACTION';
-  if(position==='ABOVE ZONE'){
-    event=primary==='SHORT'?'SWEEP HIGH → BEARISH DISPLACEMENT':'RECLAIM ZONE → RETEST';
+  if(reactionState==='REJECTION'){
+    event='REJECTION OBSERVED → WAIT FOR MSS / DISPLACEMENT';
+  }else if(position==='ABOVE ZONE'){
+    event=primary==='SHORT'?'SWEEP HIGH → BEARISH DISPLACEMENT':
+      primary==='LONG'?'RECLAIM ZONE → RETEST':'WAIT FOR REACTION';
   }else if(position==='BELOW ZONE'){
-    event=primary==='LONG'?'SWEEP LOW → BULLISH DISPLACEMENT':'RECLAIM ZONE → RETEST';
+    event=primary==='LONG'?'SWEEP LOW → BULLISH DISPLACEMENT':
+      primary==='SHORT'?'RECLAIM ZONE → RETEST':'WAIT FOR REACTION';
   }else{
     event=primary==='SHORT'
       ? 'SWEEP HIGH / REJECTION → MSS DOWN'
@@ -1651,7 +1662,7 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
   const fvg=!!m15 && primary ? (primary==='LONG'
     ? m15.L.includes('bullish FVG')
     : m15.S.includes('bearish FVG')) : false;
-  const reaction=r75.state==='REJECTION'||r75.state==='RECLAIM';
+  const reaction=(r75.state==='REJECTION'||r75.state==='RECLAIM') && primary!=='WAIT';
 
   const gates=[inZone,reaction,sweep,displacement,mss||fvg];
   const done=gates.filter(Boolean).length;
@@ -1666,11 +1677,13 @@ function getDynamicSetupZone(a,d,lf,r75,sr75,entryConf,conf){
       ? 'HIGH LIQUIDITY SWEEP → BEARISH DISPLACEMENT → MSS DOWN → FVG/RETEST → CONFIRMATION'
       : 'LIQUIDITY SWEEP → DISPLACEMENT → MSS → FVG/RETEST → CONFIRMATION';
 
-  const action=stateName==='ACTIVE'
-    ? `${primary==='WAIT'?'LOCATION ACTIVE':primary+' LOCATION ACTIVE'} · do not treat location alone as an entry.`
-    : stateName==='APPROACHING'
-      ? `Price is approaching the setup zone · wait for the defined event sequence.`
-      : `Price is away from the setup zone · no entry sequence is active.`;
+  const action=reactionState==='REJECTION'
+    ? `75% reaction = REJECTION · directional bias is suspended until displacement + MSS confirm the next side.`
+    : stateName==='ACTIVE'
+      ? `${primary==='WAIT'?'LOCATION ACTIVE':primary+' LOCATION ACTIVE'} · do not treat location alone as an entry.`
+      : stateName==='APPROACHING'
+        ? `Price is approaching the setup zone · wait for the defined event sequence.`
+        : `Price is away from the setup zone · no entry sequence is active.`;
 
   return {state:stateName,zoneLow,zoneHigh,position,primary,event,invalid,done,path,action,fib,liq,distToZone,inZone};
 }
@@ -3439,7 +3452,7 @@ function updateUI(d){
   if($('fibExtNote')) $('fibExtNote').textContent=ext.note;
 
 
-  // v9.0.9: initialize Entry Confirmation before any UI block reads it.
+  // v9.1.0: initialize Entry Confirmation before any UI block reads it.
   const entryConf=getEntryConfirmation(d,r75,ext,conf);
   const ecBadge=$('entryConfirmBadge');
   if(ecBadge){
@@ -3515,7 +3528,7 @@ function updateUI(d){
       ? `75% = ${fmt(sr75.fib75)} · ${r} · ${s}. ${zoneText}`
       : 'The 75% level is unavailable until a confirmed Swing Low → Swing High pair is formed.';
   }
-  // v9.0.9: separate bias, location, trigger and final decision.
+  // v9.1.0: separate bias, location, trigger and final decision.
   $('confluenceScore').textContent=conf.score;
   const trigger=d.side?'CONFIRMED':(d.longTrigger||d.shortTrigger?'TRIGGER WATCH':'WAIT');
   const mtfScore=conf.breakdown.mtf||0;
