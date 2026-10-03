@@ -304,7 +304,7 @@ body{margin:0;background:linear-gradient(135deg,#060a12,#0d1525);color:var(--tex
           <div class="liqFibBox"><small>REGIME SCORE</small><b id="ltScore">—</b></div>
           <div class="liqFibBox"><small>MODEL STATE</small><b id="ltState">WAIT</b></div>
         </div>
-        <div class="liqFibNote" id="ltNote">Long-term regime is context only. It combines multi-timeframe trend alignment, time-series momentum, volatility and drawdown. It does not create an entry and does not override Market Validation.</div>
+        <div class="liqFibNote" id="ltNote">Long-term regime is context only. It uses extended daily history for 30D/90D/180D/365D momentum and 2Y drawdown, plus 1W/1M/12H alignment. It does not create an entry and does not override Market Validation. It does not create an entry and does not override Market Validation.</div>
       </div>
       <div class="liqFibPanel macroPanel">
         <div class="liqFibHead"><span class="liqFibTitle">Macro Regime Engine</span><span class="liqFibBadge separate" id="macroBadge">WAIT</span></div>
@@ -819,8 +819,8 @@ function renderSymbols(list){
   else if(list.length){state.symbol=list[0];sel.value=state.symbol;}
 }
 
-async function loadTF(tf){
-  const r=await timeoutFetch(`${API}/klines?symbol=${encodeURIComponent(state.symbol)}&interval=${tf}&limit=240`,9000);
+async function loadTF(tf,limit=240){
+  const r=await timeoutFetch(`${API}/klines?symbol=${encodeURIComponent(state.symbol)}&interval=${tf}&limit=${limit}`,9000);
   if(!r.ok)throw new Error(`HTTP ${r.status} · ${state.symbol} · ${tf}`);
   const raw=await r.json();
   if(!Array.isArray(raw)||raw.length<50)throw new Error(`Insufficient data · ${state.symbol} · ${tf}`);
@@ -3554,7 +3554,11 @@ async function loadAll(){
     state.macro['1w']=results[allTfs.indexOf('1w')];
     state.macro['1M']=results[allTfs.indexOf('1M')];
 
-    state.data=results[tfs.indexOf(state.tf)];
+    // Long-term engine needs extended daily history for 365D momentum and 2Y drawdown.
+    const longTermDaily=await loadTF('1d',1000);
+    state.rawMtf['1d']=longTermDaily;
+
+    state.data=state.tf==='1d' ? longTermDaily : results[tfs.indexOf(state.tf)];
     state.livePrice=state.data.at(-1)?.c??null;
     state.liveCandleTs=state.data.at(-1)?.t??null;
     draw();
